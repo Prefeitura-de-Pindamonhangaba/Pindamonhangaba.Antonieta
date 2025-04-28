@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Doações de Ração</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> <style>
+        /* Definindo as cores customizadas para um layout mais solar e quadrado */
+        :root {
+            --laranja-primario: #f77800; /* Laranja vibrante */
+            --cor-secundaria: #ffca28; /* Amarelo solar */
+            --fundo-claro: #fff8e1; /* Fundo creme suave e quente */
+            --texto-escuro: #263238; /* Tom escuro para contraste */
+            --texto-neutro: #546e7a; /* Tom neutro para detalhes */
+            --borda-clara: #ffe0b2; /* Borda um pouco mais quente que a padrão Bootstrap */
+            --sucesso-cor: #4CAF50; /* Verde para sucesso/ok */
+            --atencao-cor: #FF9800; /* Laranja para atenção */
+            --perigo-cor: #F44336; /* Vermelho para perigo/limite */
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--fundo-claro); /* Usando a cor de background customizada */
+            color: var(--texto-escuro);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased; /* Melhora a renderização da fonte */
+            -moz-osx-font-smoothing: grayscale;
+            padding-top: 20px; /* Espaço no topo */
+        }
+
+        .container {
+            /* Bootstrap handle: max-width, margin auto, padding via utility classes */
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1); /* Sombra um pouco mais suave */
+            background-color: #ffffff; /* Fundo branco para o conteúdo principal */
+            /* Removendo border-radius para deixar quadrado */
+        }
+
+        h1 {
+            color: var(--laranja-primario); /* Título em laranja primário */
+            font-weight: 700;
+            /* Bootstrap handle: text-center, margin-bottom, font-size (via display-* classes) */
+        }
+
+        h2 {
+            color: var(--cor-secundaria); /* Subtítulo em amarelo solar */
+            border-bottom: 2px solid var(--borda-clara); /* Borda usando a cor mais quente */
+            padding-bottom: 0.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .card {
+             border: 1px solid var(--borda-clara); /* Borda customizada mais quente */
+             /* Removendo border-radius do Bootstrap */
+        }
+
+        .card-header {
+             background-color: var(--fundo-claro); /* Fundo claro customizado para cabeçalhos de card */
+             border-bottom: 1px solid var(--borda-clara);
+             font-weight: 600;
+             color: var(--texto-escuro);
+        }
+
+        .stock-summary .display-4 {
+            color: var(--laranja-primario);
+            font-weight: 700;
+        }
+
+        .beneficiary-list .list-group-item {
+            border: 1px solid var(--borda-clara); /* Borda customizada mais quente */
+            margin-bottom: 0.75rem; /* Espaço entre os itens */
+            /* Removendo rounded/rounded-3 do Bootstrap e border-radius */
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05); /* Sombra leve nos itens */
+            transition: all 0.2s ease-in-out;
+        }
+
+        .beneficiary-list .list-group-item-action:hover {
+            background-color: rgba(247, 120, 0, 0.05); /* Fundo laranja primário com opacidade no hover */
+             border-color: var(--laranja-primario) !important; /* Borda laranja no hover */
+        }
+
+        .beneficiary-list h3 {
+             color: var(--texto-escuro);
+             font-weight: 700;
+             margin-bottom: 0.25rem;
+             font-size: 1.15rem;
+        }
+
+        .beneficiary-status .progress {
+            height: 10px; /* Altura menor para a barra de progresso */
+            background-color: #e9ecef; /* Cor de fundo padrão da barra */
+             /* Removendo border-radius do Bootstrap */
+        }
+
+        .beneficiary-status .progress-bar {
+            background-color: var(--sucesso-cor); /* Cor padrão verde */
+             /* Removendo border-radius do Bootstrap */
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--texto-neutro);
+        }
+
+        .footer {
+             border-top: 1px solid var(--borda-clara); /* Borda superior mais quente */
+             padding-top: 1.5rem;
+             margin-top: 3rem;
+        }
+
+         /* Classes para cores da barra de progresso */
+        .progress-bar-warning {
+            background-color: var(--atencao-cor) !important;
+        }
+        .progress-bar-danger {
+            background-color: var(--perigo-cor) !important;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container mt-4 mb-5 p-4">
+
+        <h1 class="text-center mb-4">Gerenciamento de Doações de Ração</h1>
+
+        <div class="card stock-summary mb-4">
+            <div class="card-header">Resumo de Estoque</div>
+            <div class="card-body text-center">
+                <div class="row align-items-center">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <p class="text-muted mb-1">Entrada Total (Mês)</p>
+                        <p class="display-4 mb-0 text-success">550 kg</p>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                         <p class="text-muted mb-1">Saída Total (Mês)</p>
+                         <p class="display-4 mb-0 text-danger">320 kg</p>
+                    </div>
+                     <div class="col-md-4">
+                         <p class="text-muted mb-1">Estoque Atual</p>
+                         <p class="display-4 mb-0"><span class="text-primary">230 kg</span></p> </div>
+                </div>
+                <hr class="my-4 border-borda-clara">
+                <div class="row">
+                     <div class="col-md-6">
+                        <button class="btn btn-primary w-100" style="background-color: var(--cor-secundaria); border-color: var(--cor-secundaria); color: var(--texto-escuro); font-weight: 600;">
+                             <i class="fas fa-plus me-2"></i> Registrar Nova Doação
+                        </button>
+                     </div>
+                      <div class="col-md-6">
+                        <button class="btn btn-outline-primary w-100" style="border-color: var(--laranja-primario); color: var(--laranja-primario); font-weight: 600;">
+                            <i class="fas fa-history me-2"></i> Ver Histórico
+                        </button>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="pb-2 mb-4">Beneficiários e Controle Mensal</h2>
+
+        <div class="card beneficiary-list">
+             <div class="card-header">Lista de Contemplados (Status Mensal)</div>
+             <ul class="list-group list-group-flush">
+
+                 <li class="list-group-item list-group-item-action py-3">
+                     <div class="row align-items-center">
+                         <div class="col-md-4">
+                             <h3 class="mb-1">Ana Silva</h3>
+                             <p class="mb-0 status-text">Limite Mensal: 15 kg</p>
+                         </div>
+                         <div class="col-md-5 beneficiary-status">
+                             <p class="mb-1 status-text">Recebido Este Mês: 5 kg</p>
+                             <div class="progress">
+                                 <div class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="5" aria-valuemin="0" aria-valuemax="15"></div>
+                             </div>
+                         </div>
+                         <div class="col-md-3 text-md-end mt-3 mt-md-0">
+                              <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Pode Receber</span>
+                             <button class="btn btn-sm btn-outline-secondary ms-2" style="color: var(--texto-neutro); border-color: var(--borda-clara);">Registrar Entrega</button>
+                         </div>
+                     </div>
+                 </li>
+
+                 <li class="list-group-item list-group-item-action py-3">
+                      <div class="row align-items-center">
+                         <div class="col-md-4">
+                             <h3 class="mb-1">João Santos</h3>
+                             <p class="mb-0 status-text">Limite Mensal: 20 kg</p>
+                         </div>
+                         <div class="col-md-5 beneficiary-status">
+                             <p class="mb-1 status-text">Recebido Este Mês: 18 kg</p>
+                             <div class="progress">
+                                 <div class="progress-bar progress-bar-warning" role="progressbar" style="width: 90%;" aria-valuenow="18" aria-valuemin="0" aria-valuemax="20"></div>
+                             </div>
+                         </div>
+                         <div class="col-md-3 text-md-end mt-3 mt-md-0">
+                              <span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle me-1"></i> Próx. Limite</span>
+                             <button class="btn btn-sm btn-outline-secondary ms-2" style="color: var(--texto-neutro); border-color: var(--borda-clara);">Registrar Entrega</button>
+                         </div>
+                      </div>
+                 </li>
+
+                 <li class="list-group-item list-group-item-action py-3">
+                      <div class="row align-items-center">
+                         <div class="col-md-4">
+                             <h3 class="mb-1">Maria Oliveira</h3>
+                             <p class="mb-0 status-text">Limite Mensal: 10 kg</p>
+                         </div>
+                         <div class="col-md-5 beneficiary-status">
+                             <p class="mb-1 status-text">Recebido Este Mês: 10 kg</p>
+                             <div class="progress">
+                                 <div class="progress-bar progress-bar-danger" role="progressbar" style="width: 100%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="10"></div>
+                             </div>
+                         </div>
+                         <div class="col-md-3 text-md-end mt-3 mt-md-0">
+                             <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i> Limite Atingido</span>
+                             <button class="btn btn-sm btn-secondary ms-2" disabled>Registrar Entrega</button>
+                         </div>
+                     </div>
+                 </li>
+
+                  <li class="list-group-item list-group-item-action py-3">
+                      <div class="row align-items-center">
+                         <div class="col-md-4">
+                             <h3 class="mb-1">Pedro Souza</h3>
+                             <p class="mb-0 status-text">Limite Mensal: 25 kg</p>
+                         </div>
+                         <div class="col-md-5 beneficiary-status">
+                             <p class="mb-1 status-text">Recebido Este Mês: 0 kg</p>
+                             <div class="progress">
+                                 <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="25"></div>
+                             </div>
+                         </div>
+                         <div class="col-md-3 text-md-end mt-3 mt-md-0">
+                             <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Pode Receber</span>
+                             <button class="btn btn-sm btn-outline-secondary ms-2" style="color: var(--texto-neutro); border-color: var(--borda-clara);">Registrar Entrega</button>
+                         </div>
+                     </div>
+                 </li>
+
+             </ul>
+             <div class="card-footer text-muted text-center">
+                 Informações atualizadas em tempo real (demonstração).
+             </div>
+        </div>
+
+        <div class="mt-4 text-center">
+             <button class="btn btn-primary btn-lg" style="background-color: var(--laranja-primario); border-color: var(--laranja-primario);">
+                 <i class="fas fa-user-plus me-2"></i> Cadastrar Novo Beneficiário
+             </button>
+         </div>
+
+
+        <footer class="text-center mt-5 pt-4 text-muted footer">
+             <p>&copy; 2024 Sistema de Gerenciamento de Doações de Ração. (Demonstração de Interface)</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
