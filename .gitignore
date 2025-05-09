@@ -1,1 +1,75 @@
 .env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# Distributions and packaging
+dist/
+build/
+*.egg/
+wheels/
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+venv.bak/
+venv.old/
+
+# Editor directories and files
+.idea/          # JetBrains IDEs
+.vscode/        # VS Code (se você não compartilha configurações específicas)
+*.swp           # Vim swap files
+*.swo
+*~              # Emacs backup files
+.#* # Emacs lock files
+
+# OS generated files
+.DS_Store       # macOS
+Thumbs.db       # Windows
+ehthumbs.db     # Windows
+*.log
+*.temp
+*.tmp
+
+# Specific to Project Antonieta (based on previous discussions)
+.env            # Variáveis de ambiente locais (NÃO comitar senhas/chaves)
+# .env.* # Se usar arquivos .env específicos por ambiente (ex: .env.development)
+
+# Database files (if not using Docker volume for persistence)
+*.sqlite
+*.db
+
+# Docker
+# Ignore Docker volumes directory if it's in the project root
+# postgres_data/ # Se o volume postgres_data estiver na raiz do backend
+
+# Uploaded files (if applicable)
+# uploads/
+# media/
+
+# Test/Coverage reports
+htmlcov/
+.coverage.*
+.tox/
+nosetests.xml
+coverage.xml
+
+# Jupyter Notebook files
+.ipynb_checkpoints
+
+# Black formatter cache
+.black
+
+# Mypy cache
+.mypy_cache/
+
+# Pytest cache
+.pytest_cache/
