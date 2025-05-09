@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import create_tables
 import os
+from controllers.beneficiary_controller import router as beneficiary_router
 
 app = FastAPI(title="Antonieta API", version="1.0.0")
 
@@ -16,3 +17,5 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(beneficiary_router)
