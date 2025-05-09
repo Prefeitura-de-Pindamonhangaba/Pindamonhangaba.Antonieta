@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from sqlalchemy.orm import relationship
+from database import Base
 
 class Ration(Base):
     __tablename__ = 'ration'
@@ -12,3 +11,4 @@ class Ration(Base):
     unit = Column(String, index=True)
     stock = Column(Integer, index=True)
     description = Column(String, index=True)
+    distributions = relationship("Distribution", back_populates="ration")
