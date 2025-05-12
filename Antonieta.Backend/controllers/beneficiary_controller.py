@@ -1,23 +1,25 @@
 from fastapi import APIRouter
+from services.beneficiary_services import get_all_beneficiaries
 
-router = APIRouter()
+router = APIRouter(prefix="/beneficiary", tags=["Beneficiary"])
 
-@router.get("/beneficiary")
-async def get_all_beneficiaries():
-    return 
+@router.get("/")
+async def get_all_beneficiaries_endpoint():
+    
+    return await get_all_beneficiaries()
 
-@router.get("/beneficiary/{beneficiary_id}")
+@router.get("/{beneficiary_id}")
 async def get_beneficiary_by_id(beneficiary_id: int):
     return 
 
-@router.post("/beneficiary")
+@router.post("/")
 async def create_beneficiary():
     return 
 
-@router.put("/beneficiary")
+@router.put("/{beneficiary_id}")
 async def create_beneficiary(beneficiary_id: int):
     return 
 
-@router.delete("/beneficiary/{beneficiary_id}")
+@router.delete("/{beneficiary_id}")
 async def create_beneficiary(beneficiary_id: int):
     return 
