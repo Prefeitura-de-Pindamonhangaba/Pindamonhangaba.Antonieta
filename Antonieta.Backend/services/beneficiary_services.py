@@ -75,7 +75,6 @@ async def update_beneficiary_service(beneficiary_dto: update_beneficiary_dto) ->
     db = next(get_db())
     try:
         beneficiary = db.query(Beneficiary).filter(Beneficiary.id == beneficiary_dto.id).first()
-        print(beneficiary)
         if beneficiary:
             update_data = beneficiary_dto.model_dump(exclude={'id'}, exclude_unset=True)
 

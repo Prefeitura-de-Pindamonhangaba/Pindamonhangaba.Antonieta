@@ -7,7 +7,6 @@ router = APIRouter(prefix="/beneficiary", tags=["Beneficiary"])
 
 @router.get("/")
 async def get_all_beneficiaries():
-    
     return await get_all_beneficiaries_service()
 
 @router.get("/{beneficiary_id}")
@@ -20,8 +19,8 @@ async def create_beneficiary(benefeciary_dto: create_beneficiary_dto):
 
 @router.put("/")
 async def create_beneficiary(beneficiary_dto: update_beneficiary_dto):
-    return update_beneficiary_service(beneficiary_dto=beneficiary_dto)
+    return await update_beneficiary_service(beneficiary_dto=beneficiary_dto)
 
 @router.delete("/{beneficiary_id}")
 async def create_beneficiary(beneficiary_id: int):
-    return delete_beneficiary_service(beneficiary_id=beneficiary_id)
+    return await delete_beneficiary_service(beneficiary_id=beneficiary_id)
