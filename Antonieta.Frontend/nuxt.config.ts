@@ -1,13 +1,18 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
-  compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
+import AutoImport from 'unplugin-auto-import/vite'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
+import Components from 'unplugin-vue-components/vite'
 
-  modules: [
-    '@nuxt/fonts',
-    '@nuxt/icon',
-    '@nuxt/image',
-    '@nuxt/test-utils',
-    '@nuxt/eslint'
-  ]
+export default defineNuxtConfig({
+  devtools: { enabled: true },
+  modules: ['@bg-dev/nuxt-naiveui'],
+  naiveui: {
+    themeConfig: {
+      shared: {
+        common: {
+          primaryColor: '#f77800'
+        }
+      }
+    }
+  }
 })
