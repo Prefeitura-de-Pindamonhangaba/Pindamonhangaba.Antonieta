@@ -11,3 +11,4 @@ class Beneficiary(Base):
     address = Column(String, index=True)
     contact = Column(String, index=True)
     distributions = relationship("Distribution", back_populates="beneficiary")
+    # TODO - Add limit
