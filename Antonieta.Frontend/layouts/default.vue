@@ -78,13 +78,14 @@ function renderIcon(icon: Component) {
 
 <style scoped>
 .logo-container {
-  padding: 1rem;
+  padding: v-bind(collapsed ? '0.1rem' : '1rem');
   text-align: center;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
 .logo {
-  height: 40px;
+  height: v-bind(collapsed ? '50px' : '120px');
   width: auto;
   transition: all 0.3s ease;
 }
