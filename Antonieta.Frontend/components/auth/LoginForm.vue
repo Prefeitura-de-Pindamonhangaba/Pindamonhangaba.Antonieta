@@ -1,5 +1,8 @@
 <template>
   <div class="login-container">
+    <div class="logo-container">
+      <img src="/assets/logo_projeto_antonieta.svg" alt="Logo Projeto Antonieta" class="logo" />
+    </div>
     <n-card class="login-card" title="Bem-vindo">
       <n-form
         ref="formRef"
@@ -31,16 +34,17 @@
           </n-input>
         </n-form-item>
 
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center">
           <n-checkbox v-model:checked="rememberMe">
             Lembrar-me
           </n-checkbox>
-          <n-button text type="primary">
+          <n-button text>
             Esqueceu a senha?
           </n-button>
         </div>
 
         <n-button
+          class=""
           type="primary"
           block
           @click="handleSubmit"
@@ -90,18 +94,49 @@ const handleSubmit = () => {
 .login-container {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #f5f7fa;
+  background-color: #fff8e1;
+}
+
+.logo-container {
+  margin-bottom: 2rem;
+}
+
+.logo {
+  width: 300px;
+  height: auto;
 }
 
 .login-card {
   width: 100%;
   max-width: 420px;
   padding: 20px;
+  background-color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .n-form {
   margin-top: 20px;
+}
+
+:deep(.n-button--primary-type) {
+  background-color: #f77800 !important;
+}
+
+:deep(.n-button--primary-type:hover) {
+  background-color: #e56f00 !important;
+}
+
+:deep(.n-button--primary-type:active) {
+  background-color: #d36600 !important;
+}
+
+:deep(.n-card-header__title) {
+  color: #263238;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 </style>

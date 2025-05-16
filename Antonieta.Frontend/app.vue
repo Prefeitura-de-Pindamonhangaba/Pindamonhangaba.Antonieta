@@ -1,18 +1,16 @@
 <template>
   <n-config-provider>
     <n-message-provider>
-      <n-loading-bar-provider>
-        <n-dialog-provider>
-          <n-notification-provider>
-            <div class="min-h-screen bg-gray-100">
-              <NuxtPage />
-            </div>
-          </n-notification-provider>
-        </n-dialog-provider>
-      </n-loading-bar-provider>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
     </n-message-provider>
   </n-config-provider>
 </template>
+
+<script setup lang="ts">
+import { darkTheme, NConfigProvider, NMessageProvider } from 'naive-ui'
+</script>
 
 <style>
 html, body {
