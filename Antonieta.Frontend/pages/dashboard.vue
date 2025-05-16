@@ -4,6 +4,22 @@
       <h1 class="page-title">Dashboard</h1>
       <div class="title-underline"></div>
     </div>
+
+    <div class="action-buttons">
+      <n-button type="primary" class="action-button" style="background-color: #f77800">
+        <template #icon>
+          <n-icon><IconPlus /></n-icon>
+        </template>
+        Registrar Nova Doação
+      </n-button>
+      <n-button class="action-button" type="default" style="color: #f77800; border-color: #f77800">
+        <template #icon>
+          <n-icon><IconUserPlus /></n-icon>
+        </template>
+        Adicionar Novo Beneficiário
+      </n-button>
+    </div>
+
     <div class="summary-cards">
       <n-card class="summary-card">
         <div class="card-content">
@@ -38,7 +54,8 @@
 <script setup lang="ts">
 import { h, ref } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
-import { NCard, NDataTable, NPageHeader, NTag } from 'naive-ui'
+import { NCard, NDataTable, NPageHeader, NTag, NButton, NIcon } from 'naive-ui'
+import { IconPlus, IconUserPlus } from '@tabler/icons-vue'
 
 interface BeneficiaryData {
   nome: string
@@ -175,6 +192,18 @@ const pagination = {
   background-color: #ffffff;
   border: none;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.action-button {
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
 }
 
 :deep(.n-card-header__title) {
