@@ -20,15 +20,7 @@
       </n-button>
     </div>
 
-    <n-modal v-model:show="showModal" preset="dialog" title="Dialog">
-      <template #header>
-        <div>title</div>
-      </template>
-      <div>content</div>
-      <template #action>
-        <div>action</div>
-      </template>
-    </n-modal>
+    <DonationModal v-model="showModal" @submit="handleDonationSubmit" />
 
     <div class="summary-cards">
       <n-card class="summary-card">
@@ -66,6 +58,7 @@ import { h, ref } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 import { NCard, NDataTable, NPageHeader, NTag, NButton, NIcon } from 'naive-ui'
 import { IconPlus, IconUserPlus } from '@tabler/icons-vue'
+import DonationModal from '../components/modals/DonationModal.vue'
 
 interface BeneficiaryData {
   nome: string
@@ -75,6 +68,11 @@ interface BeneficiaryData {
 }
 
 const showModal = ref(false)
+
+const handleDonationSubmit = (formData: any) => {
+  console.log('Doação registrada:', formData)
+  // Aqui você pode implementar a lógica para salvar a doação
+}
 
 const columns: DataTableColumns<BeneficiaryData> = [
   {
