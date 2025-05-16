@@ -1,6 +1,9 @@
 <template>
   <div class="dashboard-container">
-    <n-page-header class="page-header" title="Dashboard" />
+    <div class="page-header">
+      <h1 class="page-title">Dashboard</h1>
+      <div class="title-underline"></div>
+    </div>
     <div class="summary-cards">
       <n-card class="summary-card">
         <div class="card-content">
@@ -117,6 +120,24 @@ const pagination = {
   padding: 2rem;
   background-color: #fff8e1;
   min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #f77800;
+  margin: 0;
+}
+
+.title-underline {
+  width: 100px;
+  height: 4px;
+  background-color: #f77800;
+  margin-top: 0.5rem;
 }
 
 .summary-cards {
