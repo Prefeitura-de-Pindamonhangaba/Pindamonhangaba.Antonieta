@@ -6,7 +6,7 @@
     </div>
 
     <div class="action-buttons">
-      <n-button type="primary" class="action-button" style="background-color: #f77800">
+      <n-button type="primary" class="action-button" style="background-color: #f77800" @click="showModal = true">
         <template #icon>
           <n-icon><IconPlus /></n-icon>
         </template>
@@ -19,6 +19,16 @@
         Adicionar Novo Beneficiário
       </n-button>
     </div>
+
+    <n-modal v-model:show="showModal" preset="dialog" title="Dialog">
+      <template #header>
+        <div>title</div>
+      </template>
+      <div>content</div>
+      <template #action>
+        <div>action</div>
+      </template>
+    </n-modal>
 
     <div class="summary-cards">
       <n-card class="summary-card">
@@ -64,6 +74,8 @@ interface BeneficiaryData {
   status: string
 }
 
+const showModal = ref(false)
+
 const columns: DataTableColumns<BeneficiaryData> = [
   {
     title: 'Nome',
@@ -94,7 +106,8 @@ const columns: DataTableColumns<BeneficiaryData> = [
             marginRight: '6px'
           }
         },
-        { default: () => row.status }
+        { default: () => row.status
+        }
       )
     }
   }
