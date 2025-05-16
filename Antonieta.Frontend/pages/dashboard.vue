@@ -6,13 +6,13 @@
     </div>
 
     <div class="action-buttons">
-      <n-button type="primary" class="action-button" style="background-color: #f77800" @click="showModal = true">
+      <n-button type="primary" class="action-button" style="background-color: #f77800" @click="showDonationModal = true">
         <template #icon>
           <n-icon><IconPlus /></n-icon>
         </template>
         Registrar Nova Doação
       </n-button>
-      <n-button class="action-button" type="default" style="color: #f77800; border-color: #f77800">
+      <n-button class="action-button" type="default" style="color: #f77800; border-color: #f77800" @click="showBeneficiaryModal = true">
         <template #icon>
           <n-icon><IconUserPlus /></n-icon>
         </template>
@@ -20,7 +20,8 @@
       </n-button>
     </div>
 
-    <DonationModal v-model="showModal" @submit="handleDonationSubmit" />
+    <DonationModal v-model="showDonationModal" @submit="handleDonationSubmit" />
+    <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
 
     <div class="summary-cards">
       <n-card class="summary-card">
@@ -59,6 +60,8 @@ import type { DataTableColumns } from 'naive-ui'
 import { NCard, NDataTable, NPageHeader, NTag, NButton, NIcon } from 'naive-ui'
 import { IconPlus, IconUserPlus } from '@tabler/icons-vue'
 import DonationModal from '../components/modals/DonationModal.vue'
+import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
+import type { Beneficiary } from '../models/beneficiary'
 
 interface BeneficiaryData {
   nome: string
@@ -67,11 +70,16 @@ interface BeneficiaryData {
   status: string
 }
 
-const showModal = ref(false)
+const showDonationModal = ref(false)
+const showBeneficiaryModal = ref(false)
 
 const handleDonationSubmit = (formData: any) => {
   console.log('Doação registrada:', formData)
   // Aqui você pode implementar a lógica para salvar a doação
+}
+
+const handleBeneficiarySubmit = (formData: Beneficiary) => {
+  console.log('Beneficiary submitted:', formData)
 }
 
 const columns: DataTableColumns<BeneficiaryData> = [
