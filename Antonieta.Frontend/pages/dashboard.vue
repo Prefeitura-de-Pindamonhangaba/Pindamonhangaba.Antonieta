@@ -57,17 +57,18 @@
 <script setup lang="ts">
 import { h, ref } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
-import { NCard, NDataTable, NPageHeader, NTag, NButton, NIcon } from 'naive-ui'
-import { IconPlus, IconUserPlus } from '@tabler/icons-vue'
+import { NCard, NDataTable, NPageHeader, NTag, NButton, NIcon, NProgress } from 'naive-ui'
+import { IconPlus, IconUserPlus, IconCheck, IconAlertTriangle, IconX } from '@tabler/icons-vue'
 import DonationModal from '../components/modals/DonationModal.vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import type { Beneficiary } from '../models/beneficiary'
 
 interface BeneficiaryData {
   nome: string
-  limiteMensal: string
-  recebido: string
+  limiteMensal: number
+  recebido: number
   status: string
+  progresso: number
 }
 
 const showDonationModal = ref(false)
@@ -89,30 +90,74 @@ const columns: DataTableColumns<BeneficiaryData> = [
   },
   {
     title: 'Limite Mensal',
-    key: 'limiteMensal'
+    key: 'limiteMensal',
+    render(row) {
+      return `${row.limiteMensal} kg`
+    }
   },
   {
     title: 'Recebido Este Mês',
-    key: 'recebido'
+    key: 'recebido',
+    render(row) {
+      return `${row.recebido} kg`
+    }
+  },
+  {
+    title: 'Progresso',
+    key: 'progresso',
+    render(row) {
+      return h(NProgress, {
+        type: 'line',
+        percentage: row.progresso,
+        indicatorPlacement: 'inside',
+        processing: row.progresso < 100,
+        status: row.progresso >= 80 ? 'error' : row.progresso >= 50 ? 'warning' : 'success',
+        style: { width: '120px' }
+      })
+    }
   },
   {
     title: 'Status',
     key: 'status',
     render(row) {
-      const statusMap = {
-        'Pode Receber': 'success',
-        'Próx. Limite': 'warning',
-        'Limite Atingido': 'error'
+      const statusConfig = {
+        'Pode Receber': {
+          icon: IconCheck,
+          type: 'success',
+          style: { backgroundColor: '#18a058', color: 'white' }
+        },
+        'Próx. Limite': {
+          icon: IconAlertTriangle,
+          type: 'warning',
+          style: { backgroundColor: '#f0a020', color: 'white' }
+        },
+        'Limite Atingido': {
+          icon: IconX,
+          type: 'error',
+          style: { backgroundColor: '#d03050', color: 'white' }
+        }
       }
+
+      const config = statusConfig[row.status as keyof typeof statusConfig]
+      
       return h(
-        'n-tag',
+        NTag,
         {
-          type: statusMap[row.status as keyof typeof statusMap] || 'default',
+          type: config.type,
           style: {
-            marginRight: '6px'
+            ...config.style,
+            padding: '4px 12px',
+            fontSize: '14px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
           }
         },
-        { default: () => row.status
+        {
+          default: () => [
+            h(config.icon, { size: 16 }),
+            row.status
+          ]
         }
       )
     }
@@ -122,27 +167,31 @@ const columns: DataTableColumns<BeneficiaryData> = [
 const tableData: BeneficiaryData[] = [
   {
     nome: 'Ana Silva',
-    limiteMensal: '15 kg',
-    recebido: '5 kg',
-    status: 'Pode Receber'
+    limiteMensal: 15,
+    recebido: 5,
+    status: 'Pode Receber',
+    progresso: 33
   },
   {
     nome: 'João Santos',
-    limiteMensal: '20 kg',
-    recebido: '18 kg',
-    status: 'Próx. Limite'
+    limiteMensal: 20,
+    recebido: 18,
+    status: 'Próx. Limite',
+    progresso: 90
   },
   {
     nome: 'Maria Oliveira',
-    limiteMensal: '10 kg',
-    recebido: '10 kg',
-    status: 'Limite Atingido'
+    limiteMensal: 10,
+    recebido: 10,
+    status: 'Limite Atingido',
+    progresso: 100
   },
   {
     nome: 'Pedro Souza',
-    limiteMensal: '25 kg',
-    recebido: '0 kg',
-    status: 'Pode Receber'
+    limiteMensal: 25,
+    recebido: 0,
+    status: 'Pode Receber',
+    progresso: 0
   }
 ]
 
