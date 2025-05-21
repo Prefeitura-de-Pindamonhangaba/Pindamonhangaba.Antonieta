@@ -5,6 +5,7 @@ import os
 from controllers.beneficiary_controller import router as beneficiary_router
 from controllers.ration_controller import router as ration_router
 from controllers.distribution_controller import router as distribution_router
+from controllers.auth_controller import router as auth_router
 
 app = FastAPI(title="Antonieta API", version="1.0.0")
 
@@ -20,6 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(beneficiary_router)
 app.include_router(ration_router)
 app.include_router(distribution_router)
