@@ -84,7 +84,11 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref } from 'vue'
+import { h, ref, onMounted } from 'vue'
+
+onMounted(() => {
+  fetchBeneficiaries()
+})
 import type { DataTableColumns } from 'naive-ui'
 import {
   NButton,
@@ -126,36 +130,61 @@ const rules = {
   limit: { required: true, message: 'Por favor, insira o limite mensal', trigger: 'blur', type: 'number' }
 }
 
-const tableData = ref<Beneficiary[]>([
-  {
-    id: 1,
-    name: 'Maria Silva',
-    document: '123.456.789-00',
-    address: 'Rua das Flores, 123',
-    contact: '(12) 98765-4321',
-    limit: 15
-  },
-  {
-    id: 2,
-    name: 'João Santos',
-    document: '987.654.321-00',
-    address: 'Av. Principal, 456',
-    contact: '(12) 91234-5678',
-    limit: 20
+let tableData = ref<Beneficiary[]>([])
+
+async function fetchBeneficiaries() {
+  try {
+    loading.value = true
+    const { getAuthHeaders } = useAuth()
+    const response = await fetch('http://localhost:8000/beneficiary', {
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        message.error('Sessão expirada. Por favor, faça login novamente.')
+        return
+      }
+      throw new Error('Erro ao carregar beneficiários')
+    }
+
+    const data: any = await response.json()
+    console.log('Dados recebidos da API:', data)
+
+    // Garante que data seja sempre um array
+    const beneficiariesArray: Beneficiary[] = data[0] || []
+
+    // Mapeia os dados e atualiza a tableData
+    tableData.value = beneficiariesArray.map(item => ({
+      id: Number(item.id) || 0,
+      name: String(item.name || ''),
+      document: String(item.document || ''),
+      address: String(item.address || ''),
+      contact: String(item.contact || ''),
+      limit: Number(item.limit) || 0
+    }))
+
+    console.log('Dados da tabela atualizados:', tableData.value)
+  } catch (error) {
+    console.error('Erro ao carregar beneficiários:', error)
+    message.error('Erro ao carregar beneficiários: ' + error.message)
+  } finally {
+    loading.value = false
   }
-])
+}
 
 const columns: DataTableColumns<Beneficiary> = [
-  { title: 'Nome', key: 'name' },
-  { title: 'Documento', key: 'document' },
-  { title: 'Endereço', key: 'address' },
-  { title: 'Contato', key: 'contact' },
+  { title: 'Nome', key: 'name', render: (row: Beneficiary) => row.name },
+  { title: 'Documento', key: 'document', render: (row: Beneficiary) => row.document },
+  { title: 'Endereço', key: 'address', render: (row: Beneficiary) => row.address },
+  { title: 'Contato', key: 'contact', render: (row: Beneficiary) => row.contact },
   {
     title: 'Limite Mensal',
     key: 'limit',
-    render(row) {
-      return `${row.limit} kg`
-    }
+    render: (row: Beneficiary) => `${row.limit} kg`
   },
   {
     title: 'Ações',
@@ -202,35 +231,68 @@ function handleDelete(beneficiary: Beneficiary) {
   showDeleteModal.value = true
 }
 
-function confirmDelete() {
+async function confirmDelete() {
   if (selectedBeneficiaryId.value !== null) {
-    tableData.value = tableData.value.filter(
-      (b) => b.id !== selectedBeneficiaryId.value
-    )
-    message.success('Beneficiário excluído com sucesso')
-    showDeleteModal.value = false
+    try {
+      loading.value = true
+      const { getAuthHeaders } = useAuth()
+      const response = await fetch(`http://localhost:8000/beneficiary/${selectedBeneficiaryId.value}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      })
+      if (!response.ok) throw new Error('Erro ao excluir beneficiário')
+      message.success('Beneficiário excluído com sucesso')
+      await fetchBeneficiaries()
+      showDeleteModal.value = false
+    } catch (error) {
+      message.error('Erro ao excluir beneficiário: ' + error.message)
+    } finally {
+      loading.value = false
+    }
   }
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate()
+  try {
+    await formRef.value?.validate()
+    loading.value = true
 
-  if (editingBeneficiary.value) {
-    // Atualizar beneficiário existente
-    const index = tableData.value.findIndex((b) => b.id === editingBeneficiary.value?.id)
-    if (index !== -1) {
-      tableData.value[index] = { ...formData.value }
+    if (editingBeneficiary.value) {
+      // Atualizar beneficiário existente
+      const { getAuthHeaders } = useAuth()
+      const response = await fetch('http://localhost:8000/beneficiary', {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData.value)
+      })
+      if (!response.ok) throw new Error('Erro ao atualizar beneficiário')
       message.success('Beneficiário atualizado com sucesso')
+    } else {
+      // Adicionar novo beneficiário
+      const { getAuthHeaders } = useAuth()
+      const response = await fetch('http://localhost:8000/beneficiary', {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData.value)
+      })
+      if (!response.ok) throw new Error('Erro ao criar beneficiário')
+      message.success('Beneficiário adicionado com sucesso')
     }
-  } else {
-    // Adicionar novo beneficiário
-    const newId = Math.max(...tableData.value.map((b) => b.id)) + 1
-    tableData.value.push({ ...formData.value, id: newId })
-    message.success('Beneficiário adicionado com sucesso')
-  }
 
-  showAddModal.value = false
-  resetForm()
+    await fetchBeneficiaries()
+    showAddModal.value = false
+    resetForm()
+  } catch (error) {
+    message.error('Erro: ' + error.message)
+  } finally {
+    loading.value = false
+  }
 }
 
 function resetForm() {
