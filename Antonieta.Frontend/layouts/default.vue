@@ -22,6 +22,7 @@
         :collapsed-width="64"
         :collapsed-icon-size="22"
         :options="menuOptions"
+        @update:value="handleMenuClick"
       />
     </n-layout-sider>
     <n-layout-content>
@@ -35,11 +36,12 @@ import { h, ref } from 'vue'
 import type { Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
 import { NLayout, NLayoutSider, NLayoutContent, NMenu, NIcon } from 'naive-ui'
+import { useRouter } from '#app'
 import {
   DashboardOutlined,
-  SettingOutlined,
   UserOutlined,
-  HistoryOutlined
+  GiftOutlined,
+  InboxOutlined
 } from '@ant-design/icons-vue'
 
 const collapsed = ref(false)
@@ -53,26 +55,35 @@ const menuOptions: MenuOption[] = [
   },
   {
     label: 'Beneficiários',
-    key: 'beneficiarios',
+    key: 'beneficiary',
     icon: renderIcon(UserOutlined),
-    path: '/beneficiarios'
+    path: '/beneficiary'
   },
   {
-    label: 'Histórico',
-    key: 'historico',
-    icon: renderIcon(HistoryOutlined),
-    path: '/historico'
+    label: 'Distribuições',
+    key: 'distributions',
+    icon: renderIcon(GiftOutlined),
+    path: '/distributions'
   },
   {
-    label: 'Configurações',
-    key: 'configuracoes',
-    icon: renderIcon(SettingOutlined),
-    path: '/configuracoes'
+    label: 'Ração',
+    key: 'ration',
+    icon: renderIcon(InboxOutlined),
+    path: '/ration'
   }
 ]
 
 function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) })
+}
+
+const router = useRouter()
+
+function handleMenuClick(key: string) {
+  const selectedOption = menuOptions.find(option => option.key === key)
+  if (selectedOption?.path) {
+    router.push(selectedOption.path)
+  }
 }
 </script>
 
