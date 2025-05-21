@@ -6,6 +6,7 @@ import Components from 'unplugin-vue-components/vite'
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@bg-dev/nuxt-naiveui'],
+  ssr: false,
   naiveui: {
     themeConfig: {
       shared: {
