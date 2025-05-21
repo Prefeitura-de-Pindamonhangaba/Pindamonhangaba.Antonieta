@@ -59,11 +59,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useMessage } from 'naive-ui'
 import { MailOutline, LockClosedOutline } from '@vicons/ionicons5'
 
 const formRef = ref(null)
 const loading = ref(false)
 const rememberMe = ref(false)
+const router = useRouter()
+const message = useMessage()
 
 const formValue = ref({
   email: '',
@@ -81,12 +85,40 @@ const rules = {
   ]
 }
 
-const handleSubmit = () => {
-  loading.value = true
-  // Aqui será implementada a lógica de autenticação
-  setTimeout(() => {
+const handleSubmit = async () => {
+  try {
+    if (!formRef.value) return
+    await formRef.value.validate()
+    
+    loading.value = true
+    const formData = new URLSearchParams()
+    formData.append('username', formValue.value.email)
+    formData.append('password', formValue.value.password)
+    formData.append('grant_type', 'password')
+
+    const response = await fetch('http://localhost:8000/auth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formData
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.detail || 'Erro ao fazer login')
+    }
+
+    const data = await response.json()
+    localStorage.setItem('access_token', data.access_token)
+    
+    message.success('Login realizado com sucesso!')
+    router.push('/dashboard')
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : 'Erro ao fazer login')
+  } finally {
     loading.value = false
-  }, 1000)
+  }
 }
 </script>
 
