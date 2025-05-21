@@ -1,6 +1,7 @@
 <template>
   <n-layout has-sider>
     <n-layout-sider
+      v-if="!isLoginPage"
       bordered
       collapse-mode="width"
       :collapsed-width="64"
@@ -25,7 +26,7 @@
         @update:value="handleMenuClick"
       />
     </n-layout-sider>
-    <n-layout-content>
+    <n-layout-content :style="contentStyle">
       <slot />
     </n-layout-content>
   </n-layout>
@@ -36,7 +37,7 @@ import { h, ref } from 'vue'
 import type { Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
 import { NLayout, NLayoutSider, NLayoutContent, NMenu, NIcon } from 'naive-ui'
-import { useRouter } from '#app'
+import { useRouter, useRoute } from '#app'
 import {
   DashboardOutlined,
   UserOutlined,
@@ -78,6 +79,13 @@ function renderIcon(icon: Component) {
 }
 
 const router = useRouter()
+const route = useRoute()
+
+const isLoginPage = computed(() => route.path === '/login')
+
+const contentStyle = computed(() => ({
+  padding: isLoginPage.value ? '0' : '20px'
+}))
 
 function handleMenuClick(key: string) {
   const selectedOption = menuOptions.find(option => option.key === key)
