@@ -14,5 +14,8 @@ export default defineNuxtConfig({
         }
       }
     }
+  },
+  routeRules: {
+    '/': { redirect: '/login' }
   }
 })
