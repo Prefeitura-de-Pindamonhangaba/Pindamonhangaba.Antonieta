@@ -16,11 +16,17 @@
     </n-card>
 
     <div class="action-buttons">
-      <n-button type="primary" class="action-button" style="background-color: #f77800" @click="showAddModal = true">
+      <n-button type="primary" class="action-button" style="background-color: #f77800; margin-right: 12px" @click="showAddModal = true">
         <template #icon>
           <n-icon><IconPlus /></n-icon>
         </template>
         Nova Entrada
+      </n-button>
+      <n-button type="default" class="action-button" @click="showManageTypesModal = true">
+        <template #icon>
+          <n-icon><IconSettings /></n-icon>
+        </template>
+        Gerenciar Tipos de Ração
       </n-button>
     </div>
 
@@ -93,18 +99,92 @@
         </div>
       </template>
     </n-modal>
+
+    <!-- Modal de Gerenciamento de Tipos de Ração -->
+    <n-modal
+      v-model:show="showManageTypesModal"
+      preset="dialog"
+      style="width: 800px"
+      title="Gerenciar Tipos de Ração"
+    >
+      <div class="types-management-container">
+        <n-form
+          ref="typeFormRef"
+          :model="typeFormData"
+          :rules="typeRules"
+          label-placement="left"
+          label-width="auto"
+          require-mark-placement="right-hanging"
+          size="medium"
+        >
+          <n-form-item label="Nome" path="name">
+            <n-input
+              v-model:value="typeFormData.name"
+              placeholder="Nome do tipo de ração"
+            />
+          </n-form-item>
+
+          <n-form-item label="Descrição" path="description">
+            <n-input
+              v-model:value="typeFormData.description"
+              type="textarea"
+              placeholder="Descrição do tipo de ração"
+            />
+          </n-form-item>
+
+          <div class="form-actions">
+            <n-button type="primary" style="background-color: #f77800" @click="handleAddType">
+              Adicionar Tipo
+            </n-button>
+          </div>
+        </n-form>
+
+        <div class="types-table">
+          <n-data-table
+            :columns="typeColumns"
+            :data="feedTypes"
+            :pagination="{ pageSize: 5 }"
+          />
+        </div>
+      </div>
+
+      <template #action>
+        <div class="modal-actions">
+          <n-button @click="showManageTypesModal = false">Fechar</n-button>
+        </div>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NCard, NButton, NDataTable, NModal, NForm, NFormItem, NInput, NInputNumber, NDatePicker, NSelect, NIcon } from 'naive-ui'
-import { IconPlus } from '@tabler/icons-vue'
+import { NCard, NButton, NDataTable, NModal, NForm, NFormItem, NInput, NInputNumber, NDatePicker, NSelect, NIcon, useMessage } from 'naive-ui'
+import { IconPlus, IconSettings } from '@tabler/icons-vue'
 import type { DataTableColumns } from 'naive-ui'
 
 const loading = ref(false)
 const showAddModal = ref(false)
+const showManageTypesModal = ref(false)
 const formRef = ref()
+const typeFormRef = ref()
+const message = useMessage()
+
+const typeFormData = ref({
+  name: '',
+  description: ''
+})
+
+const typeRules = {
+  name: {
+    required: true,
+    message: 'Por favor, informe o nome do tipo de ração'
+  },
+  description: {
+    required: true,
+    message: 'Por favor, informe a descrição do tipo de ração'
+  }
+}
 
 const formData = ref({
   date: null,
@@ -113,11 +193,63 @@ const formData = ref({
   observations: ''
 })
 
-const feedTypes = [
-  { label: 'Ração Adulto', value: 'adulto' },
-  { label: 'Ração Filhote', value: 'filhote' },
-  { label: 'Ração Premium', value: 'premium' }
+const feedTypes = ref([
+  { id: 1, name: 'Ração Adulto', description: 'Ração para gatos adultos', value: 'adulto', label: 'Ração Adulto' },
+  { id: 2, name: 'Ração Filhote', description: 'Ração para filhotes', value: 'filhote', label: 'Ração Filhote' },
+  { id: 3, name: 'Ração Premium', description: 'Ração premium para gatos', value: 'premium', label: 'Ração Premium' }
+])
+
+const typeColumns = [
+  {
+    title: 'Nome',
+    key: 'name'
+  },
+  {
+    title: 'Descrição',
+    key: 'description'
+  },
+  {
+    title: 'Ações',
+    key: 'actions',
+    render: (row: any) => {
+      return h(
+        NButton,
+        {
+          size: 'small',
+          type: 'error',
+          onClick: () => handleDeleteType(row)
+        },
+        { default: () => 'Excluir' }
+      )
+    }
+  }
 ]
+
+const handleAddType = () => {
+  typeFormRef.value?.validate((errors: any) => {
+    if (!errors) {
+      const newType = {
+        id: feedTypes.value.length + 1,
+        name: typeFormData.value.name,
+        description: typeFormData.value.description,
+        value: typeFormData.value.name.toLowerCase().replace(/\s+/g, '_'),
+        label: typeFormData.value.name
+      }
+      feedTypes.value.push(newType)
+      message.success('Tipo de ração adicionado com sucesso!')
+      typeFormData.value = { name: '', description: '' }
+      typeFormRef.value?.restoreValidation()
+    }
+  })
+}
+
+const handleDeleteType = (type: any) => {
+  const index = feedTypes.value.findIndex(t => t.id === type.id)
+  if (index > -1) {
+    feedTypes.value.splice(index, 1)
+    message.success('Tipo de ração removido com sucesso!')
+  }
+}
 
 const rules = {
   date: {
@@ -299,5 +431,24 @@ const resetForm = () => {
   display: flex;
   justify-content: flex-end;
   gap: 16px;
+}
+
+.types-management-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.types-table {
+  margin-top: 24px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 16px;
 }
 </style>
