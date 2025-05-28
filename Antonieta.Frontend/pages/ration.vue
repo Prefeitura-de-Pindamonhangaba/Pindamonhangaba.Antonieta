@@ -67,7 +67,7 @@
         <n-form-item label="Tipo de Ração" path="type">
           <n-select
             v-model:value="formData.type"
-            :options="feedTypes"
+            :options="rationTypes"
             placeholder="Selecione o tipo de ração"
             clearable
           />
@@ -142,7 +142,7 @@
         <div class="types-table">
           <n-data-table
             :columns="typeColumns"
-            :data="feedTypes"
+            :data="rationTypes"
             :pagination="{ pageSize: 5 }"
           />
         </div>
@@ -162,6 +162,7 @@ import { ref, computed } from 'vue'
 import { NCard, NButton, NDataTable, NModal, NForm, NFormItem, NInput, NInputNumber, NDatePicker, NSelect, NIcon, useMessage } from 'naive-ui'
 import { IconPlus, IconSettings } from '@tabler/icons-vue'
 import type { DataTableColumns } from 'naive-ui'
+import type { RationType } from '~/models/rationTypeModel'
 
 const loading = ref(false)
 const showAddModal = ref(false)
@@ -193,10 +194,10 @@ const formData = ref({
   observations: ''
 })
 
-const feedTypes = ref([
-  { id: 1, name: 'Ração Adulto', description: 'Ração para gatos adultos', value: 'adulto', label: 'Ração Adulto' },
-  { id: 2, name: 'Ração Filhote', description: 'Ração para filhotes', value: 'filhote', label: 'Ração Filhote' },
-  { id: 3, name: 'Ração Premium', description: 'Ração premium para gatos', value: 'premium', label: 'Ração Premium' }
+const rationTypes = ref<RationType[]>([
+  { id: 1, name: 'Ração Gato', description: 'Ração para gatos adultos' },
+  { id: 2, name: 'Ração Filhote', description: 'Ração para filhotes'},
+  { id: 3, name: 'Ração Premium', description: 'Ração premium para gatos'}
 ])
 
 const typeColumns = [
@@ -229,13 +230,13 @@ const handleAddType = () => {
   typeFormRef.value?.validate((errors: any) => {
     if (!errors) {
       const newType = {
-        id: feedTypes.value.length + 1,
+        id: rationTypes.value.length + 1,
         name: typeFormData.value.name,
         description: typeFormData.value.description,
         value: typeFormData.value.name.toLowerCase().replace(/\s+/g, '_'),
         label: typeFormData.value.name
       }
-      feedTypes.value.push(newType)
+      rationTypes.value.push(newType)
       message.success('Tipo de ração adicionado com sucesso!')
       typeFormData.value = { name: '', description: '' }
       typeFormRef.value?.restoreValidation()
@@ -244,9 +245,9 @@ const handleAddType = () => {
 }
 
 const handleDeleteType = (type: any) => {
-  const index = feedTypes.value.findIndex(t => t.id === type.id)
+  const index = rationTypes.value.findIndex(t => t.id === type.id)
   if (index > -1) {
-    feedTypes.value.splice(index, 1)
+    rationTypes.value.splice(index, 1)
     message.success('Tipo de ração removido com sucesso!')
   }
 }
