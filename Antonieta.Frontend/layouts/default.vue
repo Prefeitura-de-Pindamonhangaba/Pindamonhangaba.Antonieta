@@ -68,9 +68,9 @@ const menuOptions: MenuOption[] = [
   },
   {
     label: 'Ração',
-    key: 'ration',
+    key: 'ration_stock',
     icon: renderIcon(InboxOutlined),
-    path: '/ration'
+    path: '/ration_stock'
   }
 ]
 

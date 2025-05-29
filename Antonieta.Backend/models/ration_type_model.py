@@ -8,4 +8,4 @@ class RationType(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     description = Column(String, index=True)
-    rations = relationship("Ration", back_populates="ration_type")
+    ration_stocks = relationship("RationStock", back_populates="ration_type")

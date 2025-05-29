@@ -1,5 +1,5 @@
 <template>
-  <div class="ration-container">
+  <div class="ration-stock-container">
     <div class="page-header">
       <h1 class="page-title">Entradas de Ração</h1>
       <div class="title-underline"></div>
@@ -67,7 +67,7 @@
         <n-form-item label="Tipo de Ração" path="type">
           <n-select
             v-model:value="formData.type"
-            :options="rationTypes"
+            :options="feedTypes"
             placeholder="Selecione o tipo de ração"
             clearable
           />
@@ -142,7 +142,7 @@
         <div class="types-table">
           <n-data-table
             :columns="typeColumns"
-            :data="rationTypes"
+            :data="feedTypes"
             :pagination="{ pageSize: 5 }"
           />
         </div>
@@ -158,12 +158,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { NCard, NButton, NDataTable, NModal, NForm, NFormItem, NInput, NInputNumber, NDatePicker, NSelect, NIcon, useMessage } from 'naive-ui'
 import { IconPlus, IconSettings } from '@tabler/icons-vue'
 import type { DataTableColumns } from 'naive-ui'
-import type { RationType } from '~/models/rationTypeModel'
+import { useAuth } from '~/composables/useAuth'
 
+const { getAuthHeaders } = useAuth()
 const loading = ref(false)
 const showAddModal = ref(false)
 const showManageTypesModal = ref(false)
@@ -194,11 +195,96 @@ const formData = ref({
   observations: ''
 })
 
-const rationTypes = ref<RationType[]>([
-  { id: 1, name: 'Ração Gato', description: 'Ração para gatos adultos' },
-  { id: 2, name: 'Ração Filhote', description: 'Ração para filhotes'},
-  { id: 3, name: 'Ração Premium', description: 'Ração premium para gatos'}
-])
+const feedTypes = ref([])
+
+const fetchRationTypes = async () => {
+  try {
+    loading.value = true
+    const response = await fetch('http://localhost:5000/api/ration_type', {
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders(),
+        'Accept': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Falha ao carregar tipos de ração')
+    }
+
+    const data = await response.json()
+    console.log('API Response:', data)
+
+    feedTypes.value = data.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      value: item.id,
+      label: item.name
+    })).filter(Boolean)
+
+    console.log('Processed Data:', feedTypes.value)
+  } catch (error) {
+    message.error(error.message || 'Erro ao carregar tipos de ração')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleAddType = async () => {
+  typeFormRef.value?.validate(async (errors: any) => {
+    if (!errors) {
+      try {
+        loading.value = true
+        const response = await fetch('http://localhost:5000/api/ration_type', {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: typeFormData.value.name,
+            description: typeFormData.value.description
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error('Falha ao adicionar tipo de ração')
+        }
+
+        await fetchRationTypes()
+        message.success('Tipo de ração adicionado com sucesso!')
+        typeFormData.value = { name: '', description: '' }
+        typeFormRef.value?.restoreValidation()
+      } catch (error) {
+        message.error(error.message || 'Erro ao adicionar tipo de ração')
+      } finally {
+        loading.value = false
+      }
+    }
+  })
+}
+
+const handleDeleteType = async (type: any) => {
+  try {
+    loading.value = true
+    const response = await fetch(`http://localhost:5000/api/ration_type/${type.id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    })
+
+    if (!response.ok) {
+      throw new Error('Falha ao remover tipo de ração')
+    }
+
+    await fetchRationTypes()
+    message.success('Tipo de ração removido com sucesso!')
+  } catch (error) {
+    message.error(error.message || 'Erro ao remover tipo de ração')
+  } finally {
+    loading.value = false
+  }
+}
 
 const typeColumns = [
   {
@@ -225,48 +311,6 @@ const typeColumns = [
     }
   }
 ]
-
-const handleAddType = () => {
-  typeFormRef.value?.validate((errors: any) => {
-    if (!errors) {
-      const newType = {
-        id: rationTypes.value.length + 1,
-        name: typeFormData.value.name,
-        description: typeFormData.value.description,
-        value: typeFormData.value.name.toLowerCase().replace(/\s+/g, '_'),
-        label: typeFormData.value.name
-      }
-      rationTypes.value.push(newType)
-      message.success('Tipo de ração adicionado com sucesso!')
-      typeFormData.value = { name: '', description: '' }
-      typeFormRef.value?.restoreValidation()
-    }
-  })
-}
-
-const handleDeleteType = (type: any) => {
-  const index = rationTypes.value.findIndex(t => t.id === type.id)
-  if (index > -1) {
-    rationTypes.value.splice(index, 1)
-    message.success('Tipo de ração removido com sucesso!')
-  }
-}
-
-const rules = {
-  date: {
-    required: true,
-    message: 'Por favor, selecione a data'
-  },
-  type: {
-    required: true,
-    message: 'Por favor, selecione o tipo de ração'
-  },
-  quantity: {
-    required: true,
-    type: 'number',
-    message: 'Por favor, informe a quantidade'
-  }
-}
 
 // Exemplo de dados para a tabela
 const tableData = ref([
@@ -319,15 +363,38 @@ const pagination = {
   pageSize: 10
 }
 
-const handleSubmit = () => {
-  formRef.value?.validate((errors: any) => {
+const handleSubmit = async () => {
+  formRef.value?.validate(async (errors: any) => {
     if (!errors) {
-      loading.value = true
-      // Aqui você implementaria a lógica para salvar os dados
-      console.log('Dados do formulário:', formData.value)
-      loading.value = false
-      showAddModal.value = false
-      resetForm()
+      try {
+        loading.value = true
+        const response = await fetch('http://localhost:5000/api/ration-stock', {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: formData.value.observations,
+            ration_type_id: parseInt(formData.value.type),
+            unit: 'kg',
+            stock: formData.value.quantity,
+            description: formData.value.observations
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error('Falha ao adicionar entrada de ração')
+        }
+
+        message.success('Entrada de ração adicionada com sucesso!')
+        showAddModal.value = false
+        resetForm()
+      } catch (error) {
+        message.error(error.message || 'Erro ao adicionar entrada de ração')
+      } finally {
+        loading.value = false
+      }
     }
   })
 }
@@ -346,10 +413,14 @@ const resetForm = () => {
   }
   formRef.value?.restoreValidation()
 }
+
+onMounted(() => {
+  fetchRationTypes()
+})
 </script>
 
 <style scoped>
-.ration-container {
+.ration-stock-container {
   padding: 24px;
   background-color: #fff8e1;
   min-height: 100vh;

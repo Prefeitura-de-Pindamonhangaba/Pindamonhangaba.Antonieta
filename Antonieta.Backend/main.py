@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import create_tables
 import os
 from controllers.beneficiary_controller import router as beneficiary_router
-from controllers.ration_controller import router as ration_router
+from controllers.ration_stock_controller import router as ration_stock_router
 from controllers.distribution_controller import router as distribution_router
 from controllers.auth_controller import router as auth_router
 from controllers.ration_type_controller import router as ration_type_router
@@ -24,6 +24,6 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(beneficiary_router)
-app.include_router(ration_router)
+app.include_router(ration_stock_router)
 app.include_router(distribution_router)
 app.include_router(ration_type_router)

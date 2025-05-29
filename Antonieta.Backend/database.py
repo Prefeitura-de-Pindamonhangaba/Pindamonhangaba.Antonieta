@@ -30,10 +30,10 @@ def get_db():
 # Function to create tables
 def create_tables():
     from models.beneficiary_model import Base as BeneficiaryBase
-    from models.ration_model import Base as RationBase
+    from models.ration_stock_model import Base as RationStockBase
     from models.distribution_model import Base as DistributionBase
     
     BeneficiaryBase.metadata.create_all(bind=engine)
-    RationBase.metadata.create_all(bind=engine)
+    RationStockBase.metadata.create_all(bind=engine)
     DistributionBase.metadata.create_all(bind=engine)
 

@@ -6,9 +6,9 @@ class Distribution(Base):
     __tablename__ = 'distribution'
     
     id = Column(Integer, primary_key=True, index=True)
-    ration_id = Column(Integer, ForeignKey('ration.id'), index=True)
+    ration_id = Column(Integer, ForeignKey('ration_stock.id'), index=True)
     beneficiary_id = Column(Integer, ForeignKey('beneficiary.id'), index=True)
     amount = Column(Integer, index=True)
     date = Column(DateTime, nullable=False)
-    ration = relationship("Ration", back_populates="distributions")
+    ration = relationship("RationStock", back_populates="distributions")
     beneficiary = relationship("Beneficiary", back_populates="distributions")
