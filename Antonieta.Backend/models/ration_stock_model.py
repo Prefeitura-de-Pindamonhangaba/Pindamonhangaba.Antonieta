@@ -13,3 +13,4 @@ class RationStock(Base):
     description = Column(String, index=True)
     distributions = relationship("Distribution", back_populates="ration")
     ration_type = relationship("RationType", back_populates="ration_stocks")
+    inputs = relationship("RationInput", back_populates="ration_stock")
