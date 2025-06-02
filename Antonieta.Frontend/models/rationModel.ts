@@ -1,4 +1,4 @@
-export interface RationStock {
+export interface Ration {
   id: number
   name: string
   ration_type_id: number
