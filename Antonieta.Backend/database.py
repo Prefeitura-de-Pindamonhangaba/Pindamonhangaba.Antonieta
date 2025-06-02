@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 load_dotenv()
 
 # Database connection URL from environment variable
-DATABASE_URL = getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost/notes')
+DATABASE_URL = getenv('DATABASE_URL', '')
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)

@@ -8,11 +8,14 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.user_model import User
 from dtos.user_dto import UserCreate, TokenData
+from os import getenv
+from dotenv import load_dotenv
 
-# Configurações de segurança
-SECRET_KEY = "sua_chave_secreta_aqui"  # Em produção, use variável de ambiente
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+load_dotenv()
+
+SECRET_KEY = getenv('SECRET_KEY', '')
+ALGORITHM = getenv('ALGORITHM', '')
+ACCESS_TOKEN_EXPIRE_MINUTES = getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
