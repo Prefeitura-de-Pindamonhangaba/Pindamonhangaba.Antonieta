@@ -1,63 +1,100 @@
 <template>
-  <div class="dashboard-container">
-    <div class="page-header">
-      <h1 class="page-title">Dashboard</h1>
-      <div class="title-underline"></div>
-    </div>
+  <n-layout style="min-height: 100vh">
+    <n-layout-content style="padding: 24px">
+      <n-space vertical size="large">
+        <!-- Header -->
+        <n-space vertical size="small">
+          <n-h1 style="color: #f77800; margin: 0">Dashboard</n-h1>
+          <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
+        </n-space>
 
-    <div class="action-buttons">
-      <n-button type="primary" class="action-button" style="background-color: #f77800" @click="showDonationModal = true">
-        <template #icon>
-          <n-icon><IconPlus /></n-icon>
-        </template>
-        Registrar Nova Doação
-      </n-button>
-      <n-button class="action-button" type="default" style="color: #f77800; border-color: #f77800" @click="showBeneficiaryModal = true">
-        <template #icon>
-          <n-icon><IconUserPlus /></n-icon>
-        </template>
-        Adicionar Novo Beneficiário
-      </n-button>
-    </div>
+        <!-- Action Buttons -->
+        <n-space>
+          <n-button 
+            type="primary" 
+            style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
+            @click="showDonationModal = true"
+          >
+            <template #icon>
+              <n-icon><IconPlus /></n-icon>
+            </template>
+            Registrar Nova Doação
+          </n-button>
+          <n-button 
+            style="color: #f77800; border-color: #f77800; font-size: 14px; padding: 12px 24px"
+            @click="showBeneficiaryModal = true"
+          >
+            <template #icon>
+              <n-icon><IconUserPlus /></n-icon>
+            </template>
+            Adicionar Novo Beneficiário
+          </n-button>
+        </n-space>
 
-    <DonationModal v-model="showDonationModal" @submit="handleDonationSubmit" />
-    <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
+        <DonationModal v-model="showDonationModal" @submit="handleDonationSubmit" />
+        <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
 
-    <div class="summary-cards">
-      <n-card class="summary-card">
-        <div class="card-content">
-          <div class="card-title">Entrada Total (Mês)</div>
-          <div class="card-value">550 kg</div>
-        </div>
-      </n-card>
-      <n-card class="summary-card">
-        <div class="card-content">
-          <div class="card-title">Saída Total (Mês)</div>
-          <div class="card-value">320 kg</div>
-        </div>
-      </n-card>
-      <n-card class="summary-card">
-        <div class="card-content">
-          <div class="card-title">Estoque Atual</div>
-          <div class="card-value">230 kg</div>
-        </div>
-      </n-card>
-    </div>
+        <!-- Summary Cards -->
+        <n-grid x-gap="12" y-gap="12" cols="3" responsive="self">
+          <n-gi>
+            <n-card>
+              <n-space vertical align="center">
+                <n-text depth="3">Entrada Total (Mês)</n-text>
+                <n-statistic value="550 kg" />
+              </n-space>
+            </n-card>
+          </n-gi>
+          <n-gi>
+            <n-card>
+              <n-space vertical align="center">
+                <n-text depth="3">Saída Total (Mês)</n-text>
+                <n-statistic value="320 kg" />
+              </n-space>
+            </n-card>
+          </n-gi>
+          <n-gi>
+            <n-card>
+              <n-space vertical align="center">
+                <n-text depth="3">Estoque Atual</n-text>
+                <n-statistic value="230 kg" />
+              </n-space>
+            </n-card>
+          </n-gi>
+        </n-grid>
 
-    <n-card class="beneficiaries-card" title="Beneficiários e Controle Mensal">
-      <n-data-table
-        :columns="columns"
-        :data="tableData"
-        :pagination="pagination"
-      />
-    </n-card>
-  </div>
+        <!-- Beneficiaries Table -->
+        <n-card title="Beneficiários e Controle Mensal">
+          <n-data-table
+            :columns="columns"
+            :data="tableData"
+            :pagination="pagination"
+          />
+        </n-card>
+      </n-space>
+    </n-layout-content>
+  </n-layout>
 </template>
 
 <script setup lang="ts">
 import { h, ref } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
-import { NCard, NDataTable, NPageHeader, NTag, NButton, NIcon, NProgress } from 'naive-ui'
+import { 
+  NLayout,
+  NLayoutContent,
+  NSpace,
+  NButton,
+  NCard,
+  NDataTable,
+  NIcon,
+  NProgress,
+  NTag,
+  NGrid,
+  NGi,
+  NH1,
+  NDivider,
+  NText,
+  NStatistic
+} from 'naive-ui'
 import { IconPlus, IconUserPlus, IconCheck, IconAlertTriangle, IconX } from '@tabler/icons-vue'
 import DonationModal from '../components/modals/DonationModal.vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
@@ -201,82 +238,5 @@ const pagination = {
 </script>
 
 <style scoped>
-.dashboard-container {
-  padding: 2rem;
-  background-color: #fff8e1;
-  min-height: 100vh;
-}
 
-.page-header {
-  margin-bottom: 2rem;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #f77800;
-  margin: 0;
-}
-
-.title-underline {
-  width: 100px;
-  height: 4px;
-  background-color: #f77800;
-  margin-top: 0.5rem;
-}
-
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.summary-card {
-  background-color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.card-content {
-  text-align: center;
-  padding: 1rem;
-}
-
-.card-title {
-  color: #263238;
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.card-value {
-  color: #f77800;
-  font-size: 2rem;
-  font-weight: 600;
-}
-
-.beneficiaries-card {
-  background-color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.action-button {
-  font-weight: 500;
-  font-size: 1rem;
-  padding: 0.75rem 1.5rem;
-}
-
-:deep(.n-card-header__title) {
-  color: #263238;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
 </style>
