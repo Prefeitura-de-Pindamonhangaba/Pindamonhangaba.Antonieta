@@ -20,3 +20,11 @@ async def get_total_distributions_month(db: Session = Depends(get_db)):
         return dashboard_service.get_total_distributions_month()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/current-total-stock")
+async def get_current_total_stock(db: Session = Depends(get_db)):
+    try:
+        dashboard_service = DashboardService(db)
+        return dashboard_service.get_current_total_stock()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
