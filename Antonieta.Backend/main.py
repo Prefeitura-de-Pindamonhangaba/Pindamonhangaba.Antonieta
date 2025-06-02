@@ -25,7 +25,7 @@ create_tables()
 # Configuração CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[getenv('CORS_ORIGINS', 'http://localhost:3000')],
+    allow_origins=[*os.getenv('CORS_ORIGINS', '*').split(',')],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,4 +41,4 @@ app.include_router(dashboard_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv('PORT')))
+    uvicorn.run(app, host=(os.getenv('HOST')), port=int(os.getenv('PORT')))
