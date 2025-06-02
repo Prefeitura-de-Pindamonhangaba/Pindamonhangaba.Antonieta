@@ -8,6 +8,7 @@ from controllers.distribution_controller import router as distribution_router
 from controllers.auth_controller import router as auth_router
 from controllers.ration_type_controller import router as ration_type_router
 from controllers.ration_input_controller import router as ration_input_router
+from controllers.dashboard_controller import router as dashboard_router
 
 app = FastAPI(title="Antonieta API", version="1.0.0")
 
@@ -29,3 +30,4 @@ app.include_router(ration_stock_router)
 app.include_router(distribution_router)
 app.include_router(ration_type_router)
 app.include_router(ration_input_router)
+app.include_router(dashboard_router)
