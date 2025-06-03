@@ -42,10 +42,21 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
-      - name: Reiniciar serviços com PM2
+      - name: Reiniciar serviços com PM2 (sem recriar)
         run: |
-          pm2 restart antonieta-backend || pm2 start "source /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/venv/bin/activate && python3 /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/main.py" --name antonieta-backend
-          pm2 restart antonieta-frontend || PORT=3001 pm2 start /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output/server/index.mjs --name antonieta-frontend --cwd /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend
+          if pm2 list | grep -q antonieta-backend; then
+            echo "🔁 Reiniciando antonieta-backend..."
+            pm2 restart antonieta-backend
+          else
+            echo "⚠️ antonieta-backend não encontrado no PM2."
+          fi
+
+          if pm2 list | grep -q antonieta-frontend; then
+            echo "🔁 Reiniciando antonieta-frontend..."
+            pm2 restart antonieta-frontend
+          else
+            echo "⚠️ antonieta-frontend não encontrado no PM2."
+          fi
 
       - name: Salvar estado do PM2
         run: |
