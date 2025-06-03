@@ -13,6 +13,10 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
+      - name: Autorizar repositório local como seguro
+        run: |
+          git config --global --add safe.directory /opt/Pindamonhangaba.Antonieta
+
       - name: Atualizar repositório
         run: |
           cd /opt/Pindamonhangaba.Antonieta
