@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy local com runner
 
 on:
   push:
@@ -7,27 +7,35 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout código
+      - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Configurar SSH
-        shell: bash
+      - name: Atualizar repositório
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          cd /opt/Pindamonhangaba.Antonieta
+          git pull origin main
 
-      - name: Enviar arquivos para o servidor
-        run: rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.DEPLOY_PATH }}
-
-      - name: Rodar comandos de deploy no servidor
+      - name: Instalar e buildar o frontend Vue
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ${{ secrets.DEPLOY_PATH }}
-          source ~/.bash_profile
-          pm2 restart app
-          EOF
+          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend
+          npm install
+          npm run build
+
+      - name: Instalar dependências do backend Python
+        run: |
+          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Backend
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Reiniciar serviços com PM2
+        run: |
+          pm2 restart antonieta-backend || pm2 start "source /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/venv/bin/activate && python3 /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/main.py" --name antonieta-backend
+          pm2 restart antonieta-frontend || pm2 start "npx serve -s /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/dist" --name antonieta-frontend
+
+      - name: Salvar estado do PM2
+        run: |
+          pm2 save
