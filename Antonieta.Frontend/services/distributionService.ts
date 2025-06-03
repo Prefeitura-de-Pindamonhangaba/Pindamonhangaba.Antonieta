@@ -1,6 +1,6 @@
 import type { Distribution } from '../models/distributionModel'
 
-const BASE_URL = 'http://localhost:8000/distribution'
+const BASE_URL = useRuntimeConfig().public.backendUrl + '/distribution'
 
 export const distributionService = {
   async getAll(): Promise<Distribution[]> {

@@ -1,6 +1,6 @@
 import type { RationInput } from '../models/rationInputModel'
 
-const BASE_URL = 'http://localhost:8000/ration-input'
+const BASE_URL = useRuntimeConfig().public.backendUrl + '/ration-input'
 
 export const rationInputService = {
   async getAll(): Promise<RationInput[]> {

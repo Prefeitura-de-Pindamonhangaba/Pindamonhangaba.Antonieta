@@ -1,6 +1,6 @@
 import type { RationStock } from '../models/rationStockModel'
 
-const BASE_URL = 'http://localhost:8000/ration-stock'
+const BASE_URL = useRuntimeConfig().public.backendUrl + '/ration-stock'
 
 export const rationStockService = {
   async getAll(): Promise<RationStock[]> {

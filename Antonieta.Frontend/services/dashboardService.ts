@@ -9,7 +9,7 @@ interface StockData {
   last_updated: string;
 }
 
-const BASE_URL = 'http://localhost:8000/dashboard'
+const BASE_URL = useRuntimeConfig().public.backendUrl + '/dashboard'
 
 export const dashboardService = {
   async getTotalInputsMonth(): Promise<DashboardData> {

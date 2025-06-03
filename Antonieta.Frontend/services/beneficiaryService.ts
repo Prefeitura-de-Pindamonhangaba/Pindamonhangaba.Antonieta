@@ -1,6 +1,6 @@
 import type { Beneficiary } from '../models/beneficiary'
 
-const BASE_URL = 'http://localhost:8000/beneficiary'
+const BASE_URL = useRuntimeConfig().public.backendUrl + '/beneficiary'
 
 export const beneficiaryService = {
   async getAll(): Promise<Beneficiary[]> {
