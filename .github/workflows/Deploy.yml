@@ -1,0 +1,31 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar SSH
+        run: |
+          echo "${{ secrets.b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACAzQyOsI+6FsAuMzhKcmWDVyGUpI+8iVZg0aGl+MTNT0wAAAJg+aDHBPmgxwQAAAAtzc2gtZWQyNTUxOQAAACAzQyOsI+6FsAuMzhKcmWDVyGUpI+8iVZg0aGl+MTNT0wAAAECbiFs8Ez7lOmg7Otk+mycsB+nd5EVtTxJvbIE7iLXMhDNDI6wj7oWwC4zOEpyZYNXIZSkj7yJVmDRoaX4xM1PTAAAAFHJvb3RAc2Vydi1hcGxpY2F0aW9uAQ== }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.10.0.0.193 }} >> ~/.ssh/known_hosts
+
+      - name: Enviar arquivos para o servidor
+        run: rsync -avz --delete ./ ${{ secrets.root }}@${{ secrets.serv-application }}:${{ secrets./opt/Pindamonhangaba.Antonieta}}
+
+      - name: Rodar comandos de deploy no Almalinux
+        run: |
+          ssh ${{ secrets.root }}@${{ secrets.serv-application }} << 'EOF'
+          cd ${{ secrets./opt/Pindamonhangaba.Antonieta }}
+          source ~/.bash_profile
+          pm2 restart app
+          EOF
