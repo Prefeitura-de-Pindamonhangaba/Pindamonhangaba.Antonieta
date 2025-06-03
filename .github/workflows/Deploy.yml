@@ -22,6 +22,10 @@ jobs:
           cd /opt/Pindamonhangaba.Antonieta
           git pull origin main
 
+      - name: Limpar build anterior do Nuxt
+        run: |
+          rm -rf /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output
+
       - name: Instalar e buildar o frontend Vue (Nuxt 3)
         run: |
           cd /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend
@@ -38,7 +42,7 @@ jobs:
       - name: Reiniciar serviços com PM2
         run: |
           pm2 restart antonieta-backend || pm2 start "source /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/venv/bin/activate && python3 /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/main.py" --name antonieta-backend
-          pm2 restart antonieta-frontend || PORT=3001 pm2 start /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output/server/index.mjs --name antonieta-frontend
+          pm2 restart antonieta-frontend || PORT=3001 pm2 start /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output/server/index.mjs --name antonieta-frontend --cwd /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend
 
       - name: Salvar estado do PM2
         run: |
