@@ -21,7 +21,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
       - name: Enviar arquivos para o servidor
-        run: rsync -avz --delete ./ ${{ secrets.root }}@${{ secrets.serv-application }}:${{ secrets./opt/Pindamonhangaba.Antonieta}}
+        run: rsync -avz --delete ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.DEPLOY_PATH }}
 
       - name: Rodar comandos de deploy no Almalinux
         run: |
