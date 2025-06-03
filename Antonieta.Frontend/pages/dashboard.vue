@@ -40,7 +40,7 @@
             <n-card>
               <n-space vertical align="center">
                 <n-text depth="3">Entrada Total (Mês)</n-text>
-                <n-statistic value="550 kg" />
+                <n-statistic :value="`${total_inputs} kg`" />
               </n-space>
             </n-card>
           </n-gi>
@@ -48,7 +48,7 @@
             <n-card>
               <n-space vertical align="center">
                 <n-text depth="3">Saída Total (Mês)</n-text>
-                <n-statistic value="320 kg" />
+                <n-statistic :value="`${total_distributions} kg`" />
               </n-space>
             </n-card>
           </n-gi>
@@ -56,7 +56,7 @@
             <n-card>
               <n-space vertical align="center">
                 <n-text depth="3">Estoque Atual</n-text>
-                <n-statistic value="230 kg" />
+                <n-statistic :value="`${current_stock} kg`" />
               </n-space>
             </n-card>
           </n-gi>
@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref } from 'vue'
+import { h, ref, onMounted, onUnmounted } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 import { 
   NLayout,
@@ -99,6 +99,11 @@ import { IconPlus, IconUserPlus, IconCheck, IconAlertTriangle, IconX } from '@ta
 import DonationModal from '../components/modals/DonationModal.vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import type { Beneficiary } from '../models/beneficiary'
+import { beneficiaryService } from '../services/beneficiaryService'
+import { rationStockService } from '../services/rationStockService'
+import { distributionService } from '~/services/distributionService'
+import { rationInputService } from '~/services/rationInputService'
+import { dashboardService } from '~/services/dashboardService'
 
 interface BeneficiaryData {
   nome: string
@@ -107,6 +112,10 @@ interface BeneficiaryData {
   status: string
   progresso: number
 }
+
+const current_stock = ref(0)
+const total_inputs = ref(0)
+const total_distributions = ref(0)
 
 const showDonationModal = ref(false)
 const showBeneficiaryModal = ref(false)
@@ -235,6 +244,46 @@ const tableData: BeneficiaryData[] = [
 const pagination = {
   pageSize: 10
 }
+
+// Add this function to fetch dashboard data
+const fetchDashboardData = async () => {
+  try {
+    const stockData = await dashboardService.getCurrentTotalStock()
+    const inputsData = await dashboardService.getTotalInputsMonth()
+    const distributionsData = await dashboardService.getTotalDistributionsMonth()
+
+    current_stock.value = stockData.current_stock
+    total_inputs.value = inputsData.total_amount
+    total_distributions.value = distributionsData.total_amount
+  } catch (error) {
+    console.error('Error loading dashboard data:', error)
+  }
+}
+
+// Add onMounted hook to fetch initial data
+onMounted(() => {
+  fetchDashboardData()
+})
+
+// Add a function to update data periodically (optional)
+const startPolling = () => {
+  const pollingInterval = 30000 // 30 seconds
+  setInterval(() => {
+    fetchDashboardData()
+  }, pollingInterval)
+}
+
+onMounted(() => {
+  fetchDashboardData()
+  startPolling()
+})
+
+// Clean up interval when component is unmounted
+onUnmounted(() => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
+  }
+})
 </script>
 
 <style scoped>
