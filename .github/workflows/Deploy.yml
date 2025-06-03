@@ -44,14 +44,14 @@ jobs:
 
       - name: Reiniciar serviços com PM2 (sem recriar)
         run: |
-          if pm2 list | grep -q antonieta-backend; then
+          if pm2 jlist | grep -q '"name":"antonieta-backend"'; then
             echo "🔁 Reiniciando antonieta-backend..."
             pm2 restart antonieta-backend
           else
             echo "⚠️ antonieta-backend não encontrado no PM2."
           fi
 
-          if pm2 list | grep -q antonieta-frontend; then
+          if pm2 jlist | grep -q '"name":"antonieta-frontend"'; then
             echo "🔁 Reiniciando antonieta-frontend..."
             pm2 restart antonieta-frontend
           else
