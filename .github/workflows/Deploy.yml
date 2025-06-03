@@ -26,7 +26,7 @@ jobs:
         run: |
           cd /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend
           npm install
-          npm run build
+          node --max-old-space-size=4096 ./node_modules/.bin/nuxt build
 
       - name: Instalar dependências do backend Python
         run: |
@@ -38,7 +38,7 @@ jobs:
       - name: Reiniciar serviços com PM2
         run: |
           pm2 restart antonieta-backend || pm2 start "source /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/venv/bin/activate && python3 /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/main.py" --name antonieta-backend
-          pm2 restart antonieta-frontend || pm2 start "npx serve -s /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/dist" --name antonieta-frontend
+          pm2 restart antonieta-frontend || pm2 start "npm run start --prefix /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend" --name antonieta-frontend
 
       - name: Salvar estado do PM2
         run: |
