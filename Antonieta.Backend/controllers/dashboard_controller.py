@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from services.dashboard_service import DashboardService
+from typing import List
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -26,5 +27,16 @@ async def get_current_total_stock(db: Session = Depends(get_db)):
     try:
         dashboard_service = DashboardService(db)
         return dashboard_service.get_current_total_stock()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/beneficiaries-dashboard")
+async def get_beneficiaries_dashboard(db: Session = Depends(get_db)):
+    """
+    Retorna dados consolidados dos beneficiários para o dashboard
+    """
+    try:
+        dashboard_service = DashboardService(db)
+        return dashboard_service.get_beneficiaries_dashboard()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
