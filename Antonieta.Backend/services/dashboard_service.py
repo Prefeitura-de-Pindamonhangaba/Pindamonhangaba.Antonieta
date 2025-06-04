@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 from models.ration_input_model import RationInput
 from models.distribution_model import Distribution
@@ -72,15 +72,25 @@ class DashboardService:
             "last_updated": datetime.now()
         }
     
-    def get_beneficiaries_dashboard(self) -> List[dict]:
+    def get_beneficiaries_dashboard(self, skip: int = 0, limit: int = 10) -> Tuple[List[dict], int]:
         """
         Retorna dados consolidados dos beneficiários para o dashboard
         incluindo limites, quantidades recebidas e status
+        
+        Args:
+            skip: Número de registros para pular
+            limit: Número máximo de registros para retornar
+            
+        Returns:
+            Tupla contendo a lista de beneficiários e o total de registros
         """
         current_date = datetime.now()
         
-        # Busca todos os beneficiários
-        beneficiaries = self.db.query(Beneficiary).all()
+        # Busca total de beneficiários
+        total = self.db.query(func.count(Beneficiary.id)).scalar()
+        
+        # Busca beneficiários com paginação
+        beneficiaries = self.db.query(Beneficiary).offset(skip).limit(limit).all()
         
         dashboard_data = []
         
@@ -114,4 +124,4 @@ class DashboardService:
                 "status": status
             })
         
-        return dashboard_data
+        return dashboard_data, total
