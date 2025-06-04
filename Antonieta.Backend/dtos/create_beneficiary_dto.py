@@ -8,3 +8,4 @@ class create_beneficiary_dto(BaseModel):
     document: str
     address: str
     contact: str
+    monthly_limit: int = 0  # Add monthly_limit field with default value
