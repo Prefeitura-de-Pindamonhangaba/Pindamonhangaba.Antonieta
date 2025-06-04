@@ -65,9 +65,11 @@
         <!-- Beneficiaries Table -->
         <n-card title="Beneficiários e Controle Mensal">
           <n-data-table
+            :loading="loading"
             :columns="columns"
             :data="tableData"
             :pagination="pagination"
+            remote
           />
         </n-card>
       </n-space>
@@ -76,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted, onUnmounted } from 'vue'
+import { h, ref, onMounted, onUnmounted, reactive } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 import { 
   NLayout,
@@ -105,12 +107,14 @@ import { distributionService } from '~/services/distributionService'
 import { rationInputService } from '~/services/rationInputService'
 import { dashboardService } from '~/services/dashboardService'
 
+// Update BeneficiaryData interface to match the service response
 interface BeneficiaryData {
+  id: number
   nome: string
-  limiteMensal: number
-  recebido: number
-  status: string
+  limite_mensal: number  // Changed from limiteMensal to match backend
+  recebido_mes: number   // Changed from recebido to match backend
   progresso: number
+  status: 'Pode Receber' | 'Próx. Limite' | 'Limite Atingido'
 }
 
 const current_stock = ref(0)
@@ -129,6 +133,18 @@ const handleBeneficiarySubmit = (formData: Beneficiary) => {
   console.log('Beneficiary submitted:', formData)
 }
 
+// Add reactive refs for table data and loading state
+const tableData = ref<BeneficiaryData[]>([])
+const loading = ref(true)
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  itemCount: 0,
+  onChange: async (page: number) => {
+    await fetchBeneficiariesData(page)
+  }
+})
+
 const columns: DataTableColumns<BeneficiaryData> = [
   {
     title: 'Nome',
@@ -136,16 +152,16 @@ const columns: DataTableColumns<BeneficiaryData> = [
   },
   {
     title: 'Limite Mensal',
-    key: 'limiteMensal',
+    key: 'limite_mensal',  // Changed from limiteMensal
     render(row) {
-      return `${row.limiteMensal} kg`
+      return `${row.limite_mensal} kg`
     }
   },
   {
     title: 'Recebido Este Mês',
-    key: 'recebido',
+    key: 'recebido_mes',   // Changed from recebido
     render(row) {
-      return `${row.recebido} kg`
+      return `${row.recebido_mes} kg`
     }
   },
   {
@@ -210,51 +226,36 @@ const columns: DataTableColumns<BeneficiaryData> = [
   }
 ]
 
-const tableData: BeneficiaryData[] = [
-  {
-    nome: 'Ana Silva',
-    limiteMensal: 15,
-    recebido: 5,
-    status: 'Pode Receber',
-    progresso: 33
-  },
-  {
-    nome: 'João Santos',
-    limiteMensal: 20,
-    recebido: 18,
-    status: 'Próx. Limite',
-    progresso: 90
-  },
-  {
-    nome: 'Maria Oliveira',
-    limiteMensal: 10,
-    recebido: 10,
-    status: 'Limite Atingido',
-    progresso: 100
-  },
-  {
-    nome: 'Pedro Souza',
-    limiteMensal: 25,
-    recebido: 0,
-    status: 'Pode Receber',
-    progresso: 0
+// Add function to fetch beneficiaries data
+const fetchBeneficiariesData = async (page: number = 1) => {
+  try {
+    loading.value = true
+    const skip = (page - 1) * pagination.pageSize
+    const beneficiariesData = await dashboardService.getBeneficiariesDashboard(skip, pagination.pageSize)
+    
+    tableData.value = beneficiariesData.data
+    pagination.itemCount = beneficiariesData.total
+  } catch (error) {
+    console.error('Error fetching beneficiaries:', error)
+  } finally {
+    loading.value = false
   }
-]
-
-const pagination = {
-  pageSize: 10
 }
 
-// Add this function to fetch dashboard data
+// Update the fetchDashboardData function to include beneficiaries
 const fetchDashboardData = async () => {
   try {
-    const stockData = await dashboardService.getCurrentTotalStock()
-    const inputsData = await dashboardService.getTotalInputsMonth()
-    const distributionsData = await dashboardService.getTotalDistributionsMonth()
+    const [stockData, inputsData, distributionsData] = await Promise.all([
+      dashboardService.getCurrentTotalStock(),
+      dashboardService.getTotalInputsMonth(),
+      dashboardService.getTotalDistributionsMonth()
+    ])
 
     current_stock.value = stockData.current_stock
     total_inputs.value = inputsData.total_amount
     total_distributions.value = distributionsData.total_amount
+
+    await fetchBeneficiariesData(pagination.page)
   } catch (error) {
     console.error('Error loading dashboard data:', error)
   }
@@ -263,6 +264,7 @@ const fetchDashboardData = async () => {
 // Add onMounted hook to fetch initial data
 onMounted(() => {
   fetchDashboardData()
+  startPolling()
 })
 
 // Add a function to update data periodically (optional)
@@ -272,11 +274,6 @@ const startPolling = () => {
     fetchDashboardData()
   }, pollingInterval)
 }
-
-onMounted(() => {
-  fetchDashboardData()
-  startPolling()
-})
 
 // Clean up interval when component is unmounted
 onUnmounted(() => {

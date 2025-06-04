@@ -9,6 +9,22 @@ interface StockData {
   last_updated: string;
 }
 
+interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
+interface BeneficiaryDashboardData {
+  id: number;
+  nome: string;
+  limiteMensal: number;
+  recebido: number;
+  progresso: number;
+  status: 'Pode Receber' | 'Próx. Limite' | 'Limite Atingido';
+}
+
 const BASE_URL = useRuntimeConfig().public.backendUrl + '/dashboard'
 
 export const dashboardService = {
@@ -49,6 +65,20 @@ export const dashboardService = {
     
     if (!response.ok) {
       throw new Error('Failed to fetch current total stock')
+    }
+    
+    return response.json()
+  },
+
+  async getBeneficiariesDashboard(skip: number = 0, limit: number = 10): Promise<PaginatedResponse<BeneficiaryDashboardData>> {
+    const response = await fetch(`${BASE_URL}/beneficiaries-dashboard?skip=${skip}&limit=${limit}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch beneficiaries dashboard')
     }
     
     return response.json()
