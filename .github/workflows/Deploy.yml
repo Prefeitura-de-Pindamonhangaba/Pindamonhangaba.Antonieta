@@ -22,7 +22,14 @@ jobs:
           cd /opt/Pindamonhangaba.Antonieta
           git pull origin main
 
-      - name: Instalar e buildar o frontend Vue
+      - name: Corrigir permissões do .output
+        run: sudo chown -R runner:runner /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output || true
+
+      - name: Limpar build anterior do Nuxt
+        run: |
+          rm -rf /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output
+
+      - name: Instalar e buildar o frontend Vue (Nuxt 3)
         run: |
           cd /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend
           npm install
@@ -35,10 +42,21 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
-      - name: Reiniciar serviços com PM2
+      - name: Reiniciar serviços com PM2 (sem recriar)
         run: |
-          pm2 restart antonieta-backend || pm2 start "source /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/venv/bin/activate && python3 /opt/Pindamonhangaba.Antonieta/Antonieta.Backend/main.py" --name antonieta-backend
-          pm2 restart antonieta-frontend || pm2 start "npm run start --prefix /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend" --name antonieta-frontend
+          if pm2 jlist | grep -q '"name":"antonieta-backend"'; then
+            echo "🔁 Reiniciando antonieta-backend..."
+            pm2 restart antonieta-backend
+          else
+            echo "⚠️ antonieta-backend não encontrado no PM2."
+          fi
+
+          if pm2 jlist | grep -q '"name":"antonieta-frontend"'; then
+            echo "🔁 Reiniciando antonieta-frontend..."
+            pm2 restart antonieta-frontend
+          else
+            echo "⚠️ antonieta-frontend não encontrado no PM2."
+          fi
 
       - name: Salvar estado do PM2
         run: |
