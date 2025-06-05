@@ -49,13 +49,16 @@ export const beneficiaryService = {
   },
 
   async update(id: number, beneficiary: Partial<Beneficiary>): Promise<Beneficiary> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'PATCH',
+    const response = await fetch(`${BASE_URL}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       },
-      body: JSON.stringify(beneficiary)
+      body: JSON.stringify({
+        id,
+        ...beneficiary
+      })
     })
     
     if (!response.ok) {
