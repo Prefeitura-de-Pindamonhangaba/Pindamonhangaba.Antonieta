@@ -271,51 +271,5 @@ function resetForm() {
 </script>
 
 <style scoped>
-.beneficiary-container {
-  padding: 2rem;
-  background-color: #fff8e1;
-  min-height: 100vh;
-}
 
-.page-header {
-  margin-bottom: 2rem;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #f77800;
-  margin: 0;
-}
-
-.title-underline {
-  width: 100px;
-  height: 4px;
-  background-color: #f77800;
-  margin-top: 0.5rem;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.action-button {
-  font-weight: 500;
-  font-size: 1rem;
-  padding: 0.75rem 1.5rem;
-}
-
-.beneficiaries-table-card {
-  background-color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
 </style>
