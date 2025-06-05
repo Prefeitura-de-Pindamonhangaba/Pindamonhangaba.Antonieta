@@ -1,96 +1,111 @@
 <template>
-  <div class="beneficiary-container">
-    <div class="page-header">
-      <h1 class="page-title">Beneficiários</h1>
-      <div class="title-underline"></div>
-    </div>
+  <n-layout style="min-height: 100vh">
+    <n-layout-content style="padding: 24px">
+      <n-space vertical size="large">
+        <!-- Header -->
+        <n-space vertical size="small">
+          <n-h1 style="color: #f77800; margin: 0">Beneficiários</n-h1>
+          <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
+        </n-space>
 
-    <div class="action-buttons">
-      <n-button type="primary" class="action-button" style="background-color: #f77800" @click="showAddModal = true">
-        <template #icon>
-          <n-icon><IconUserPlus /></n-icon>
-        </template>
-        Adicionar Novo Beneficiário
-      </n-button>
-    </div>
-
-    <n-card class="beneficiaries-table-card">
-      <n-data-table
-        :columns="columns"
-        :data="tableData"
-        :pagination="pagination"
-        :loading="loading"
-      />
-    </n-card>
-
-    <!-- Modal de Adição/Edição -->
-    <n-modal
-      v-model:show="showAddModal"
-      preset="dialog"
-      style="width: 600px"
-      :title="editingBeneficiary ? 'Editar Beneficiário' : 'Adicionar Novo Beneficiário'"
-    >
-      <n-form
-        ref="formRef"
-        :model="formData"
-        :rules="rules"
-        label-placement="left"
-        label-width="auto"
-        require-mark-placement="right-hanging"
-        size="medium"
-      >
-        <n-form-item label="Nome" path="name">
-          <n-input v-model:value="formData.name" placeholder="Nome completo" />
-        </n-form-item>
-        <n-form-item label="Documento" path="document">
-          <n-input v-model:value="formData.document" placeholder="CPF" />
-        </n-form-item>
-        <n-form-item label="Endereço" path="address">
-          <n-input v-model:value="formData.address" placeholder="Endereço completo" />
-        </n-form-item>
-        <n-form-item label="Contato" path="contact">
-          <n-input v-model:value="formData.contact" placeholder="Telefone" />
-        </n-form-item>
-        <n-form-item label="Limite Mensal (kg)" path="limit">
-          <n-input-number v-model:value="formData.limit" placeholder="Limite em kg" />
-        </n-form-item>
-      </n-form>
-      <template #action>
-        <div class="modal-actions">
-          <n-button @click="showAddModal = false">Cancelar</n-button>
+        <!-- Action Buttons -->
+        <n-space>
           <n-button
             type="primary"
-            style="background-color: #f77800"
-            @click="handleSubmit"
+            style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
+            @click="showAddModal = true"
           >
-            {{ editingBeneficiary ? 'Salvar Alterações' : 'Adicionar' }}
+            <template #icon>
+              <n-icon><IconUserPlus /></n-icon>
+            </template>
+            Adicionar Novo Beneficiário
           </n-button>
-        </div>
-      </template>
-    </n-modal>
+        </n-space>
 
-    <!-- Modal de Confirmação de Exclusão -->
-    <n-modal
-      v-model:show="showDeleteModal"
-      preset="dialog"
-      title="Confirmar Exclusão"
-      content="Tem certeza que deseja excluir este beneficiário? Esta ação não pode ser desfeita."
-      positive-text="Sim, Excluir"
-      negative-text="Cancelar"
-      @positive-click="confirmDelete"
-      @negative-click="showDeleteModal = false"
-    />
-  </div>
+        <!-- Table -->
+        <n-card>
+          <n-data-table
+            :columns="columns"
+            :data="tableData"
+            :pagination="pagination"
+            :loading="loading"
+          />
+        </n-card>
+
+        <!-- Add/Edit Modal -->
+        <n-modal
+          v-model:show="showAddModal"
+          preset="dialog"
+          style="width: 600px"
+          :title="editingBeneficiary ? 'Editar Beneficiário' : 'Adicionar Novo Beneficiário'"
+        >
+          <n-form
+            ref="formRef"
+            :model="formData"
+            :rules="rules"
+            label-placement="left"
+            label-width="auto"
+            require-mark-placement="right-hanging"
+            size="medium"
+          >
+            <n-space vertical>
+              <n-form-item label="Nome" path="name">
+                <n-input v-model:value="formData.name" placeholder="Nome completo" />
+              </n-form-item>
+              <n-form-item label="Documento" path="document">
+                <n-input v-model:value="formData.document" placeholder="CPF" />
+              </n-form-item>
+              <n-form-item label="Endereço" path="address">
+                <n-input v-model:value="formData.address" placeholder="Endereço completo" />
+              </n-form-item>
+              <n-form-item label="Contato" path="contact">
+                <n-input v-model:value="formData.contact" placeholder="Telefone" />
+              </n-form-item>
+              <n-form-item label="Limite Mensal (kg)" path="limit">
+                <n-input-number v-model:value="formData.limit" placeholder="Limite em kg" />
+              </n-form-item>
+            </n-space>
+          </n-form>
+          <template #action>
+            <n-space justify="end">
+              <n-button @click="showAddModal = false" :disabled="loading">
+                Cancelar
+              </n-button>
+              <n-button
+                type="primary"
+                style="background-color: #f77800"
+                @click="handleSubmit"
+                :loading="loading"
+                :disabled="loading"
+              >
+                {{ editingBeneficiary ? 'Salvar Alterações' : 'Adicionar' }}
+              </n-button>
+            </n-space>
+          </template>
+        </n-modal>
+
+        <!-- Delete Modal -->
+        <n-modal
+          v-model:show="showDeleteModal"
+          preset="dialog"
+          title="Confirmar Exclusão"
+          content="Tem certeza que deseja excluir este beneficiário? Esta ação não pode ser desfeita."
+          positive-text="Sim, Excluir"
+          negative-text="Cancelar"
+          @positive-click="confirmDelete"
+          @negative-click="showDeleteModal = false"
+        />
+      </n-space>
+    </n-layout-content>
+  </n-layout>
 </template>
 
 <script setup lang="ts">
 import { h, ref, onMounted } from 'vue'
-
-onMounted(() => {
-  fetchBeneficiaries()
-})
-import type { DataTableColumns } from 'naive-ui'
 import {
+  NLayout,
+  NLayoutContent,
+  NSpace,
   NButton,
   NCard,
   NDataTable,
@@ -100,9 +115,12 @@ import {
   NInput,
   NInputNumber,
   NIcon,
+  NH1,
+  NDivider,
   useMessage
 } from 'naive-ui'
 import { IconUserPlus, IconEdit, IconTrash } from '@tabler/icons-vue'
+import type { DataTableColumns } from 'naive-ui'
 import type { Beneficiary } from '../models/beneficiary'
 
 const message = useMessage()
