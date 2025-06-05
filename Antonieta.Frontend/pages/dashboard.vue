@@ -268,17 +268,20 @@ onMounted(() => {
 })
 
 // Add a function to update data periodically (optional)
+let pollingInterval: NodeJS.Timer | null = null
+
 const startPolling = () => {
-  const pollingInterval = 30000 // 30 seconds
-  setInterval(() => {
+  const interval = 30000 // 30 seconds
+  pollingInterval = setInterval(() => {
     fetchDashboardData()
-  }, pollingInterval)
+  }, interval)
 }
 
 // Clean up interval when component is unmounted
 onUnmounted(() => {
   if (pollingInterval) {
     clearInterval(pollingInterval)
+    pollingInterval = null
   }
 })
 </script>
