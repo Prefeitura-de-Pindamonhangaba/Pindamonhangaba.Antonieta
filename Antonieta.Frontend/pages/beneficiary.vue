@@ -35,7 +35,10 @@
         <!-- Use BeneficiaryModal component -->
         <BeneficiaryModal
           v-model="showBeneficiaryModal"
+          :edit-mode="!!selectedBeneficiary"
+          :beneficiary-data="selectedBeneficiary"
           @submit="handleBeneficiarySubmit"
+          @update="handleBeneficiaryUpdate"
         />
 
         <!-- Delete Modal -->
@@ -55,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted } from 'vue'
+import { h, ref, onMounted, watch } from 'vue'
 import {
   NLayout,
   NLayoutContent,
@@ -81,6 +84,7 @@ const loading = ref(false)
 const showBeneficiaryModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedBeneficiaryId = ref<number | null>(null)
+const selectedBeneficiary = ref<Beneficiary | null>(null)
 
 async function fetchBeneficiaries() {
   try {
@@ -142,8 +146,8 @@ const pagination = {
 }
 
 function handleEdit(beneficiary: Beneficiary) {
-  // Will be implemented with edit modal
-  console.log('Edit beneficiary:', beneficiary)
+  selectedBeneficiary.value = beneficiary
+  showBeneficiaryModal.value = true
 }
 
 function handleDelete(beneficiary: Beneficiary) {
@@ -167,9 +171,40 @@ async function confirmDelete() {
   }
 }
 
+// Add these functions after handleEdit
+const handleBeneficiarySubmit = async (beneficiary: Beneficiary) => {
+  try {
+    await beneficiaryService.create(beneficiary)
+    message.success('Beneficiário cadastrado com sucesso')
+    await fetchBeneficiaries()
+  } catch (error) {
+    message.error('Erro ao cadastrar beneficiário')
+    console.error(error)
+  }
+}
+
+const handleBeneficiaryUpdate = async (id: number, updatedData: Beneficiary) => {
+  try {
+    await beneficiaryService.update(id, updatedData)
+    message.success('Beneficiário atualizado com sucesso')
+    await fetchBeneficiaries()
+  } catch (error) {
+    message.error('Erro ao atualizar beneficiário')
+    console.error(error)
+  } finally {
+    selectedBeneficiary.value = null
+  }
+}
+
 // Load data when component mounts
 onMounted(() => {
   fetchBeneficiaries()
+})
+
+watch(showBeneficiaryModal, (newValue) => {
+  if (!newValue) {
+    selectedBeneficiary.value = null
+  }
 })
 </script>
 

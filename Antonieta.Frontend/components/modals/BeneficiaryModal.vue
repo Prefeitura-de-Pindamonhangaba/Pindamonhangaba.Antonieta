@@ -2,7 +2,7 @@
   <n-modal :show="modelValue" @update:show="$emit('update:modelValue', $event)" preset="dialog" style="width: 600px">
     <template #header>
       <div class="modal-header">
-        <h3>Cadastrar Novo Beneficiário</h3>
+        <h3>{{ props.editMode ? 'Editar Beneficiário' : 'Cadastrar Novo Beneficiário' }}</h3>
       </div>
     </template>
     <div class="modal-content">
@@ -65,18 +65,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue'
+import { ref, defineProps, defineEmits, watch } from 'vue'
 import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton } from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
 import type { Beneficiary } from '~/models/beneficiary'
 
 const props = defineProps<{
   modelValue: boolean
+  editMode?: boolean
+  beneficiaryData?: Beneficiary
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'submit': [formData: Beneficiary]
+  'update': [id: number, formData: Partial<Beneficiary>]
 }>()
 
 const formRef = ref()
@@ -112,30 +115,53 @@ const rules = {
   }
 }
 
+watch(() => props.beneficiaryData, (newValue) => {
+  if (newValue && props.editMode) {
+    formData.value = {
+      name: newValue.name,
+      document: newValue.document,
+      address: newValue.address,
+      contact: newValue.contact,
+      monthly_limit: newValue.monthly_limit
+    }
+  }
+}, { immediate: true })
+
 const handleSubmit = async () => {
   try {
     await formRef.value?.validate()
     submitting.value = true
 
-    const newBeneficiary = await beneficiaryService.create({
+    const beneficiaryData = {
       name: formData.value.name,
       document: formData.value.document,
       address: formData.value.address,
       contact: formData.value.contact,
       monthly_limit: formData.value.monthly_limit || 0
-    })
+    }
 
-    window.$message?.success('Beneficiário cadastrado com sucesso!')
-    emit('submit', newBeneficiary)
+    if (props.editMode && props.beneficiaryData) {
+      const updatedBeneficiary = await beneficiaryService.update(
+        props.beneficiaryData.id,
+        beneficiaryData
+      )
+      window.$message?.success('Beneficiário atualizado com sucesso!')
+      emit('update', props.beneficiaryData.id, updatedBeneficiary)
+    } else {
+      const newBeneficiary = await beneficiaryService.create(beneficiaryData)
+      window.$message?.success('Beneficiário cadastrado com sucesso!')
+      emit('submit', newBeneficiary)
+    }
+
     emit('update:modelValue', false)
     resetForm()
   } catch (error) {
     if (error instanceof Error) {
       window.$message?.error(error.message)
     } else {
-      window.$message?.error('Erro ao cadastrar beneficiário')
+      window.$message?.error(props.editMode ? 'Erro ao atualizar beneficiário' : 'Erro ao cadastrar beneficiário')
     }
-    console.error('Error creating beneficiary:', error)
+    console.error('Error:', error)
   } finally {
     submitting.value = false
   }
