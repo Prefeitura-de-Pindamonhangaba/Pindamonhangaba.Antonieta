@@ -42,7 +42,8 @@ import {
   DashboardOutlined,
   UserOutlined,
   GiftOutlined,
-  InboxOutlined
+  InboxOutlined,
+  BarChartOutlined // Add this import
 } from '@ant-design/icons-vue'
 
 const collapsed = ref(false)
@@ -67,10 +68,10 @@ const menuOptions: MenuOption[] = [
     path: '/distributions'
   },
   {
-    label: 'Ração',
-    key: 'ration_stock',
-    icon: renderIcon(InboxOutlined),
-    path: '/ration_stock'
+    label: 'Estoque',
+    key: 'stock_control',
+    icon: renderIcon(BarChartOutlined),
+    path: '/stock_control'
   }
 ]
 
