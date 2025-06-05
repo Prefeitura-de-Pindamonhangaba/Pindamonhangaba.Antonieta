@@ -1,138 +1,168 @@
 <template>
-  <div class="distributions-container">
-    <div class="page-header">
-      <h1 class="page-title">Distribuições de Ração</h1>
-      <div class="title-underline"></div>
-    </div>
+  <n-layout style="min-height: 100vh">
+    <n-layout-content style="padding: 24px">
+      <n-space vertical size="large">
+        <!-- Header -->
+        <n-space vertical size="small">
+          <n-h1 style="color: #f77800; margin: 0">Distribuições</n-h1>
+          <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
+        </n-space>
 
-    <div class="action-buttons">
-      <n-button type="primary" class="action-button" style="background-color: #f77800" @click="showDistributionModal = true">
-        <template #icon>
-          <n-icon><IconPlus /></n-icon>
-        </template>
-        Registrar Nova Distribuição
-      </n-button>
-    </div>
+        <!-- Action Buttons -->
+        <n-space>
+          <n-button 
+            type="primary" 
+            style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
+            @click="showDistributionModal = true"
+          >
+            <template #icon>
+              <n-icon><IconPlus /></n-icon>
+            </template>
+            Registrar Nova Distribuição
+          </n-button>
+        </n-space>
 
-    <DistributionModal v-model="showDistributionModal" @submit="handleDistributionSubmit" />
+        <!-- Table -->
+        <n-card>
+          <n-data-table
+            :columns="columns"
+            :data="tableData"
+            :pagination="pagination"
+            :loading="loading"
+          />
+        </n-card>
 
-    <n-card class="distributions-table-card">
-      <n-data-table
-        :columns="columns"
-        :data="tableData"
-        :pagination="pagination"
-        :loading="loading"
-      />
-    </n-card>
-  </div>
+        <DistributionModal 
+          v-model="showDistributionModal" 
+          @submit="handleDistributionSubmit" 
+        />
+      </n-space>
+    </n-layout-content>
+  </n-layout>
 </template>
 
 <script setup lang="ts">
-import { h, ref } from 'vue'
+import { h, ref, onMounted } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
-import { NCard, NDataTable, NTag, NButton, NIcon } from 'naive-ui'
+import { NCard, NDataTable, NButton, NIcon, NLayout, NLayoutContent, NSpace, NH1, NDivider, useMessage } from 'naive-ui'
 import { IconPlus } from '@tabler/icons-vue'
 import DistributionModal from '../components/modals/DistributionModal.vue'
+import { distributionService } from '~/services/distributionService'
+import { beneficiaryService } from '~/services/beneficiaryService'
+import { rationTypeService } from '~/services/rationTypeService'
+import type { Distribution } from '~/models/distributionModel'
 
-interface DistributionData {
-  id: number
-  data: string
-  beneficiario: string
-  quantidade: number
-  observacoes: string
-}
-
+const message = useMessage()
 const loading = ref(false)
 const showDistributionModal = ref(false)
+const tableData = ref<Distribution[]>([])
+const beneficiariesMap = ref<Map<number, string>>(new Map())
+const rationTypesMap = ref<Map<number, string>>(new Map())
 
-const handleDistributionSubmit = (formData: any) => {
-  console.log('Distribuição registrada:', formData)
-  // Aqui você pode implementar a lógica para salvar a distribuição
+// Função para buscar distribuições
+const fetchDistributions = async () => {
+  try {
+    loading.value = true
+    await Promise.all([loadBeneficiaries(), loadRationTypes()])
+    
+    const [distributions] = await distributionService.getAll()
+    tableData.value = distributions.map(dist => ({
+      ...dist,
+      beneficiaryName: dist.beneficiary_id ? beneficiariesMap.value.get(dist.beneficiary_id) : 'N/A',
+      rationTypeName: rationTypesMap.value.get(dist.ration_id) || 'N/A'
+    }))
+  } catch (error) {
+    console.error('Error fetching distributions:', error)
+    message.error('Erro ao carregar distribuições')
+  } finally {
+    loading.value = false
+  }
 }
 
-const columns: DataTableColumns<DistributionData> = [
+// Função para carregar beneficiários
+const loadBeneficiaries = async () => {
+  try {
+    const [beneficiaries] = await beneficiaryService.getAll()
+    beneficiariesMap.value = new Map(
+      beneficiaries.map(b => [b.id, b.name])
+    )
+  } catch (error) {
+    console.error('Error loading beneficiaries:', error)
+  }
+}
+
+// Função para carregar tipos de ração
+const loadRationTypes = async () => {
+  try {
+    const rationTypes = await rationTypeService.getAll()
+    rationTypesMap.value = new Map(
+      rationTypes.map(rt => [rt.id, rt.name])
+    )
+  } catch (error) {
+    console.error('Error loading ration types:', error)
+  }
+}
+
+// Atualiza o manipulador de envio para usar o serviço
+const handleDistributionSubmit = async (formData: Omit<Distribution, 'id'>) => {
+  try {
+    await distributionService.create(formData)
+    message.success('Distribuição registrada com sucesso')
+    await fetchDistributions()
+  } catch (error) {
+    message.error('Erro ao registrar distribuição')
+    console.error(error)
+  }
+}
+
+// Atualiza as colunas para corresponder ao modelo de Distribuição
+const columns: DataTableColumns<Distribution> = [
   {
     title: 'Data',
-    key: 'data',
-    sorter: true
-  },
-  {
-    title: 'Beneficiário',
-    key: 'beneficiario',
-    sorter: true
-  },
-  {
-    title: 'Quantidade',
-    key: 'quantidade',
+    key: 'date',
+    sorter: true,
     render(row) {
-      return `${row.quantidade} kg`
+      return new Date(row.date).toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     }
   },
   {
-    title: 'Observações',
-    key: 'observacoes'
-  }
-]
-
-const tableData: DistributionData[] = [
+    title: 'Beneficiário',
+    key: 'beneficiaryName',
+    render(row) {
+      return row.beneficiaryName || 'N/A'
+    }
+  },
   {
-    id: 1,
-    data: '2024-01-16',
-    beneficiario: 'João Santos',
-    quantidade: 10,
-    observacoes: 'Retirada regular'
+    title: 'Tipo de Ração',
+    key: 'rationTypeName',
+    render(row) {
+      return row.rationTypeName || 'N/A'
+    }
+  },
+  {
+    title: 'Quantidade',
+    key: 'amount',
+    render(row) {
+      return `${row.amount} kg`
+    }
   }
 ]
 
 const pagination = {
   pageSize: 10
 }
+
+// Carrega os dados quando o componente é montado
+onMounted(() => {
+  fetchDistributions()
+})
 </script>
 
 <style scoped>
-.distributions-container {
-  padding: 2rem;
-  background-color: #fff8e1;
-  min-height: 100vh;
-}
-
-.action-buttons {
-  margin-bottom: 2rem;
-}
-
-.action-button {
-  font-weight: 600;
-}
-
-.page-header {
-  margin-bottom: 2rem;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #f77800;
-  margin: 0;
-}
-
-.title-underline {
-  width: 100px;
-  height: 4px;
-  background-color: #f77800;
-  margin-top: 0.5rem;
-}
-
-.distributions-table-card {
-  background-color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-:deep(.n-data-table-th) {
-  background-color: #fff8e1;
-}
-
-:deep(.n-data-table-td) {
-  padding: 12px !important;
-}
 </style>
