@@ -35,19 +35,30 @@
             style="width: 100%" 
             placeholder="Telefone ou e-mail"/>
         </n-form-item>
-        <n-form-item label="Limite Mensal (kg)" path="limit">
+        <n-form-item label="Limite Mensal (kg)" path="monthly_limit">
           <n-input-number 
-            v-model:value="formData.limit" 
+            v-model:value="formData.monthly_limit" 
             clearable 
             style="width: 100%" 
-            placeholder="Limite mensal em kg"/>
+            placeholder="Limite mensal em kg"
+          />
         </n-form-item>
       </n-form>
     </div>
     <template #action>
       <div class="modal-actions">
-        <n-button @click="handleCancel">Cancelar</n-button>
-        <n-button type="primary" style="background-color: #f77800" @click="handleSubmit">Salvar</n-button>
+        <n-button @click="handleCancel" :disabled="submitting">
+          Cancelar
+        </n-button>
+        <n-button 
+          type="primary" 
+          style="background-color: #f77800" 
+          @click="handleSubmit"
+          :loading="submitting"
+          :disabled="submitting"
+        >
+          {{ submitting ? 'Salvando...' : 'Salvar' }}
+        </n-button>
       </div>
     </template>
   </n-modal>
@@ -56,6 +67,7 @@
 <script setup lang="ts">
 import { ref, defineProps, defineEmits } from 'vue'
 import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton } from 'naive-ui'
+import { beneficiaryService } from '~/services/beneficiaryService'
 import type { Beneficiary } from '~/models/beneficiary'
 
 const props = defineProps<{
@@ -68,13 +80,13 @@ const emit = defineEmits<{
 }>()
 
 const formRef = ref()
-const formData = ref<Beneficiary>({
-  id: 0,
+const submitting = ref(false)
+const formData = ref({
   name: '',
   document: '',
   address: '',
   contact: '',
-  limit: null
+  monthly_limit: null as number | null // Changed from limit to monthly_limit to match backend
 })
 
 const rules = {
@@ -103,31 +115,45 @@ const rules = {
 const handleSubmit = async () => {
   try {
     await formRef.value?.validate()
-    emit('submit', formData.value)
+    submitting.value = true
+
+    const newBeneficiary = await beneficiaryService.create({
+      name: formData.value.name,
+      document: formData.value.document,
+      address: formData.value.address,
+      contact: formData.value.contact,
+      monthly_limit: formData.value.monthly_limit || 0
+    })
+
+    window.$message?.success('Beneficiário cadastrado com sucesso!')
+    emit('submit', newBeneficiary)
     emit('update:modelValue', false)
-    formData.value = {
-      id: 0,
-      name: '',
-      document: '',
-      address: '',
-      contact: '',
-      limit: null
+    resetForm()
+  } catch (error) {
+    if (error instanceof Error) {
+      window.$message?.error(error.message)
+    } else {
+      window.$message?.error('Erro ao cadastrar beneficiário')
     }
-  } catch (e) {
-    // Erros de validação são tratados automaticamente pelo naive-ui
+    console.error('Error creating beneficiary:', error)
+  } finally {
+    submitting.value = false
+  }
+}
+
+const resetForm = () => {
+  formData.value = {
+    name: '',
+    document: '',
+    address: '',
+    contact: '',
+    monthly_limit: null
   }
 }
 
 const handleCancel = () => {
   emit('update:modelValue', false)
-  formData.value = {
-    id: 0,
-    name: '',
-    document: '',
-    address: '',
-    contact: '',
-    limit: null
-  }
+  resetForm()
 }
 </script>
 
