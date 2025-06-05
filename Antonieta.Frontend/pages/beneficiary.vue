@@ -13,7 +13,7 @@
           <n-button
             type="primary"
             style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
-            @click="showAddModal = true"
+            @click="showBeneficiaryModal = true"
           >
             <template #icon>
               <n-icon><IconUserPlus /></n-icon>
@@ -32,57 +32,11 @@
           />
         </n-card>
 
-        <!-- Add/Edit Modal -->
-        <n-modal
-          v-model:show="showAddModal"
-          preset="dialog"
-          style="width: 600px"
-          :title="editingBeneficiary ? 'Editar Beneficiário' : 'Adicionar Novo Beneficiário'"
-        >
-          <n-form
-            ref="formRef"
-            :model="formData"
-            :rules="rules"
-            label-placement="left"
-            label-width="auto"
-            require-mark-placement="right-hanging"
-            size="medium"
-          >
-            <n-space vertical>
-              <n-form-item label="Nome" path="name">
-                <n-input v-model:value="formData.name" placeholder="Nome completo" />
-              </n-form-item>
-              <n-form-item label="Documento" path="document">
-                <n-input v-model:value="formData.document" placeholder="CPF" />
-              </n-form-item>
-              <n-form-item label="Endereço" path="address">
-                <n-input v-model:value="formData.address" placeholder="Endereço completo" />
-              </n-form-item>
-              <n-form-item label="Contato" path="contact">
-                <n-input v-model:value="formData.contact" placeholder="Telefone" />
-              </n-form-item>
-              <n-form-item label="Limite Mensal (kg)" path="limit">
-                <n-input-number v-model:value="formData.limit" placeholder="Limite em kg" />
-              </n-form-item>
-            </n-space>
-          </n-form>
-          <template #action>
-            <n-space justify="end">
-              <n-button @click="showAddModal = false" :disabled="loading">
-                Cancelar
-              </n-button>
-              <n-button
-                type="primary"
-                style="background-color: #f77800"
-                @click="handleSubmit"
-                :loading="loading"
-                :disabled="loading"
-              >
-                {{ editingBeneficiary ? 'Salvar Alterações' : 'Adicionar' }}
-              </n-button>
-            </n-space>
-          </template>
-        </n-modal>
+        <!-- Use BeneficiaryModal component -->
+        <BeneficiaryModal
+          v-model="showBeneficiaryModal"
+          @submit="handleBeneficiarySubmit"
+        />
 
         <!-- Delete Modal -->
         <n-modal
@@ -110,45 +64,35 @@ import {
   NCard,
   NDataTable,
   NModal,
-  NForm,
-  NFormItem,
-  NInput,
-  NInputNumber,
   NIcon,
   NH1,
   NDivider,
   useMessage
 } from 'naive-ui'
 import { IconUserPlus, IconEdit, IconTrash } from '@tabler/icons-vue'
+import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import type { DataTableColumns } from 'naive-ui'
 import type { Beneficiary } from '../models/beneficiary'
+import { beneficiaryService } from '~/services/beneficiaryService'
 
 const message = useMessage()
 const loading = ref(false)
-const showAddModal = ref(false)
+const showBeneficiaryModal = ref(false) // Changed from showAddModal
 const showDeleteModal = ref(false)
-const editingBeneficiary = ref<Beneficiary | null>(null)
 const selectedBeneficiaryId = ref<number | null>(null)
 
-const formRef = ref()
-const formData = ref<Beneficiary>({
-  id: 0,
-  name: '',
-  document: '',
-  address: '',
-  contact: '',
-  limit: 0
-})
+// Remove formRef and formData since they're now in BeneficiaryModal
 
-const rules = {
-  name: { required: true, message: 'Por favor, insira o nome', trigger: 'blur' },
-  document: { required: true, message: 'Por favor, insira o documento', trigger: 'blur' },
-  address: { required: true, message: 'Por favor, insira o endereço', trigger: 'blur' },
-  contact: { required: true, message: 'Por favor, insira o contato', trigger: 'blur' },
-  limit: { required: true, message: 'Por favor, insira o limite mensal', trigger: 'blur', type: 'number' }
+const handleBeneficiarySubmit = async (beneficiary: Beneficiary) => {
+  try {
+    await beneficiaryService.create(beneficiary)
+    message.success('Beneficiário adicionado com sucesso')
+    await fetchBeneficiaries()
+  } catch (error) {
+    message.error('Erro ao adicionar beneficiário')
+    console.error(error)
+  }
 }
-
-let tableData = ref<Beneficiary[]>([])
 
 async function fetchBeneficiaries() {
   try {
