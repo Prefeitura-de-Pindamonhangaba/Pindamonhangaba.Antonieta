@@ -10,46 +10,60 @@
       size="medium"
       style="max-width: 640px"
     >
-      <n-form-item label="Beneficiário" path="beneficiario">
+      <n-form-item label="Beneficiário" path="beneficiary_id">
         <n-select
-          v-model:value="formData.beneficiario"
+          v-model:value="formData.beneficiary_id"
           :options="beneficiaryOptions"
           placeholder="Selecione o beneficiário"
+          :loading="!beneficiaryOptions.length"
           clearable
         />
       </n-form-item>
 
-      <n-form-item label="Quantidade (kg)" path="quantidade">
+      <n-form-item label="Tipo de Ração" path="ration_id">
+        <n-select
+          v-model:value="formData.ration_id"
+          :options="rationOptions"
+          placeholder="Selecione o tipo de ração"
+          :loading="!rationOptions.length"
+          clearable
+        />
+      </n-form-item>
+
+      <n-form-item label="Quantidade (kg)" path="amount">
         <n-input-number
-          v-model:value="formData.quantidade"
+          v-model:value="formData.amount"
           :min="1"
           :precision="0"
           placeholder="Informe a quantidade em kg"
         />
       </n-form-item>
-
-      <n-form-item label="Observações" path="observacoes">
-        <n-input
-          v-model:value="formData.observacoes"
-          type="textarea"
-          placeholder="Observações adicionais"
-        />
-      </n-form-item>
     </n-form>
 
     <template #action>
-      <div style="display: flex; justify-content: flex-end; gap: 12px">
-        <n-button @click="handleCancel">Cancelar</n-button>
-        <n-button type="primary" :loading="loading" @click="handleSubmit">Registrar</n-button>
-      </div>
+      <n-space justify="end">
+        <n-button @click="handleCancel" :disabled="loading">Cancelar</n-button>
+        <n-button
+          type="primary"
+          :loading="loading"
+          :disabled="loading"
+          style="background-color: #f77800"
+          @click="handleSubmit"
+        >
+          {{ loading ? 'Salvando...' : 'Registrar' }}
+        </n-button>
+      </n-space>
     </template>
   </n-modal>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import type { FormInst, FormRules } from 'naive-ui'
-import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton, NSelect } from 'naive-ui'
+import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton, NSelect, useMessage } from 'naive-ui'
+import { beneficiaryService } from '~/services/beneficiaryService'
+import { rationTypeService } from '~/services/rationTypeService'
+import type { Distribution } from '~/models/distributionModel'
 
 const props = defineProps<{
   modelValue: boolean
@@ -57,11 +71,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'submit', formData: any): void
+  (e: 'submit', formData: Distribution): void
 }>()
 
+const message = useMessage()
 const formRef = ref<FormInst | null>(null)
 const loading = ref(false)
+const beneficiaryOptions = ref<Array<{ label: string; value: number }>>([])
+const rationOptions = ref<Array<{ label: string; value: number }>>([])
 
 const show = computed({
   get: () => props.modelValue,
@@ -69,18 +86,26 @@ const show = computed({
 })
 
 const formData = ref({
-  beneficiario: '',
-  quantidade: null as number | null,
-  observacoes: ''
+  beneficiary_id: null as number | null,
+  ration_id: null as number | null,
+  amount: null as number | null,
+  date: new Date().toISOString()
 })
 
 const rules: FormRules = {
-  beneficiario: {
+  beneficiary_id: {
     required: true,
+    type: 'number',
     message: 'Por favor, selecione o beneficiário',
-    trigger: ['blur', 'change']
+    trigger: 'change'
   },
-  quantidade: {
+  ration_id: {
+    required: true,
+    type: 'number',
+    message: 'Por favor, selecione o tipo de ração',
+    trigger: 'change'
+  },
+  amount: {
     required: true,
     type: 'number',
     message: 'Por favor, informe a quantidade',
@@ -88,37 +113,66 @@ const rules: FormRules = {
   }
 }
 
-// Exemplo de opções de beneficiários - deve ser substituído por dados reais
-const beneficiaryOptions = [
-  { label: 'João Santos', value: 'João Santos' },
-  { label: 'Maria Silva', value: 'Maria Silva' },
-  { label: 'Pedro Souza', value: 'Pedro Souza' }
-]
+const loadBeneficiaries = async () => {
+  try {
+    const [beneficiaries] = await beneficiaryService.getAll()
+    beneficiaryOptions.value = beneficiaries.map(b => ({
+      label: b.name,
+      value: b.id
+    }))
+  } catch (error) {
+    console.error('Error loading beneficiaries:', error)
+    message.error('Erro ao carregar beneficiários')
+  }
+}
+
+const loadRationTypes = async () => {
+  try {
+    const rationTypes = await rationTypeService.getAll()
+    rationOptions.value = rationTypes.map(rt => ({
+      label: rt.name,
+      value: rt.id
+    }))
+  } catch (error) {
+    console.error('Error loading ration types:', error)
+    message.error('Erro ao carregar tipos de ração')
+  }
+}
+
+onMounted(() => {
+  Promise.all([loadBeneficiaries(), loadRationTypes()])
+})
 
 const handleSubmit = () => {
-  formRef.value?.validate((errors) => {
+  formRef.value?.validate(async (errors) => {
     if (!errors) {
-      loading.value = true
-      emit('submit', formData.value)
-      loading.value = false
-      show.value = false
-      formRef.value?.restoreValidation()
-      formData.value = {
-        beneficiario: '',
-        quantidade: null,
-        observacoes: ''
+      try {
+        loading.value = true
+        emit('submit', formData.value as Distribution)
+        show.value = false
+        resetForm()
+      } catch (error) {
+        console.error('Error submitting distribution:', error)
+        message.error('Erro ao registrar distribuição')
+      } finally {
+        loading.value = false
       }
     }
   })
 }
 
+const resetForm = () => {
+  formData.value = {
+    beneficiary_id: null,
+    ration_id: null,
+    amount: null,
+    date: new Date().toISOString()
+  }
+  formRef.value?.restoreValidation()
+}
+
 const handleCancel = () => {
   show.value = false
-  formRef.value?.restoreValidation()
-  formData.value = {
-    beneficiario: '',
-    quantidade: null,
-    observacoes: ''
-  }
+  resetForm()
 }
 </script>
