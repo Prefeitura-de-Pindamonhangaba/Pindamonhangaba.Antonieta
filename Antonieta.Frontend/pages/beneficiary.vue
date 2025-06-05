@@ -76,104 +76,63 @@ import type { Beneficiary } from '../models/beneficiary'
 import { beneficiaryService } from '~/services/beneficiaryService'
 
 const message = useMessage()
+const tableData = ref<Beneficiary[]>([])
 const loading = ref(false)
-const showBeneficiaryModal = ref(false) // Changed from showAddModal
+const showBeneficiaryModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedBeneficiaryId = ref<number | null>(null)
-
-// Remove formRef and formData since they're now in BeneficiaryModal
-
-const handleBeneficiarySubmit = async (beneficiary: Beneficiary) => {
-  try {
-    await beneficiaryService.create(beneficiary)
-    message.success('Beneficiário adicionado com sucesso')
-    await fetchBeneficiaries()
-  } catch (error) {
-    message.error('Erro ao adicionar beneficiário')
-    console.error(error)
-  }
-}
 
 async function fetchBeneficiaries() {
   try {
     loading.value = true
-    const { getAuthHeaders } = useAuth()
-    const response = await fetch('http://localhost:8000/beneficiary', {
-      headers: {
-        ...getAuthHeaders(),
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        message.error('Sessão expirada. Por favor, faça login novamente.')
-        return
-      }
-      throw new Error('Erro ao carregar beneficiários')
-    }
-
-    const data: any = await response.json()
-    console.log('Dados recebidos da API:', data)
-
-    // Garante que data seja sempre um array
-    const beneficiariesArray: Beneficiary[] = data[0] || []
-
-    // Mapeia os dados e atualiza a tableData
-    tableData.value = beneficiariesArray.map(item => ({
-      id: Number(item.id) || 0,
-      name: String(item.name || ''),
-      document: String(item.document || ''),
-      address: String(item.address || ''),
-      contact: String(item.contact || ''),
-      limit: Number(item.limit) || 0
-    }))
-
-    console.log('Dados da tabela atualizados:', tableData.value)
+    const [beneficiaries] = await beneficiaryService.getAll()
+    tableData.value = beneficiaries
   } catch (error) {
     console.error('Erro ao carregar beneficiários:', error)
-    message.error('Erro ao carregar beneficiários: ' + error.message)
+    message.error('Erro ao carregar beneficiários')
   } finally {
     loading.value = false
   }
 }
 
 const columns: DataTableColumns<Beneficiary> = [
-  { title: 'Nome', key: 'name', render: (row: Beneficiary) => row.name },
-  { title: 'Documento', key: 'document', render: (row: Beneficiary) => row.document },
-  { title: 'Endereço', key: 'address', render: (row: Beneficiary) => row.address },
-  { title: 'Contato', key: 'contact', render: (row: Beneficiary) => row.contact },
+  { title: 'Nome', key: 'name' },
+  { title: 'Documento', key: 'document' },
+  { title: 'Endereço', key: 'address' },
+  { title: 'Contato', key: 'contact' },
   {
     title: 'Limite Mensal',
-    key: 'limit',
-    render: (row: Beneficiary) => `${row.limit} kg`
+    key: 'monthly_limit',
+    render: (row: Beneficiary) => `${row.monthly_limit} kg`
   },
   {
     title: 'Ações',
     key: 'actions',
     render(row) {
-      return h('div', { style: 'display: flex; gap: 8px;' }, [
-        h(
-          NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            style: { color: '#f77800' },
-            onClick: () => handleEdit(row)
-          },
-          { default: () => h(IconEdit) }
-        ),
-        h(
-          NButton,
-          {
-            size: 'small',
-            quaternary: true,
-            style: { color: '#d03050' },
-            onClick: () => handleDelete(row)
-          },
-          { default: () => h(IconTrash) }
-        )
-      ])
+      return h(NSpace, { justify: 'center', align: 'center' }, {
+        default: () => [
+          h(
+            NButton,
+            {
+              size: 'small',
+              quaternary: true,
+              style: { color: '#f77800' },
+              onClick: () => handleEdit(row)
+            },
+            { default: () => h(IconEdit) }
+          ),
+          h(
+            NButton,
+            {
+              size: 'small',
+              quaternary: true,
+              style: { color: '#d03050' },
+              onClick: () => handleDelete(row)
+            },
+            { default: () => h(IconTrash) }
+          )
+        ]
+      })
     }
   }
 ]
@@ -183,9 +142,8 @@ const pagination = {
 }
 
 function handleEdit(beneficiary: Beneficiary) {
-  editingBeneficiary.value = beneficiary
-  formData.value = { ...beneficiary }
-  showAddModal.value = true
+  // Will be implemented with edit modal
+  console.log('Edit beneficiary:', beneficiary)
 }
 
 function handleDelete(beneficiary: Beneficiary) {
@@ -197,77 +155,22 @@ async function confirmDelete() {
   if (selectedBeneficiaryId.value !== null) {
     try {
       loading.value = true
-      const { getAuthHeaders } = useAuth()
-      const response = await fetch(`http://localhost:8000/beneficiary/${selectedBeneficiaryId.value}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-      })
-      if (!response.ok) throw new Error('Erro ao excluir beneficiário')
+      await beneficiaryService.delete(selectedBeneficiaryId.value)
       message.success('Beneficiário excluído com sucesso')
       await fetchBeneficiaries()
       showDeleteModal.value = false
     } catch (error) {
-      message.error('Erro ao excluir beneficiário: ' + error.message)
+      message.error('Erro ao excluir beneficiário')
     } finally {
       loading.value = false
     }
   }
 }
 
-async function handleSubmit() {
-  try {
-    await formRef.value?.validate()
-    loading.value = true
-
-    if (editingBeneficiary.value) {
-      // Atualizar beneficiário existente
-      const { getAuthHeaders } = useAuth()
-      const response = await fetch('http://localhost:8000/beneficiary', {
-        method: 'PUT',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData.value)
-      })
-      if (!response.ok) throw new Error('Erro ao atualizar beneficiário')
-      message.success('Beneficiário atualizado com sucesso')
-    } else {
-      // Adicionar novo beneficiário
-      const { getAuthHeaders } = useAuth()
-      const response = await fetch('http://localhost:8000/beneficiary', {
-        method: 'POST',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData.value)
-      })
-      if (!response.ok) throw new Error('Erro ao criar beneficiário')
-      message.success('Beneficiário adicionado com sucesso')
-    }
-
-    await fetchBeneficiaries()
-    showAddModal.value = false
-    resetForm()
-  } catch (error) {
-    message.error('Erro: ' + error.message)
-  } finally {
-    loading.value = false
-  }
-}
-
-function resetForm() {
-  formData.value = {
-    id: 0,
-    name: '',
-    document: '',
-    address: '',
-    contact: '',
-    limit: 0
-  }
-  editingBeneficiary.value = null
-}
+// Load data when component mounts
+onMounted(() => {
+  fetchBeneficiaries()
+})
 </script>
 
 <style scoped>
