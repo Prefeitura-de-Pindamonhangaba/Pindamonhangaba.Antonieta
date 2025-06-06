@@ -41,7 +41,13 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
-          alembic upgrade head
+
+      - name: Rodar migrations do banco de dados
+        run: |
+          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Backend
+          source venv/bin/activate
+          sudo -E env "PATH=$PATH" alembic upgrade head
+          
 
       - name: Reiniciar serviços com PM2 (sem recriar)
         run: |
