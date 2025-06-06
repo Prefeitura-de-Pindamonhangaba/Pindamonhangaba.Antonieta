@@ -57,9 +57,14 @@ export const authService = {
   },
 
   async getCurrentUser(): Promise<User> {
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
     const response = await fetch(`${BASE_URL}/me`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        'Authorization': `Bearer ${token}`
       }
     })
 

@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref } from 'vue'
+import { h, ref, onMounted } from 'vue'
 import type { Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
 import { NLayout, NLayoutSider, NLayoutContent, NMenu, NIcon } from 'naive-ui'
@@ -56,6 +56,11 @@ import {
   LogoutOutlined,
   BarChartOutlined // Add this import
 } from '@ant-design/icons-vue'
+import { useAuth } from '~/composables/useAuth' // Adjust the import based on your project structure
+
+const { checkAuth, clearToken } = useAuth()
+const router = useRouter()
+const route = useRoute()
 
 const collapsed = ref(false)
 
@@ -98,9 +103,6 @@ function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) })
 }
 
-const router = useRouter()
-const route = useRoute()
-
 const isLoginPage = computed(() => route.path === '/login')
 
 const contentStyle = computed(() => ({
@@ -114,9 +116,16 @@ const menuStyle = computed(() => ({
   justifyContent: 'space-between'
 }))
 
+// Check authentication on layout mount
+onMounted(() => {
+  if (!checkAuth() && route.path !== '/login') {
+    router.push('/login')
+  }
+})
+
 async function handleMenuClick(key: string) {
   if (key === 'logout') {
-    localStorage.removeItem('access_token')
+    clearToken()
     await router.push('/login')
     return
   }
