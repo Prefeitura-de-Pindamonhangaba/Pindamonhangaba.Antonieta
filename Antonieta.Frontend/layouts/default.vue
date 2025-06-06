@@ -68,11 +68,17 @@ const menuOptions: MenuOption[] = [
     path: '/distributions'
   },
   {
-    label: 'Estoque',
-    key: 'stock_control',
-    icon: renderIcon(BarChartOutlined),
-    path: '/stock_control'
-  }
+    label: 'Entradas',
+    key: 'inputs',
+    icon: renderIcon(InboxOutlined),
+    path: '/inputs'
+  },
+  // {
+  //   label: 'Estoque',
+  //   key: 'stock_control',
+  //   icon: renderIcon(BarChartOutlined),
+  //   path: '/stock_control'
+  // }
 ]
 
 function renderIcon(icon: Component) {

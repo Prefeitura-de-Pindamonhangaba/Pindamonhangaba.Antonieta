@@ -21,6 +21,16 @@
             Registrar Nova Saída
           </n-button>
           <n-button 
+            type="primary"
+            style="background-color: #18a058; font-size: 14px; padding: 12px 24px"
+            @click="showInputModal = true"
+          >
+            <template #icon>
+              <n-icon><IconPlus /></n-icon>
+            </template>
+            Registrar Nova Entrada
+          </n-button>
+          <n-button 
             style="color: #f77800; border-color: #f77800; font-size: 14px; padding: 12px 24px"
             @click="showBeneficiaryModal = true"
           >
@@ -32,6 +42,7 @@
         </n-space>
 
         <DonationModal v-model="showDonationModal" @submit="handleDonationSubmit" />
+        <InputModal v-model="showInputModal" @submit="handleInputSubmit" />
         <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
 
         <!-- Summary Cards -->
@@ -100,6 +111,7 @@ import {
 import { IconPlus, IconUserPlus, IconCheck, IconAlertTriangle, IconX } from '@tabler/icons-vue'
 import DonationModal from '../components/modals/DonationModal.vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
+import InputModal from '../components/modals/InputModal.vue'
 import type { Beneficiary } from '../models/beneficiary'
 import { beneficiaryService } from '../services/beneficiaryService'
 import { rationStockService } from '../services/rationStockService'
@@ -123,6 +135,7 @@ const total_distributions = ref(0)
 
 const showDonationModal = ref(false)
 const showBeneficiaryModal = ref(false)
+const showInputModal = ref(false)
 
 const handleDonationSubmit = (formData: any) => {
   console.log('Doação registrada:', formData)
@@ -131,6 +144,18 @@ const handleDonationSubmit = (formData: any) => {
 
 const handleBeneficiarySubmit = (formData: Beneficiary) => {
   console.log('Beneficiary submitted:', formData)
+}
+
+// Add handler function
+const handleInputSubmit = async (formData: any) => {
+  try {
+    await rationInputService.create(formData)
+    message.success('Entrada registrada com sucesso')
+    await fetchDashboardData()
+  } catch (error) {
+    message.error('Erro ao registrar entrada')
+    console.error(error)
+  }
 }
 
 // Add reactive refs for table data and loading state
