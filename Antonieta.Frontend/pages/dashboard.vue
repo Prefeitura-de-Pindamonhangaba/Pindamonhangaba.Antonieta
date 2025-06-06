@@ -18,7 +18,7 @@
             <template #icon>
               <n-icon><IconPlus /></n-icon>
             </template>
-            Registrar Nova Doação
+            Registrar Nova Saída
           </n-button>
           <n-button 
             style="color: #f77800; border-color: #f77800; font-size: 14px; padding: 12px 24px"
