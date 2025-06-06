@@ -17,18 +17,26 @@ load_dotenv()
 
 port = int(getenv('PORT', 5000))
 
-app = FastAPI(title="Antonieta API", version="1.0.0", )
+app = FastAPI(title="Antonieta API", version="1.0.0")
 
 # Create database tables on startup
 create_tables()
 
-# Configuração CORS
+# CORS Configuration
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv('CORS_ORIGINS', '*').split(',')],
+    allow_origins=origins,
+    allow_origin_regex=None,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*", "Authorization", "Content-Type"],
+    expose_headers=["*"],
+    max_age=600,
 )
 
 app.include_router(auth_router)
