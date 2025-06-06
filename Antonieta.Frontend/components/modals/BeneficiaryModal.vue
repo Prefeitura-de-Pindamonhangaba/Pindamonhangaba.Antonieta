@@ -2,7 +2,7 @@
   <n-modal :show="modelValue" @update:show="$emit('update:modelValue', $event)" preset="dialog" style="width: 600px">
     <template #header>
       <div class="modal-header">
-        <h3>Cadastrar Novo Beneficiário</h3>
+        <h3>{{ props.editMode ? 'Editar Beneficiário' : 'Cadastrar Novo Beneficiário' }}</h3>
       </div>
     </template>
     <div class="modal-content">
@@ -35,46 +35,61 @@
             style="width: 100%" 
             placeholder="Telefone ou e-mail"/>
         </n-form-item>
-        <n-form-item label="Limite Mensal (kg)" path="limit">
+        <n-form-item label="Limite Mensal (kg)" path="monthly_limit">
           <n-input-number 
-            v-model:value="formData.limit" 
+            v-model:value="formData.monthly_limit" 
             clearable 
             style="width: 100%" 
-            placeholder="Limite mensal em kg"/>
+            placeholder="Limite mensal em kg"
+          />
         </n-form-item>
       </n-form>
     </div>
     <template #action>
       <div class="modal-actions">
-        <n-button @click="handleCancel">Cancelar</n-button>
-        <n-button type="primary" style="background-color: #f77800" @click="handleSubmit">Salvar</n-button>
+        <n-button @click="handleCancel" :disabled="submitting">
+          Cancelar
+        </n-button>
+        <n-button 
+          type="primary" 
+          style="background-color: #f77800" 
+          @click="handleSubmit"
+          :loading="submitting"
+          :disabled="submitting"
+        >
+          {{ submitting ? 'Salvando...' : 'Salvar' }}
+        </n-button>
       </div>
     </template>
   </n-modal>
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue'
+import { ref, defineProps, defineEmits, watch } from 'vue'
 import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton } from 'naive-ui'
+import { beneficiaryService } from '~/services/beneficiaryService'
 import type { Beneficiary } from '~/models/beneficiary'
 
 const props = defineProps<{
   modelValue: boolean
+  editMode?: boolean
+  beneficiaryData?: Beneficiary
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'submit': [formData: Beneficiary]
+  'update': [id: number, formData: Partial<Beneficiary>]
 }>()
 
 const formRef = ref()
-const formData = ref<Beneficiary>({
-  id: 0,
+const submitting = ref(false)
+const formData = ref({
   name: '',
   document: '',
   address: '',
   contact: '',
-  limit: null
+  monthly_limit: null as number | null // Changed from limit to monthly_limit to match backend
 })
 
 const rules = {
@@ -100,34 +115,71 @@ const rules = {
   }
 }
 
+watch(() => props.beneficiaryData, (newValue) => {
+  if (newValue && props.editMode) {
+    formData.value = {
+      name: newValue.name,
+      document: newValue.document,
+      address: newValue.address,
+      contact: newValue.contact,
+      monthly_limit: newValue.monthly_limit
+    }
+  }
+}, { immediate: true })
+
 const handleSubmit = async () => {
   try {
     await formRef.value?.validate()
-    emit('submit', formData.value)
-    emit('update:modelValue', false)
-    formData.value = {
-      id: 0,
-      name: '',
-      document: '',
-      address: '',
-      contact: '',
-      limit: null
+    submitting.value = true
+
+    const beneficiaryData = {
+      name: formData.value.name,
+      document: formData.value.document,
+      address: formData.value.address,
+      contact: formData.value.contact,
+      monthly_limit: formData.value.monthly_limit || 0
     }
-  } catch (e) {
-    // Erros de validação são tratados automaticamente pelo naive-ui
+
+    if (props.editMode && props.beneficiaryData) {
+      const updatedBeneficiary = await beneficiaryService.update(
+        props.beneficiaryData.id,
+        beneficiaryData
+      )
+      window.$message?.success('Beneficiário atualizado com sucesso!')
+      emit('update', props.beneficiaryData.id, updatedBeneficiary)
+    } else {
+      const newBeneficiary = await beneficiaryService.create(beneficiaryData)
+      window.$message?.success('Beneficiário cadastrado com sucesso!')
+      emit('submit', newBeneficiary)
+    }
+
+    emit('update:modelValue', false)
+    resetForm()
+  } catch (error) {
+    if (error instanceof Error) {
+      window.$message?.error(error.message)
+    } else {
+      window.$message?.error(props.editMode ? 'Erro ao atualizar beneficiário' : 'Erro ao cadastrar beneficiário')
+    }
+    console.error('Error:', error)
+  } finally {
+    submitting.value = false
+  }
+}
+
+const resetForm = () => {
+  formData.value = {
+    name: '',
+    document: '',
+    address: '',
+    contact: '',
+    monthly_limit: null
   }
 }
 
 const handleCancel = () => {
   emit('update:modelValue', false)
-  formData.value = {
-    id: 0,
-    name: '',
-    document: '',
-    address: '',
-    contact: '',
-    limit: null
-  }
+  resetForm()
 }
 </script>
 

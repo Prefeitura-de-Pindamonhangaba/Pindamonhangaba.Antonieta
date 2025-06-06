@@ -4,7 +4,7 @@
       <n-space vertical size="large">
         <!-- Header -->
         <n-space vertical size="small">
-          <n-h1 style="color: #f77800; margin: 0">Distribuições</n-h1>
+          <n-h1 style="color: #f77800; margin: 0">Entradas de Ração</n-h1>
           <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
         </n-space>
 
@@ -13,12 +13,12 @@
           <n-button 
             type="primary" 
             style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
-            @click="showDistributionModal = true"
+            @click="showInputModal = true"
           >
             <template #icon>
               <n-icon><IconPlus /></n-icon>
             </template>
-            Registrar Nova Distribuição
+            Registrar Nova Entrada
           </n-button>
         </n-space>
 
@@ -32,9 +32,9 @@
           />
         </n-card>
 
-        <DistributionModal 
-          v-model="showDistributionModal" 
-          @submit="handleDistributionSubmit" 
+        <InputModal 
+          v-model="showInputModal" 
+          @submit="handleInputSubmit" 
         />
       </n-space>
     </n-layout-content>
@@ -46,52 +46,35 @@ import { h, ref, onMounted } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 import { NCard, NDataTable, NButton, NIcon, NLayout, NLayoutContent, NSpace, NH1, NDivider, useMessage } from 'naive-ui'
 import { IconPlus } from '@tabler/icons-vue'
-import DistributionModal from '../components/modals/DistributionModal.vue'
-import { distributionService } from '~/services/distributionService'
-import { beneficiaryService } from '~/services/beneficiaryService'
+import InputModal from '../components/modals/InputModal.vue'
+import { rationInputService } from '~/services/rationInputService'
 import { rationTypeService } from '~/services/rationTypeService'
-import type { Distribution } from '~/models/distributionModel'
+import type { RationInput } from '~/models/rationInputModel'
 
 const message = useMessage()
 const loading = ref(false)
-const showDistributionModal = ref(false)
-const tableData = ref<Distribution[]>([])
-const beneficiariesMap = ref<Map<number, string>>(new Map())
+const showInputModal = ref(false)
+const tableData = ref<RationInput[]>([])
 const rationTypesMap = ref<Map<number, string>>(new Map())
 
-// Função para buscar distribuições
-const fetchDistributions = async () => {
+const fetchInputs = async () => {
   try {
     loading.value = true
-    await Promise.all([loadBeneficiaries(), loadRationTypes()])
+    await loadRationTypes()
     
-    const [distributions] = await distributionService.getAll()
-    tableData.value = distributions.map(dist => ({
-      ...dist,
-      beneficiaryName: dist.beneficiary_id ? beneficiariesMap.value.get(dist.beneficiary_id) : 'N/A',
-      rationTypeName: rationTypesMap.value.get(dist.ration_id) || 'N/A'
+    const [inputs] = await rationInputService.getAll()
+    tableData.value = inputs.map(input => ({
+      ...input,
+      rationTypeName: rationTypesMap.value.get(input.ration_id) || 'N/A'
     }))
   } catch (error) {
-    console.error('Error fetching distributions:', error)
-    message.error('Erro ao carregar distribuições')
+    console.error('Error fetching inputs:', error)
+    message.error('Erro ao carregar entradas')
   } finally {
     loading.value = false
   }
 }
 
-// Função para carregar beneficiários
-const loadBeneficiaries = async () => {
-  try {
-    const [beneficiaries] = await beneficiaryService.getAll()
-    beneficiariesMap.value = new Map(
-      beneficiaries.map(b => [b.id, b.name])
-    )
-  } catch (error) {
-    console.error('Error loading beneficiaries:', error)
-  }
-}
-
-// Função para carregar tipos de ração
 const loadRationTypes = async () => {
   try {
     const rationTypes = await rationTypeService.getAll()
@@ -103,20 +86,18 @@ const loadRationTypes = async () => {
   }
 }
 
-// Atualiza o manipulador de envio para usar o serviço
-const handleDistributionSubmit = async (formData: Omit<Distribution, 'id'>) => {
+const handleInputSubmit = async (formData: Omit<RationInput, 'id'>) => {
   try {
-    await distributionService.create(formData)
-    message.success('Distribuição registrada com sucesso')
-    await fetchDistributions()
+    await rationInputService.create(formData)
+    message.success('Entrada registrada com sucesso')
+    await fetchInputs()
   } catch (error) {
-    message.error('Erro ao registrar distribuição')
+    message.error('Erro ao registrar entrada')
     console.error(error)
   }
 }
 
-// Atualiza as colunas para corresponder ao modelo de Distribuição
-const columns: DataTableColumns<Distribution> = [
+const columns: DataTableColumns<RationInput> = [
   {
     title: 'Data',
     key: 'date',
@@ -129,13 +110,6 @@ const columns: DataTableColumns<Distribution> = [
         hour: '2-digit',
         minute: '2-digit'
       })
-    }
-  },
-  {
-    title: 'Beneficiário',
-    key: 'beneficiaryName',
-    render(row) {
-      return row.beneficiaryName || 'N/A'
     }
   },
   {
@@ -158,11 +132,7 @@ const pagination = {
   pageSize: 10
 }
 
-// Carrega os dados quando o componente é montado
 onMounted(() => {
-  fetchDistributions()
+  fetchInputs()
 })
 </script>
-
-<style scoped>
-</style>

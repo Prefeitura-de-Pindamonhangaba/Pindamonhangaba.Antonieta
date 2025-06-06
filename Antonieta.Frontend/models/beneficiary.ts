@@ -4,5 +4,5 @@ export default class Beneficiary {
   public document: string = ''
   public address: string = ''
   public contact: string = ''
-  public limit: number = 0
+  public monthly_limit: number = 0
 }
