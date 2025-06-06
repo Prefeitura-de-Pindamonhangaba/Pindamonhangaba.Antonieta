@@ -18,13 +18,23 @@
           class="logo"
         />
       </div>
-      <n-menu
-        :collapsed="collapsed"
-        :collapsed-width="64"
-        :collapsed-icon-size="22"
-        :options="menuOptions"
-        @update:value="handleMenuClick"
-      />
+      <div class="menu-container">
+        <n-menu
+          :collapsed="collapsed"
+          :collapsed-width="64"
+          :collapsed-icon-size="22"
+          :options="mainMenuOptions"
+          @update:value="handleMenuClick"
+        />
+        <n-menu
+          :collapsed="collapsed"
+          :collapsed-width="64"
+          :collapsed-icon-size="22"
+          :options="footerMenuOptions"
+          @update:value="handleMenuClick"
+          class="footer-menu"
+        />
+      </div>
     </n-layout-sider>
     <n-layout-content :style="contentStyle">
       <slot />
@@ -43,12 +53,13 @@ import {
   UserOutlined,
   GiftOutlined,
   InboxOutlined,
+  LogoutOutlined,
   BarChartOutlined // Add this import
 } from '@ant-design/icons-vue'
 
 const collapsed = ref(false)
 
-const menuOptions: MenuOption[] = [
+const mainMenuOptions: MenuOption[] = [
   {
     label: 'Dashboard',
     key: 'dashboard',
@@ -72,13 +83,15 @@ const menuOptions: MenuOption[] = [
     key: 'inputs',
     icon: renderIcon(InboxOutlined),
     path: '/inputs'
-  },
-  // {
-  //   label: 'Estoque',
-  //   key: 'stock_control',
-  //   icon: renderIcon(BarChartOutlined),
-  //   path: '/stock_control'
-  // }
+  }
+]
+
+const footerMenuOptions: MenuOption[] = [
+  {
+    label: 'Sair',
+    key: 'logout',
+    icon: renderIcon(LogoutOutlined)
+  }
 ]
 
 function renderIcon(icon: Component) {
@@ -94,8 +107,21 @@ const contentStyle = computed(() => ({
   padding: isLoginPage.value ? '0' : '20px'
 }))
 
-function handleMenuClick(key: string) {
-  const selectedOption = menuOptions.find(option => option.key === key)
+const menuStyle = computed(() => ({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between'
+}))
+
+async function handleMenuClick(key: string) {
+  if (key === 'logout') {
+    localStorage.removeItem('access_token')
+    await router.push('/login')
+    return
+  }
+
+  const selectedOption = mainMenuOptions.find(option => option.key === key)
   if (selectedOption?.path) {
     router.push(selectedOption.path)
   }
@@ -114,6 +140,17 @@ function handleMenuClick(key: string) {
   height: v-bind(collapsed ? '50px' : '120px');
   width: auto;
   transition: all 0.3s ease;
+}
+
+.menu-container {
+  height: calc(100vh - 150px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.footer-menu {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 :deep(.n-layout-sider) {
@@ -135,5 +172,9 @@ function handleMenuClick(key: string) {
 :deep(.n-menu-item--selected) {
   color: #f77800;
   background-color: #fff8e1;
+}
+
+:deep(.footer-menu .n-menu-item) {
+  margin-bottom: 0;
 }
 </style>
