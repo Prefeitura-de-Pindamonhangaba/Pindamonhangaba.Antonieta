@@ -15,7 +15,7 @@ load_dotenv()
 
 SECRET_KEY = getenv('SECRET_KEY', '')
 ALGORITHM = getenv('ALGORITHM', '')
-ACCESS_TOKEN_EXPIRE_MINUTES = getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30)
+ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES', '30'))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
