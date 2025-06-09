@@ -9,13 +9,8 @@ from dotenv import load_dotenv
 # Add the project root directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-# Import your models and Base
+# Import Base and all models
 from database import Base
-from models.beneficiary_model import Beneficiary
-from models.distribution_model import Distribution
-from models.ration_stock_model import RationStock
-from models.ration_input_model import RationInput
-from models.ration_type_model import RationType
 
 # Load environment variables
 load_dotenv()

@@ -6,7 +6,6 @@ class update_ration_stock_dto(BaseModel):
     """
     id: int
     name: str
-    rationType: str
+    description: str
     unit: str
     stock: int
-    description: str
