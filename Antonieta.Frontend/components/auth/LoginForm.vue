@@ -17,7 +17,12 @@
                 :bordered="true"
                 :shadow="false"
               >
-                <n-form ref="formRef" :model="formValue" :rules="rules">
+                <n-form 
+                  ref="formRef" 
+                  :model="formValue" 
+                  :rules="rules"
+                  @keydown.enter.prevent="handleSubmit"
+                >
                   <n-form-item path="email" label="E-mail">
                     <n-input
                       v-model:value="formValue.email"
