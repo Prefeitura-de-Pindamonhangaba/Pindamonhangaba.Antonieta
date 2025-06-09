@@ -1,60 +1,58 @@
 <template>
-  <n-layout style="min-height: 100vh">
-    <n-layout-content style="padding: 24px">
-      <n-space vertical size="large">
-        <!-- Header -->
-        <n-space vertical size="small">
-          <n-h1 style="color: #f77800; margin: 0">Beneficiários</n-h1>
-          <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
-        </n-space>
-
-        <!-- Action Buttons -->
-        <n-space>
-          <n-button
-            type="primary"
-            style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
-            @click="showBeneficiaryModal = true"
-          >
-            <template #icon>
-              <n-icon><IconUserPlus /></n-icon>
-            </template>
-            Adicionar Novo Beneficiário
-          </n-button>
-        </n-space>
-
-        <!-- Table -->
-        <n-card>
-          <n-data-table
-            :columns="columns"
-            :data="tableData"
-            :pagination="pagination"
-            :loading="loading"
-          />
-        </n-card>
-
-        <!-- Use BeneficiaryModal component -->
-        <BeneficiaryModal
-          v-model="showBeneficiaryModal"
-          :edit-mode="!!selectedBeneficiary"
-          :beneficiary-data="selectedBeneficiary"
-          @submit="handleBeneficiarySubmit"
-          @update="handleBeneficiaryUpdate"
-        />
-
-        <!-- Delete Modal -->
-        <n-modal
-          v-model:show="showDeleteModal"
-          preset="dialog"
-          title="Confirmar Exclusão"
-          content="Tem certeza que deseja excluir este beneficiário? Esta ação não pode ser desfeita."
-          positive-text="Sim, Excluir"
-          negative-text="Cancelar"
-          @positive-click="confirmDelete"
-          @negative-click="showDeleteModal = false"
-        />
+  <page-wrapper :loading="pageLoading">
+    <n-space vertical size="large">
+      <!-- Header -->
+      <n-space vertical size="small">
+        <n-h1 style="color: #f77800; margin: 0">Beneficiários</n-h1>
+        <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
       </n-space>
-    </n-layout-content>
-  </n-layout>
+
+      <!-- Action Buttons -->
+      <n-space>
+        <n-button
+          type="primary"
+          style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
+          @click="showBeneficiaryModal = true"
+        >
+          <template #icon>
+            <n-icon><IconUserPlus /></n-icon>
+          </template>
+          Adicionar Novo Beneficiário
+        </n-button>
+      </n-space>
+
+      <!-- Table -->
+      <n-card>
+        <n-data-table
+          :columns="columns"
+          :data="tableData"
+          :pagination="pagination"
+          :loading="loading"
+        />
+      </n-card>
+
+      <!-- Use BeneficiaryModal component -->
+      <BeneficiaryModal
+        v-model="showBeneficiaryModal"
+        :edit-mode="!!selectedBeneficiary"
+        :beneficiary-data="selectedBeneficiary"
+        @submit="handleBeneficiarySubmit"
+        @update="handleBeneficiaryUpdate"
+      />
+
+      <!-- Delete Modal -->
+      <n-modal
+        v-model:show="showDeleteModal"
+        preset="dialog"
+        title="Confirmar Exclusão"
+        content="Tem certeza que deseja excluir este beneficiário? Esta ação não pode ser desfeita."
+        positive-text="Sim, Excluir"
+        negative-text="Cancelar"
+        @positive-click="confirmDelete"
+        @negative-click="showDeleteModal = false"
+      />
+    </n-space>
+  </page-wrapper>
 </template>
 
 <script setup lang="ts">
@@ -85,6 +83,7 @@ const showBeneficiaryModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedBeneficiaryId = ref<number | null>(null)
 const selectedBeneficiary = ref<Beneficiary | null>(null)
+const pageLoading = ref(true)
 
 async function fetchBeneficiaries() {
   try {
@@ -96,6 +95,7 @@ async function fetchBeneficiaries() {
     message.error('Erro ao carregar beneficiários')
   } finally {
     loading.value = false
+    pageLoading.value = false // Add this line to stop the page loading
   }
 }
 
@@ -196,9 +196,10 @@ const handleBeneficiaryUpdate = async (id: number, updatedData: Beneficiary) => 
   }
 }
 
-// Load data when component mounts
-onMounted(() => {
-  fetchBeneficiaries()
+// Update onMounted to set initial loading state
+onMounted(async () => {
+  pageLoading.value = true
+  await fetchBeneficiaries()
 })
 
 watch(showBeneficiaryModal, (newValue) => {

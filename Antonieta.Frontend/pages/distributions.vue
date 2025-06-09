@@ -1,44 +1,42 @@
 <template>
-  <n-layout style="min-height: 100vh">
-    <n-layout-content style="padding: 24px">
-      <n-space vertical size="large">
-        <!-- Header -->
-        <n-space vertical size="small">
-          <n-h1 style="color: #f77800; margin: 0">Distribuições</n-h1>
-          <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
-        </n-space>
-
-        <!-- Action Buttons -->
-        <n-space>
-          <n-button 
-            type="primary" 
-            style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
-            @click="showDistributionModal = true"
-          >
-            <template #icon>
-              <n-icon><IconPlus /></n-icon>
-            </template>
-            Registrar Nova Distribuição
-          </n-button>
-        </n-space>
-
-        <!-- Table -->
-        <n-card>
-          <n-data-table
-            :columns="columns"
-            :data="tableData"
-            :pagination="pagination"
-            :loading="loading"
-          />
-        </n-card>
-
-        <DistributionModal 
-          v-model="showDistributionModal" 
-          @submit="handleDistributionSubmit" 
-        />
+  <page-wrapper :loading="pageLoading">
+    <n-space vertical size="large">
+      <!-- Header -->
+      <n-space vertical size="small">
+        <n-h1 style="color: #f77800; margin: 0">Distribuições</n-h1>
+        <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
       </n-space>
-    </n-layout-content>
-  </n-layout>
+
+      <!-- Action Buttons -->
+      <n-space>
+        <n-button 
+          type="primary" 
+          style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
+          @click="showDistributionModal = true"
+        >
+          <template #icon>
+            <n-icon><IconPlus /></n-icon>
+          </template>
+          Registrar Nova Distribuição
+        </n-button>
+      </n-space>
+
+      <!-- Table -->
+      <n-card>
+        <n-data-table
+          :columns="columns"
+          :data="tableData"
+          :pagination="pagination"
+          :loading="loading"
+        />
+      </n-card>
+
+      <DistributionModal 
+        v-model="showDistributionModal" 
+        @submit="handleDistributionSubmit" 
+      />
+    </n-space>
+  </page-wrapper>
 </template>
 
 <script setup lang="ts">
@@ -58,10 +56,12 @@ const showDistributionModal = ref(false)
 const tableData = ref<Distribution[]>([])
 const beneficiariesMap = ref<Map<number, string>>(new Map())
 const rationTypesMap = ref<Map<number, string>>(new Map())
+const pageLoading = ref(true)
 
 // Função para buscar distribuições
 const fetchDistributions = async () => {
   try {
+    pageLoading.value = true
     loading.value = true
     await Promise.all([loadBeneficiaries(), loadRationTypes()])
     
@@ -76,6 +76,7 @@ const fetchDistributions = async () => {
     message.error('Erro ao carregar distribuições')
   } finally {
     loading.value = false
+    pageLoading.value = false
   }
 }
 

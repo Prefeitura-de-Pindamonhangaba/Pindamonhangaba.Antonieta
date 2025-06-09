@@ -1,44 +1,42 @@
 <template>
-  <n-layout style="min-height: 100vh">
-    <n-layout-content style="padding: 24px">
-      <n-space vertical size="large">
-        <!-- Header -->
-        <n-space vertical size="small">
-          <n-h1 style="color: #f77800; margin: 0">Entradas de Ração</n-h1>
-          <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
-        </n-space>
-
-        <!-- Action Buttons -->
-        <n-space>
-          <n-button 
-            type="primary" 
-            style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
-            @click="showInputModal = true"
-          >
-            <template #icon>
-              <n-icon><IconPlus /></n-icon>
-            </template>
-            Registrar Nova Entrada
-          </n-button>
-        </n-space>
-
-        <!-- Table -->
-        <n-card>
-          <n-data-table
-            :columns="columns"
-            :data="tableData"
-            :pagination="pagination"
-            :loading="loading"
-          />
-        </n-card>
-
-        <InputModal 
-          v-model="showInputModal" 
-          @submit="handleInputSubmit" 
-        />
+  <page-wrapper :loading="pageLoading">
+    <n-space vertical size="large">
+      <!-- Header -->
+      <n-space vertical size="small">
+        <n-h1 style="color: #f77800; margin: 0">Entradas de Ração</n-h1>
+        <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
       </n-space>
-    </n-layout-content>
-  </n-layout>
+
+      <!-- Action Buttons -->
+      <n-space>
+        <n-button 
+          type="primary" 
+          style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
+          @click="showInputModal = true"
+        >
+          <template #icon>
+            <n-icon><IconPlus /></n-icon>
+          </template>
+          Registrar Nova Entrada
+        </n-button>
+      </n-space>
+
+      <!-- Table -->
+      <n-card>
+        <n-data-table
+          :columns="columns"
+          :data="tableData"
+          :pagination="pagination"
+          :loading="loading"
+        />
+      </n-card>
+
+      <InputModal 
+        v-model="showInputModal" 
+        @submit="handleInputSubmit" 
+      />
+    </n-space>
+  </page-wrapper>
 </template>
 
 <script setup lang="ts">
@@ -56,10 +54,12 @@ const loading = ref(false)
 const showInputModal = ref(false)
 const tableData = ref<RationInput[]>([])
 const rationTypesMap = ref<Map<number, string>>(new Map())
+const pageLoading = ref(true)
 
 const fetchInputs = async () => {
   try {
     loading.value = true
+    pageLoading.value = true
     await loadRationTypes()
     
     const [inputs] = await rationInputService.getAll()
@@ -72,6 +72,7 @@ const fetchInputs = async () => {
     message.error('Erro ao carregar entradas')
   } finally {
     loading.value = false
+    pageLoading.value = false
   }
 }
 

@@ -1,160 +1,162 @@
 <template>
-  <div class="ration-stock-container">
-    <div class="page-header">
-      <h1 class="page-title">Entradas de Ração</h1>
-      <div class="title-underline"></div>
-    </div>
-
-    <!-- Resumo do Estoque -->
-    <n-card class="stock-summary">
-      <div class="stock-grid">
-        <div class="stock-item" v-for="stock in stockSummary" :key="stock.type">
-          <h3>{{ stock.type }}</h3>
-          <p class="stock-quantity">{{ stock.quantity }}kg</p>
-        </div>
+  <page-wrapper :loading="pageLoading">
+    <div class="ration-stock-container">
+      <div class="page-header">
+        <h1 class="page-title">Entradas de Ração</h1>
+        <div class="title-underline"></div>
       </div>
-    </n-card>
 
-    <div class="action-buttons">
-      <n-button type="primary" class="action-button" style="background-color: #f77800; margin-right: 12px" @click="showAddModal = true">
-        <template #icon>
-          <n-icon><IconPlus /></n-icon>
-        </template>
-        Nova Entrada
-      </n-button>
-      <n-button type="default" class="action-button" @click="showManageTypesModal = true">
-        <template #icon>
-          <n-icon><IconSettings /></n-icon>
-        </template>
-        Gerenciar Tipos de Ração
-      </n-button>
-    </div>
-
-    <n-card class="entries-table-card">
-      <n-data-table
-        :columns="columns"
-        :data="tableData"
-        :pagination="pagination"
-        :loading="loading"
-      />
-    </n-card>
-
-    <!-- Modal de Nova Entrada -->
-    <n-modal
-      v-model:show="showAddModal"
-      preset="dialog"
-      style="width: 600px"
-      title="Nova Entrada de Ração"
-    >
-      <n-form
-        ref="formRef"
-        :model="formData"
-        :rules="rules"
-        label-placement="left"
-        label-width="auto"
-        require-mark-placement="right-hanging"
-        size="medium"
-      >
-        <n-form-item label="Data" path="date">
-          <n-date-picker
-            v-model:value="formData.date"
-            type="date"
-            clearable
-            style="width: 100%"
-          />
-        </n-form-item>
-
-        <n-form-item label="Tipo de Ração" path="type">
-          <n-select
-            v-model:value="formData.type"
-            :options="feedTypes"
-            placeholder="Selecione o tipo de ração"
-            clearable
-          />
-        </n-form-item>
-
-        <n-form-item label="Quantidade (kg)" path="quantity">
-          <n-input-number
-            v-model:value="formData.quantity"
-            :min="1"
-            :precision="0"
-            placeholder="Informe a quantidade em kg"
-            style="width: 100%"
-          />
-        </n-form-item>
-
-        <n-form-item label="Observações" path="observations">
-          <n-input
-            v-model:value="formData.observations"
-            type="textarea"
-            placeholder="Observações adicionais"
-          />
-        </n-form-item>
-      </n-form>
-
-      <template #action>
-        <div class="modal-actions">
-          <n-button @click="handleCancel">Cancelar</n-button>
-          <n-button type="primary" style="background-color: #f77800" :loading="loading" @click="handleSubmit">Salvar</n-button>
+      <!-- Resumo do Estoque -->
+      <n-card class="stock-summary">
+        <div class="stock-grid">
+          <div class="stock-item" v-for="stock in stockSummary" :key="stock.type">
+            <h3>{{ stock.type }}</h3>
+            <p class="stock-quantity">{{ stock.quantity }}kg</p>
+          </div>
         </div>
-      </template>
-    </n-modal>
+      </n-card>
 
-    <!-- Modal de Gerenciamento de Tipos de Ração -->
-    <n-modal
-      v-model:show="showManageTypesModal"
-      preset="dialog"
-      style="width: 800px"
-      title="Gerenciar Tipos de Ração"
-    >
-      <div class="types-management-container">
+      <div class="action-buttons">
+        <n-button type="primary" class="action-button" style="background-color: #f77800; margin-right: 12px" @click="showAddModal = true">
+          <template #icon>
+            <n-icon><IconPlus /></n-icon>
+          </template>
+          Nova Entrada
+        </n-button>
+        <n-button type="default" class="action-button" @click="showManageTypesModal = true">
+          <template #icon>
+            <n-icon><IconSettings /></n-icon>
+          </template>
+          Gerenciar Tipos de Ração
+        </n-button>
+      </div>
+
+      <n-card class="entries-table-card">
+        <n-data-table
+          :columns="columns"
+          :data="tableData"
+          :pagination="pagination"
+          :loading="loading"
+        />
+      </n-card>
+
+      <!-- Modal de Nova Entrada -->
+      <n-modal
+        v-model:show="showAddModal"
+        preset="dialog"
+        style="width: 600px"
+        title="Nova Entrada de Ração"
+      >
         <n-form
-          ref="typeFormRef"
-          :model="typeFormData"
-          :rules="typeRules"
+          ref="formRef"
+          :model="formData"
+          :rules="rules"
           label-placement="left"
           label-width="auto"
           require-mark-placement="right-hanging"
           size="medium"
         >
-          <n-form-item label="Nome" path="name">
-            <n-input
-              v-model:value="typeFormData.name"
-              placeholder="Nome do tipo de ração"
+          <n-form-item label="Data" path="date">
+            <n-date-picker
+              v-model:value="formData.date"
+              type="date"
+              clearable
+              style="width: 100%"
             />
           </n-form-item>
 
-          <n-form-item label="Descrição" path="description">
+          <n-form-item label="Tipo de Ração" path="type">
+            <n-select
+              v-model:value="formData.type"
+              :options="feedTypes"
+              placeholder="Selecione o tipo de ração"
+              clearable
+            />
+          </n-form-item>
+
+          <n-form-item label="Quantidade (kg)" path="quantity">
+            <n-input-number
+              v-model:value="formData.quantity"
+              :min="1"
+              :precision="0"
+              placeholder="Informe a quantidade em kg"
+              style="width: 100%"
+            />
+          </n-form-item>
+
+          <n-form-item label="Observações" path="observations">
             <n-input
-              v-model:value="typeFormData.description"
+              v-model:value="formData.observations"
               type="textarea"
-              placeholder="Descrição do tipo de ração"
+              placeholder="Observações adicionais"
             />
           </n-form-item>
-
-          <div class="form-actions">
-            <n-button type="primary" style="background-color: #f77800" @click="handleAddType">
-              Adicionar Tipo
-            </n-button>
-          </div>
         </n-form>
 
-        <div class="types-table">
-          <n-data-table
-            :columns="typeColumns"
-            :data="feedTypes"
-            :pagination="{ pageSize: 5 }"
-          />
-        </div>
-      </div>
+        <template #action>
+          <div class="modal-actions">
+            <n-button @click="handleCancel">Cancelar</n-button>
+            <n-button type="primary" style="background-color: #f77800" :loading="loading" @click="handleSubmit">Salvar</n-button>
+          </div>
+        </template>
+      </n-modal>
 
-      <template #action>
-        <div class="modal-actions">
-          <n-button @click="showManageTypesModal = false">Fechar</n-button>
+      <!-- Modal de Gerenciamento de Tipos de Ração -->
+      <n-modal
+        v-model:show="showManageTypesModal"
+        preset="dialog"
+        style="width: 800px"
+        title="Gerenciar Tipos de Ração"
+      >
+        <div class="types-management-container">
+          <n-form
+            ref="typeFormRef"
+            :model="typeFormData"
+            :rules="typeRules"
+            label-placement="left"
+            label-width="auto"
+            require-mark-placement="right-hanging"
+            size="medium"
+          >
+            <n-form-item label="Nome" path="name">
+              <n-input
+                v-model:value="typeFormData.name"
+                placeholder="Nome do tipo de ração"
+              />
+            </n-form-item>
+
+            <n-form-item label="Descrição" path="description">
+              <n-input
+                v-model:value="typeFormData.description"
+                type="textarea"
+                placeholder="Descrição do tipo de ração"
+              />
+            </n-form-item>
+
+            <div class="form-actions">
+              <n-button type="primary" style="background-color: #f77800" @click="handleAddType">
+                Adicionar Tipo
+              </n-button>
+            </div>
+          </n-form>
+
+          <div class="types-table">
+            <n-data-table
+              :columns="typeColumns"
+              :data="feedTypes"
+              :pagination="{ pageSize: 5 }"
+            />
+          </div>
         </div>
-      </template>
-    </n-modal>
-  </div>
+
+        <template #action>
+          <div class="modal-actions">
+            <n-button @click="showManageTypesModal = false">Fechar</n-button>
+          </div>
+        </template>
+      </n-modal>
+    </div>
+  </page-wrapper>
 </template>
 
 <script setup lang="ts">
@@ -171,6 +173,8 @@ const showManageTypesModal = ref(false)
 const formRef = ref()
 const typeFormRef = ref()
 const message = useMessage()
+
+const pageLoading = ref(true)
 
 const typeFormData = ref({
   name: '',
@@ -199,6 +203,7 @@ const feedTypes = ref([])
 
 const fetchRationTypes = async () => {
   try {
+    pageLoading.value = true
     loading.value = true
     const response = await fetch('http://localhost:5000/api/ration_type', {
       method: 'GET',
@@ -228,6 +233,7 @@ const fetchRationTypes = async () => {
     message.error(error.message || 'Erro ao carregar tipos de ração')
   } finally {
     loading.value = false
+    pageLoading.value = false
   }
 }
 
