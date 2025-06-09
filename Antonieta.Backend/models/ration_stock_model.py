@@ -6,11 +6,9 @@ class RationStock(Base):
     __tablename__ = 'ration_stock'
     
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    ration_type_id = Column(Integer, ForeignKey('ration_type.id'), index=True)
+    name = Column(String, unique=True, index=True)  # Nome/Tipo da ração
+    description = Column(String, index=True)
     unit = Column(String, index=True)
     stock = Column(Integer, index=True)
-    description = Column(String, index=True)
     distributions = relationship("Distribution", back_populates="ration")
-    ration_type = relationship("RationType", back_populates="ration_stocks")
     inputs = relationship("RationInput", back_populates="ration_stock")
