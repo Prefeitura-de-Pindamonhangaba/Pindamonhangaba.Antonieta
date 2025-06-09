@@ -23,7 +23,7 @@ app = FastAPI(title="Antonieta API", version="1.0.0")
 create_tables()
 
 # CORS Configuration
-origins = getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
+origins = getenv('CORS_ORIGINS').split(',')
 
 app.add_middleware(
     CORSMiddleware,
