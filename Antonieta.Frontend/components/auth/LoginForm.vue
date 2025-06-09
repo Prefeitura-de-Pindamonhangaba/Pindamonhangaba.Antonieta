@@ -126,7 +126,10 @@ const handleSubmit = async () => {
 
     authService.setToken(access_token);
     message.success("Login realizado com sucesso!");
-    router.push("/dashboard");
+    await router.push({
+      path: "/dashboard",
+      query: { loading: "true" }
+    });
   } catch (error) {
     message.error(
       error instanceof Error ? error.message : "Erro ao fazer login"

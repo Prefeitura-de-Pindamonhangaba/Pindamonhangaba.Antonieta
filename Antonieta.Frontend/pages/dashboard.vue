@@ -1,90 +1,92 @@
 <template>
   <n-layout style="min-height: 100vh">
-    <n-layout-content style="padding: 24px">
-      <n-space vertical size="large">
-        <!-- Header -->
-        <n-space vertical size="small">
-          <n-h1 style="color: #f77800; margin: 0">Dashboard</n-h1>
-          <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
+    <n-spin :show="pageLoading" description="Carregando dashboard...">
+      <n-layout-content style="padding: 24px">
+        <n-space vertical size="large">
+          <!-- Header -->
+          <n-space vertical size="small">
+            <n-h1 style="color: #f77800; margin: 0">Dashboard</n-h1>
+            <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
+          </n-space>
+
+          <!-- Action Buttons -->
+          <n-space>
+            <n-button 
+              type="primary" 
+              style="font-size: 14px; padding: 12px 24px"
+              @click="showDonationModal = true"
+            >
+              <template #icon>
+                <n-icon><IconPlus /></n-icon>
+              </template>
+              Registrar Nova Saída
+            </n-button>
+            <n-button 
+              type="primary"
+              style="font-size: 14px; padding: 12px 24px"
+              @click="showInputModal = true"
+            >
+              <template #icon>
+                <n-icon><IconPlus /></n-icon>
+              </template>
+              Registrar Nova Entrada
+            </n-button>
+            <n-button 
+              style="color: #f77800; border-color: #f77800; font-size: 14px; padding: 12px 24px"
+              @click="showBeneficiaryModal = true"
+            >
+              <template #icon>
+                <n-icon><IconUserPlus /></n-icon>
+              </template>
+              Adicionar Novo Beneficiário
+            </n-button>
+          </n-space>
+
+          <DonationModal v-model="showDonationModal" @submit="handleDonationSubmit" />
+          <InputModal v-model="showInputModal" @submit="handleInputSubmit" />
+          <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
+
+          <!-- Summary Cards -->
+          <n-grid x-gap="12" y-gap="12" cols="3" responsive="self">
+            <n-gi>
+              <n-card>
+                <n-space vertical align="center">
+                  <n-text depth="3">Entrada Total (Mês)</n-text>
+                  <n-statistic :value="`${total_inputs} kg`" />
+                </n-space>
+              </n-card>
+            </n-gi>
+            <n-gi>
+              <n-card>
+                <n-space vertical align="center">
+                  <n-text depth="3">Saída Total (Mês)</n-text>
+                  <n-statistic :value="`${total_distributions} kg`" />
+                </n-space>
+              </n-card>
+            </n-gi>
+            <n-gi>
+              <n-card>
+                <n-space vertical align="center">
+                  <n-text depth="3">Estoque Atual</n-text>
+                  <n-statistic :value="`${current_stock} kg`" />
+                </n-space>
+              </n-card>
+            </n-gi>
+          </n-grid>
+
+          <!-- Beneficiaries Table -->
+          <n-card title="Beneficiários e Controle Mensal">
+            <n-data-table
+              :loading="loading"
+              :columns="columns"
+              :data="tableData"
+              :pagination="pagination"
+              remote
+            />
+          </n-card>
         </n-space>
-
-        <!-- Action Buttons -->
-        <n-space>
-          <n-button 
-            type="primary" 
-            style="font-size: 14px; padding: 12px 24px"
-            @click="showDonationModal = true"
-          >
-            <template #icon>
-              <n-icon><IconPlus /></n-icon>
-            </template>
-            Registrar Nova Saída
-          </n-button>
-          <n-button 
-            type="primary"
-            style="font-size: 14px; padding: 12px 24px"
-            @click="showInputModal = true"
-          >
-            <template #icon>
-              <n-icon><IconPlus /></n-icon>
-            </template>
-            Registrar Nova Entrada
-          </n-button>
-          <n-button 
-            style="color: #f77800; border-color: #f77800; font-size: 14px; padding: 12px 24px"
-            @click="showBeneficiaryModal = true"
-          >
-            <template #icon>
-              <n-icon><IconUserPlus /></n-icon>
-            </template>
-            Adicionar Novo Beneficiário
-          </n-button>
-        </n-space>
-
-        <DonationModal v-model="showDonationModal" @submit="handleDonationSubmit" />
-        <InputModal v-model="showInputModal" @submit="handleInputSubmit" />
-        <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
-
-        <!-- Summary Cards -->
-        <n-grid x-gap="12" y-gap="12" cols="3" responsive="self">
-          <n-gi>
-            <n-card>
-              <n-space vertical align="center">
-                <n-text depth="3">Entrada Total (Mês)</n-text>
-                <n-statistic :value="`${total_inputs} kg`" />
-              </n-space>
-            </n-card>
-          </n-gi>
-          <n-gi>
-            <n-card>
-              <n-space vertical align="center">
-                <n-text depth="3">Saída Total (Mês)</n-text>
-                <n-statistic :value="`${total_distributions} kg`" />
-              </n-space>
-            </n-card>
-          </n-gi>
-          <n-gi>
-            <n-card>
-              <n-space vertical align="center">
-                <n-text depth="3">Estoque Atual</n-text>
-                <n-statistic :value="`${current_stock} kg`" />
-              </n-space>
-            </n-card>
-          </n-gi>
-        </n-grid>
-
-        <!-- Beneficiaries Table -->
-        <n-card title="Beneficiários e Controle Mensal">
-          <n-data-table
-            :loading="loading"
-            :columns="columns"
-            :data="tableData"
-            :pagination="pagination"
-            remote
-          />
-        </n-card>
-      </n-space>
-    </n-layout-content>
+      </n-layout-content>
+    </n-spin>
   </n-layout>
 </template>
 
@@ -106,7 +108,8 @@ import {
   NH1,
   NDivider,
   NText,
-  NStatistic
+  NStatistic,
+  NSpin
 } from 'naive-ui'
 import { IconPlus, IconUserPlus, IconCheck, IconAlertTriangle, IconX } from '@tabler/icons-vue'
 import DonationModal from '../components/modals/DonationModal.vue'
@@ -118,6 +121,7 @@ import { rationStockService } from '../services/rationStockService'
 import { distributionService } from '~/services/distributionService'
 import { rationInputService } from '~/services/rationInputService'
 import { dashboardService } from '~/services/dashboardService'
+import { useRoute } from 'vue-router'
 
 // Update BeneficiaryData interface to match the service response
 interface BeneficiaryData {
@@ -129,6 +133,7 @@ interface BeneficiaryData {
   status: 'Pode Receber' | 'Próx. Limite' | 'Limite Atingido'
 }
 
+const route = useRoute()
 const current_stock = ref(0)
 const total_inputs = ref(0)
 const total_distributions = ref(0)
@@ -136,6 +141,7 @@ const total_distributions = ref(0)
 const showDonationModal = ref(false)
 const showBeneficiaryModal = ref(false)
 const showInputModal = ref(false)
+const pageLoading = ref(true)
 
 const handleDonationSubmit = (formData: any) => {
   console.log('Doação registrada:', formData)
@@ -267,9 +273,10 @@ const fetchBeneficiariesData = async (page: number = 1) => {
   }
 }
 
-// Update the fetchDashboardData function to include beneficiaries
+// Update fetchDashboardData to handle loading state
 const fetchDashboardData = async () => {
   try {
+    pageLoading.value = true
     const [stockData, inputsData, distributionsData] = await Promise.all([
       dashboardService.getCurrentTotalStock(),
       dashboardService.getTotalInputsMonth(),
@@ -279,16 +286,23 @@ const fetchDashboardData = async () => {
     current_stock.value = stockData.current_stock
     total_inputs.value = inputsData.total_amount
     total_distributions.value = distributionsData.total_amount
-
+    
     await fetchBeneficiariesData(pagination.page)
   } catch (error) {
     console.error('Error loading dashboard data:', error)
+    message.error('Erro ao carregar dados do dashboard')
+  } finally {
+    pageLoading.value = false
   }
 }
 
 // Add onMounted hook to fetch initial data
-onMounted(() => {
-  fetchDashboardData()
+onMounted(async () => {
+  if (route.query.loading === 'true') {
+    pageLoading.value = true
+    await new Promise(resolve => setTimeout(resolve, 1000)) // Add minimal delay for better UX
+  }
+  await fetchDashboardData()
   startPolling()
 })
 
@@ -312,5 +326,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-
+.n-spin {
+  min-height: 100vh;
+}
 </style>
