@@ -61,9 +61,9 @@
 import { ref, computed, onMounted } from 'vue'
 import type { FormInst, FormRules } from 'naive-ui'
 import { NModal, NForm, NFormItem, NInputNumber, NButton, NSelect, NSpace, NInput, useMessage } from 'naive-ui'
-import { rationTypeService } from '~/services/rationTypeService'
 import { rationInputService } from '~/services/rationInputService'
 import type { RationInput } from '~/models/rationInputModel'
+import { rationStockService } from '~/services/rationStockService'
 
 const props = defineProps<{
   modelValue: boolean
@@ -112,12 +112,12 @@ const rules: FormRules = {
   }
 }
 
-const loadRationTypes = async () => {
+const loadRationStocks = async () => {
   try {
-    const rationTypes = await rationTypeService.getAll()
-    rationOptions.value = rationTypes.map(rt => ({
-      label: rt.name,
-      value: rt.id
+    const rationStocks = await rationStockService.getAll()
+    rationOptions.value = rationStocks.map(rs => ({
+      label: rs.name,
+      value: rs.id
     }))
   } catch (error) {
     console.error('Error loading ration types:', error)
@@ -138,7 +138,8 @@ const handleSubmit = () => {
         }
         
         // Remove the service call from here
-        emit('submit', inputData)
+        await rationInputService.create(inputData)
+        message.success('Entrada de ração registrada com sucesso!')
         show.value = false
         resetForm()
       } catch (error) {
@@ -167,6 +168,6 @@ const handleCancel = () => {
 }
 
 onMounted(() => {
-  loadRationTypes()
+  loadRationStocks()
 })
 </script>
