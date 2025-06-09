@@ -49,6 +49,7 @@ import { distributionService } from '~/services/distributionService'
 import { beneficiaryService } from '~/services/beneficiaryService'
 import { rationTypeService } from '~/services/rationTypeService'
 import type { Distribution } from '~/models/distributionModel'
+import { rationStockService } from '~/services/rationStockService'
 
 const message = useMessage()
 const loading = ref(false)
@@ -63,7 +64,7 @@ const fetchDistributions = async () => {
   try {
     pageLoading.value = true
     loading.value = true
-    await Promise.all([loadBeneficiaries(), loadRationTypes()])
+    await Promise.all([loadBeneficiaries(), loadRationStocks()])
     
     const [distributions] = await distributionService.getAll()
     tableData.value = distributions.map(dist => ({
@@ -92,15 +93,15 @@ const loadBeneficiaries = async () => {
   }
 }
 
-// Função para carregar tipos de ração
-const loadRationTypes = async () => {
+const loadRationStocks = async () => {
   try {
-    const rationTypes = await rationTypeService.getAll()
+    const rationStocks = await rationStockService.getAll()
     rationTypesMap.value = new Map(
-      rationTypes.map(rt => [rt.id, rt.name])
+      rationStocks.map(rs => [rs.id, rs.name])
     )
   } catch (error) {
     console.error('Error loading ration types:', error)
+    message.error('Erro ao carregar tipos de ração')
   }
 }
 
