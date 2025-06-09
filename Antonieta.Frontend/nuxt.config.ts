@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   devServer: {
     port: Number(process.env.FRONTEND_PORT) || 5000,
   },
+  
   devtools: { enabled: true },
   modules: ['@bg-dev/nuxt-naiveui'],
   ssr: false,
@@ -21,5 +22,23 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/': { redirect: '/login' }
-  }
+  },
+
+  app: {
+    head: {
+      title: 'Gerenciamento de Rações - Projeto Antonieta',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'Sistema de controle de distribuição de ração do Projeto Antonieta - Prefeitura de Pindamonhangaba' }
+      ],
+       link: [
+        {
+          rel: 'icon',
+          type: 'image/x-icon',
+          href: '/favicon.ico'
+        }
+      ]
+    }
+  },
 })
