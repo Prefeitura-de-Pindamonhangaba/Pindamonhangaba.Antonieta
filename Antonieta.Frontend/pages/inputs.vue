@@ -19,6 +19,15 @@
           </template>
           Registrar Nova Entrada
         </n-button>
+        <n-button 
+          style="font-size: 14px; padding: 12px 24px"
+          @click="showRationTypeModal = true"
+        >
+          <template #icon>
+            <n-icon><IconSettings /></n-icon>
+          </template>
+          Gerenciar Tipos de Ração
+        </n-button>
       </n-space>
 
       <!-- Table -->
@@ -35,6 +44,13 @@
         v-model="showInputModal" 
         @submit="handleInputSubmit" 
       />
+      <RationTypeModal 
+        v-model="showRationTypeModal"
+        :edit-mode="!!selectedRationType"
+        :ration-type-data="selectedRationType"
+        @submit="handleRationTypeSubmit"
+        @update="handleRationTypeUpdate"
+      />
     </n-space>
   </page-wrapper>
 </template>
@@ -43,17 +59,21 @@
 import { h, ref, onMounted } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 import { NCard, NDataTable, NButton, NIcon, NLayout, NLayoutContent, NSpace, NH1, NDivider, useMessage } from 'naive-ui'
-import { IconPlus } from '@tabler/icons-vue'
+import { IconPlus, IconSettings } from '@tabler/icons-vue'
 import InputModal from '../components/modals/InputModal.vue'
+import RationTypeModal from '../components/modals/RationTypeModal.vue'
 import { rationInputService } from '~/services/rationInputService'
 import { rationTypeService } from '~/services/rationTypeService'
 import type { RationInput } from '~/models/rationInputModel'
+import type { RationType } from '~/models/rationTypeModel'
 
 const message = useMessage()
 const loading = ref(false)
 const showInputModal = ref(false)
+const showRationTypeModal = ref(false)
 const tableData = ref<RationInput[]>([])
 const rationTypesMap = ref<Map<number, string>>(new Map())
+const selectedRationType = ref<RationType | null>(null)
 const pageLoading = ref(true)
 
 const fetchInputs = async () => {
@@ -94,6 +114,28 @@ const handleInputSubmit = async (formData: Omit<RationInput, 'id'>) => {
     await fetchInputs()
   } catch (error) {
     message.error('Erro ao registrar entrada')
+    console.error(error)
+  }
+}
+
+const handleRationTypeSubmit = async (formData: Omit<RationType, 'id'>) => {
+  try {
+    await rationTypeService.create(formData)
+    message.success('Tipo de ração criado com sucesso')
+    await loadRationTypes()
+  } catch (error) {
+    message.error('Erro ao criar tipo de ração')
+    console.error(error)
+  }
+}
+
+const handleRationTypeUpdate = async (id: number, formData: Partial<RationType>) => {
+  try {
+    await rationTypeService.update(id, formData)
+    message.success('Tipo de ração atualizado com sucesso')
+    await loadRationTypes()
+  } catch (error) {
+    message.error('Erro ao atualizar tipo de ração')
     console.error(error)
   }
 }
