@@ -12,7 +12,7 @@
         <n-space>
           <n-button 
             type="primary" 
-            style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
+            style="font-size: 14px; padding: 12px 24px"
             @click="showDonationModal = true"
           >
             <template #icon>
@@ -22,7 +22,7 @@
           </n-button>
           <n-button 
             type="primary"
-            style="background-color: #18a058; font-size: 14px; padding: 12px 24px"
+            style="font-size: 14px; padding: 12px 24px"
             @click="showInputModal = true"
           >
             <template #icon>
