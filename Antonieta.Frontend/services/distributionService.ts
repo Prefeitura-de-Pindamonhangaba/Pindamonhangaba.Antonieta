@@ -65,12 +65,15 @@ export const distributionService = {
 
   async update(id: number, distribution: Partial<Distribution>): Promise<Distribution> {
     const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'PATCH',
+      method: 'PUT',  // Changed from PATCH to PUT
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       },
-      body: JSON.stringify(distribution)
+      body: JSON.stringify({
+        id,
+        ...distribution
+      })
     })
     
     if (!response.ok) {

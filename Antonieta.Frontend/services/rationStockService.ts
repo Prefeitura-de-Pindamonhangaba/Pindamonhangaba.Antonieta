@@ -51,12 +51,15 @@ export const rationStockService = {
 
   async update(id: number, rationStock: Partial<RationStock>): Promise<RationStock> {
     const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'PATCH',
+      method: 'PUT',  // Changed from PATCH to PUT
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       },
-      body: JSON.stringify(rationStock)
+      body: JSON.stringify({
+        id,
+        ...rationStock
+      })
     })
     
     if (!response.ok) {
