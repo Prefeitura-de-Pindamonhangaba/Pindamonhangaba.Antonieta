@@ -14,7 +14,7 @@
             <n-button 
               type="primary" 
               style="font-size: 14px; padding: 12px 24px"
-              @click="showDonationModal = true"
+              @click="showDistributionModal = true"
             >
               <template #icon>
                 <n-icon><IconPlus /></n-icon>
@@ -42,7 +42,7 @@
             </n-button>
           </n-space>
 
-          <DonationModal v-model="showDonationModal" @submit="handleDonationSubmit" />
+          <DistributionModal v-model="showDistributionModal" @submit="handleDistributionSubmit" />
           <InputModal v-model="showInputModal" @submit="handleInputSubmit" />
           <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
 
@@ -112,7 +112,7 @@ import {
   NSpin
 } from 'naive-ui'
 import { IconPlus, IconUserPlus, IconCheck, IconAlertTriangle, IconX } from '@tabler/icons-vue'
-import DonationModal from '../components/modals/DonationModal.vue'
+import DistributionModal from '../components/modals/DistributionModal.vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import InputModal from '../components/modals/InputModal.vue'
 import type { Beneficiary } from '../models/beneficiary'
@@ -138,12 +138,12 @@ const current_stock = ref(0)
 const total_inputs = ref(0)
 const total_distributions = ref(0)
 
-const showDonationModal = ref(false)
+const showDistributionModal = ref(false)
 const showBeneficiaryModal = ref(false)
 const showInputModal = ref(false)
 const pageLoading = ref(true)
 
-const handleDonationSubmit = (formData: any) => {
+const handleDistributionSubmit = (formData: any) => {
   console.log('Doação registrada:', formData)
   // Aqui você pode implementar a lógica para salvar a doação
 }

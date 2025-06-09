@@ -62,8 +62,9 @@ import { ref, onMounted } from 'vue'
 import type { FormInst, FormRules } from 'naive-ui'
 import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton, NSelect, useMessage } from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
-import { rationTypeService } from '~/services/rationTypeService'
 import type { Distribution } from '~/models/distributionModel'
+import { rationStockService } from '~/services/rationStockService'
+import { distributionService } from '~/services/distributionService'
 
 const props = defineProps<{
   modelValue: boolean
@@ -126,12 +127,12 @@ const loadBeneficiaries = async () => {
   }
 }
 
-const loadRationTypes = async () => {
+const loadRationStocks = async () => {
   try {
-    const rationTypes = await rationTypeService.getAll()
-    rationOptions.value = rationTypes.map(rt => ({
-      label: rt.name,
-      value: rt.id
+    const rationStocks = await rationStockService.getAll()
+    rationOptions.value = rationStocks.map(rs => ({
+      label: rs.name,
+      value: rs.id
     }))
   } catch (error) {
     console.error('Error loading ration types:', error)
@@ -139,8 +140,18 @@ const loadRationTypes = async () => {
   }
 }
 
+const submitDistribution = async (data: Distribution) => {
+  try {
+    await distributionService.create(data)
+    message.success('Distribuição registrada com sucesso!')
+  } catch (error) {
+    console.error('Error submitting distribution:', error)
+    message.error('Erro ao registrar distribuição')
+  }
+}
+
 onMounted(() => {
-  Promise.all([loadBeneficiaries(), loadRationTypes()])
+  Promise.all([loadBeneficiaries(), loadRationStocks()])
 })
 
 const handleSubmit = () => {
@@ -148,7 +159,7 @@ const handleSubmit = () => {
     if (!errors) {
       try {
         loading.value = true
-        emit('submit', formData.value as Distribution)
+        await submitDistribution(formData.value)
         show.value = false
         resetForm()
       } catch (error) {

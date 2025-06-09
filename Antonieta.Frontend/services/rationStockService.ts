@@ -13,8 +13,8 @@ export const rationStockService = {
     if (!response.ok) {
       throw new Error('Failed to fetch ration stocks')
     }
-    
-    return response.json()
+    let listOfStocks = await response.json()
+    return listOfStocks[0] ?? []
   },
 
   async getById(id: number): Promise<RationStock> {
