@@ -10,35 +10,33 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1) Checkout do workflow (apenas para termos o action code localmente)
-      - name: Checkout do código do Workflow
+      - name: Checkout do código
         uses: actions/checkout@v3
 
-      # 2) Atualizar o repositório via git pull HTTPS
       - name: Atualizar repositório no servidor
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd /opt/DEV/ANTONIETA
-          # Garante que o origin está correto
           git remote set-url origin \
             https://x-access-token:${GITHUB_TOKEN}@github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.Antonieta.git
           git fetch origin develop
           git reset --hard origin/develop
 
-      # 3) Limpar build anterior do Nuxt
       - name: Limpar build do Frontend
         run: |
           rm -rf /opt/DEV/ANTONIETA/Antonieta.Frontend/.output
 
-      # 4) Build do Frontend (Nuxt 3)
-      - name: Build Frontend
+      - name: Build Frontend (Nuxt 3)
         working-directory: /opt/DEV/ANTONIETA/Antonieta.Frontend
         run: |
           npm ci
+          if ! npm list @tabler/icons-vue >/dev/null 2>&1; then
+            echo "📦 @tabler/icons-vue ausente, instalando..."
+            npm install @tabler/icons-vue --save
+          fi
           node --max-old-space-size=4096 node_modules/.bin/nuxt build
 
-      # 5) Instalar dependências do Backend
       - name: Instalar dependências Backend
         working-directory: /opt/DEV/ANTONIETA/Antonieta.Backend
         run: |
@@ -46,29 +44,24 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
-      # 6) Rodar migrations
-      - name: Rodar Alembic Migrations
+      - name: Rodar Alembic migrations
         working-directory: /opt/DEV/ANTONIETA/Antonieta.Backend
         run: |
           source venv/bin/activate
           alembic upgrade head || true
 
-      # 7) Reiniciar (ou iniciar) serviços no PM2
       - name: Reiniciar serviços PM2
         run: |
-          # backend
           pm2 describe DEV-ANTONIETA-BACK &>/dev/null \
             && pm2 restart DEV-ANTONIETA-BACK \
             || pm2 start uvicorn --name DEV-ANTONIETA-BACK \
                  --interpreter python3 -- --host 0.0.0.0 --port 3000 main:app
 
-          # frontend
           pm2 describe PROD-ANTONIETA-FRONT &>/dev/null \
             && pm2 restart PROD-ANTONIETA-FRONT \
             || NITRO_PORT=3001 NITRO_HOST=0.0.0.0 \
                pm2 start /opt/DEV/ANTONIETA/Antonieta.Frontend/.output/server/index.mjs \
                --name PROD-ANTONIETA-FRONT --interpreter node
 
-      # 8) Salvar estado do PM2 para reboot automático
       - name: Salvar estado PM2
         run: pm2 save
