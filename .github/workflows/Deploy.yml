@@ -13,11 +13,7 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Autorizar repositório local como seguro
-        run: |
-          git config --global --add safe.directory /opt/DEV/ANTONIETA
-
-      - name: Atualizar repositório
+      - name: Atualizar repositório local
         run: |
           cd /opt/DEV/ANTONIETA
           git pull origin develop
