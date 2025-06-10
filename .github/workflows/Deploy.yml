@@ -18,7 +18,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd /opt/DEV/ANTONIETA
-          git pull https://x-access-token:${GITHUB_TOKEN}@github.com/loginx-tech/Pindamonhangaba.Antonieta.git develop
+          git pull https://x-access-token:${GITHUB_TOKEN}@github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.Antonieta.git develop
 
       - name: Limpar build anterior do Nuxt
         run: |
