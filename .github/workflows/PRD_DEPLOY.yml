@@ -3,18 +3,23 @@ name: Deploy Produção Antonieta
 on:
   push:
     branches:
-      - main   # agora o trigger é na branch main
+      - main
 
 jobs:
   deploy:
     runs-on: self-hosted
 
     steps:
-      # 1) Checkout do workflow
-      - name: Checkout do código
+      # 1) Obtém o código do workflow
+      - name: Checkout do código do Workflow
         uses: actions/checkout@v3
 
-      # 2) Atualizar o repositório de produção
+      # 2) Marca o diretório de produção como seguro para o Git
+      - name: Marcar diretório de produção como seguro
+        run: |
+          git config --global --add safe.directory /opt/PRD/ANTONIETA
+
+      # 3) Atualiza o repositório via HTTPS + token
       - name: Atualizar repositório no servidor
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -25,12 +30,11 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
 
-      # 3) Limpar build anterior do Frontend
+      # 4) Limpa build anterior do Frontend
       - name: Limpar build do Frontend
-        run: |
-          rm -rf /opt/PRD/ANTONIETA/Antonieta.Frontend/.output
+        run: rm -rf /opt/PRD/ANTONIETA/Antonieta.Frontend/.output
 
-      # 4) Build do Frontend (Nuxt 3)
+      # 5) Build do Frontend (Nuxt 3)
       - name: Build Frontend (Nuxt 3)
         working-directory: /opt/PRD/ANTONIETA/Antonieta.Frontend
         run: |
@@ -41,7 +45,7 @@ jobs:
           fi
           node --max-old-space-size=4096 node_modules/.bin/nuxt build
 
-      # 5) Instalar dependências do Backend
+      # 6) Instala dependências do Backend
       - name: Instalar dependências Backend
         working-directory: /opt/PRD/ANTONIETA/Antonieta.Backend
         run: |
@@ -49,29 +53,29 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
-      # 6) Rodar migrations
+      # 7) Rodar Alembic migrations
       - name: Rodar Alembic migrations
         working-directory: /opt/PRD/ANTONIETA/Antonieta.Backend
         run: |
           source venv/bin/activate
           alembic upgrade head || true
 
-      # 7) Reiniciar (ou iniciar) serviços no PM2
+      # 8) Reiniciar (ou iniciar) serviços no PM2
       - name: Reiniciar serviços PM2
         run: |
-          # backend de produção
+          # Backend de produção
           pm2 describe PROD-ANTONIETA-BACK &>/dev/null \
             && pm2 restart PROD-ANTONIETA-BACK \
             || pm2 start uvicorn --name PROD-ANTONIETA-BACK \
-                 --interpreter python3 -- --host 0.0.0.0 --port 3002 main:app
+                 --interpreter python3 -- --host 0.0.0.0 --port 3000 main:app
 
-          # frontend de produção
+          # Frontend de produção
           pm2 describe PROD-ANTONIETA-FRONT &>/dev/null \
             && pm2 restart PROD-ANTONIETA-FRONT \
-            || NITRO_PORT=3003 NITRO_HOST=0.0.0.0 \
+            || NITRO_PORT=3001 NITRO_HOST=0.0.0.0 \
                pm2 start /opt/PRD/ANTONIETA/Antonieta.Frontend/.output/server/index.mjs \
                --name PROD-ANTONIETA-FRONT --interpreter node
 
-      # 8) Salvar estado do PM2 para reinício automático.
+      # 9) Persiste o estado do PM2
       - name: Salvar estado PM2
         run: pm2 save
