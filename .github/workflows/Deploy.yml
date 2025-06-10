@@ -19,7 +19,7 @@ jobs:
 
       - name: Corrigir permissões do repositório
         run: |
-          sudo chown -R runner:runner /opt/DEV/ANTONIETA
+          chown -R runner:runner /opt/DEV/ANTONIETA
 
       - name: Atualizar repositório
         run: |
@@ -28,7 +28,7 @@ jobs:
 
       - name: Corrigir permissões do .output
         run: |
-          sudo chown -R runner:runner /opt/DEV/ANTONIETA/Antonieta.Frontend/.output || true
+          chown -R runner:runner /opt/DEV/ANTONIETA/Antonieta.Frontend/.output || true
 
       - name: Limpar build anterior do Nuxt
         run: |
@@ -55,6 +55,7 @@ jobs:
 
       - name: Reiniciar serviços com PM2 (sem recriar)
         run: |
+          # Backend
           if pm2 jlist | grep -q '"name":"DEV-ANTONIETA-BACK"'; then
             echo "🔁 Reiniciando DEV-ANTONIETA-BACK..."
             pm2 restart DEV-ANTONIETA-BACK
@@ -62,6 +63,7 @@ jobs:
             echo "⚠️ DEV-ANTONIETA-BACK não encontrado no PM2."
           fi
 
+          # Frontend
           if pm2 jlist | grep -q '"name":"PROD-ANTONIETA-FRONT"'; then
             echo "🔁 Reiniciando PROD-ANTONIETA-FRONT..."
             pm2 restart PROD-ANTONIETA-FRONT
