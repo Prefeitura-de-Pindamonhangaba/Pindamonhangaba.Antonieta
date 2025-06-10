@@ -1,68 +1,77 @@
-name: Deploy local com runner
+name: Deploy Produção Antonieta
 
 on:
   push:
     branches:
-      - main
+      - main   # agora o trigger é na branch main
 
 jobs:
   deploy:
     runs-on: self-hosted
 
     steps:
+      # 1) Checkout do workflow
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Autorizar repositório local como seguro
+      # 2) Atualizar o repositório de produção
+      - name: Atualizar repositório no servidor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global --add safe.directory /opt/Pindamonhangaba.Antonieta
+          cd /opt/PRD/ANTONIETA
+          git remote set-url origin \
+            https://x-access-token:${GITHUB_TOKEN}@github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.Antonieta.git
+          git fetch origin main
+          git reset --hard origin/main
 
-      - name: Atualizar repositório
+      # 3) Limpar build anterior do Frontend
+      - name: Limpar build do Frontend
         run: |
-          cd /opt/Pindamonhangaba.Antonieta
-          git pull origin main
+          rm -rf /opt/PRD/ANTONIETA/Antonieta.Frontend/.output
 
-      - name: Corrigir permissões do .output
-        run: chown -R runner:runner /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output || true
-
-      - name: Limpar build anterior do Nuxt
+      # 4) Build do Frontend (Nuxt 3)
+      - name: Build Frontend (Nuxt 3)
+        working-directory: /opt/PRD/ANTONIETA/Antonieta.Frontend
         run: |
-          rm -rf /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output
+          npm ci
+          if ! npm list @tabler/icons-vue >/dev/null 2>&1; then
+            echo "📦 @tabler/icons-vue ausente, instalando..."
+            npm install @tabler/icons-vue --save
+          fi
+          node --max-old-space-size=4096 node_modules/.bin/nuxt build
 
-      - name: Instalar e buildar o frontend Vue (Nuxt 3)
+      # 5) Instalar dependências do Backend
+      - name: Instalar dependências Backend
+        working-directory: /opt/PRD/ANTONIETA/Antonieta.Backend
         run: |
-          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend
-          npm install
-          node --max-old-space-size=4096 ./node_modules/.bin/nuxt build
-
-      - name: Instalar dependências do backend Python
-        run: |
-          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Backend
           python3 -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
 
-      - name: Rodar migrations do banco de dados
+      # 6) Rodar migrations
+      - name: Rodar Alembic migrations
+        working-directory: /opt/PRD/ANTONIETA/Antonieta.Backend
         run: |
-          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Backend
           source venv/bin/activate
           alembic upgrade head || true
 
-      - name: Reiniciar serviços com PM2 (sem recriar)
+      # 7) Reiniciar (ou iniciar) serviços no PM2
+      - name: Reiniciar serviços PM2
         run: |
-          if pm2 jlist | grep -q '"name":"antonieta-backend"'; then
-            echo "🔁 Reiniciando antonieta-backend..."
-            pm2 restart antonieta-backend
-          else
-            echo "⚠️ antonieta-backend não encontrado no PM2."
-          fi
+          # backend de produção
+          pm2 describe PROD-ANTONIETA-BACK &>/dev/null \
+            && pm2 restart PROD-ANTONIETA-BACK \
+            || pm2 start uvicorn --name PROD-ANTONIETA-BACK \
+                 --interpreter python3 -- --host 0.0.0.0 --port 3002 main:app
 
-          if pm2 jlist | grep -q '"name":"antonieta-frontend"'; then
-            echo "🔁 Reiniciando antonieta-frontend..."
-            pm2 restart antonieta-frontend
-          else
-            echo "⚠️ antonieta-frontend não encontrado no PM2."
-          fi
+          # frontend de produção
+          pm2 describe PROD-ANTONIETA-FRONT &>/dev/null \
+            && pm2 restart PROD-ANTONIETA-FRONT \
+            || NITRO_PORT=3003 NITRO_HOST=0.0.0.0 \
+               pm2 start /opt/PRD/ANTONIETA/Antonieta.Frontend/.output/server/index.mjs \
+               --name PROD-ANTONIETA-FRONT --interpreter node
 
-      - name: Salvar estado do PM2
+      # 8) Salvar estado do PM2 para reinício automático
+      - name: Salvar estado PM2
         run: pm2 save
