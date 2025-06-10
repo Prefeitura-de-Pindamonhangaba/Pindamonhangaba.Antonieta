@@ -10,15 +10,21 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout do código
+      - name: Checkout Actions (não usado para deploy)
         uses: actions/checkout@v3
 
-      - name: Atualizar repositório no servidor
+      - name: Clonar repositório do zero
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd /opt/DEV/ANTONIETA
-          git pull https://x-access-token:${GITHUB_TOKEN}@github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.Antonieta.git develop
+          # Remove qualquer estado anterior
+          rm -rf /opt/DEV/ANTONIETA
+          # Clone apenas o branch develop
+          git clone \
+            --depth 1 \
+            --branch develop \
+            https://x-access-token:${GITHUB_TOKEN}@github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.Antonieta.git \
+            /opt/DEV/ANTONIETA
 
       - name: Limpar build anterior do Nuxt
         run: |
@@ -43,23 +49,10 @@ jobs:
           source venv/bin/activate
           alembic upgrade head || true
 
-      - name: Reiniciar serviços com PM2 (sem recriar)
+      - name: Reiniciar serviços com PM2
         run: |
-          # Backend
-          if pm2 jlist | grep -q '"name":"DEV-ANTONIETA-BACK"'; then
-            echo "🔁 Reiniciando DEV-ANTONIETA-BACK..."
-            pm2 restart DEV-ANTONIETA-BACK
-          else
-            echo "⚠️ DEV-ANTONIETA-BACK não encontrado no PM2."
-          fi
-
-          # Frontend
-          if pm2 jlist | grep -q '"name":"PROD-ANTONIETA-FRONT"'; then
-            echo "🔁 Reiniciando PROD-ANTONIETA-FRONT..."
-            pm2 restart PROD-ANTONIETA-FRONT
-          else
-            echo "⚠️ PROD-ANTONIETA-FRONT não encontrado no PM2."
-          fi
+          pm2 restart DEV-ANTONIETA-BACK || pm2 start uvicorn --name DEV-ANTONIETA-BACK --interpreter python3 -- --host 0.0.0.0 --port 3000 main:app
+          pm2 restart PROD-ANTONIETA-FRONT || NITRO_PORT=3001 NITRO_HOST=0.0.0.0 pm2 start .output/server/index.mjs --name PROD-ANTONIETA-FRONT --interpreter node
 
       - name: Salvar estado do PM2
         run: pm2 save
