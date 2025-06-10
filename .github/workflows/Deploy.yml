@@ -13,10 +13,12 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Atualizar repositório local
+      - name: Atualizar repositório no servidor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd /opt/DEV/ANTONIETA
-          git pull origin develop
+          git pull https://x-access-token:${GITHUB_TOKEN}@github.com/loginx-tech/Pindamonhangaba.Antonieta.git develop
 
       - name: Limpar build anterior do Nuxt
         run: |
