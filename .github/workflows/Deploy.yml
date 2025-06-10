@@ -3,7 +3,7 @@ name: Deploy local com runner
 on:
   push:
     branches:
-      - main
+      - develop      # agora só dispara na branch develop
 
 jobs:
   deploy:
@@ -20,7 +20,7 @@ jobs:
       - name: Atualizar repositório
         run: |
           cd /opt/Pindamonhangaba.Antonieta
-          git pull origin main
+          git pull origin develop    # puxando da develop
 
       - name: Corrigir permissões do .output
         run: chown -R runner:runner /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output || true
@@ -50,18 +50,20 @@ jobs:
 
       - name: Reiniciar serviços com PM2 (sem recriar)
         run: |
-          if pm2 jlist | grep -q '"name":"antonieta-backend"'; then
-            echo "🔁 Reiniciando antonieta-backend..."
-            pm2 restart antonieta-backend
+          # Backend
+          if pm2 jlist | grep -q '"name":"DEV-ANTONIETA-BACK"'; then
+            echo "🔁 Reiniciando DEV-ANTONIETA-BACK..."
+            pm2 restart DEV-ANTONIETA-BACK
           else
-            echo "⚠️ antonieta-backend não encontrado no PM2."
+            echo "⚠️ DEV-ANTONIETA-BACK não encontrado no PM2."
           fi
 
-          if pm2 jlist | grep -q '"name":"antonieta-frontend"'; then
-            echo "🔁 Reiniciando antonieta-frontend..."
-            pm2 restart antonieta-frontend
+          # Frontend
+          if pm2 jlist | grep -q '"name":"PROD-ANTONIETA-FRONT"'; then
+            echo "🔁 Reiniciando PROD-ANTONIETA-FRONT..."
+            pm2 restart PROD-ANTONIETA-FRONT
           else
-            echo "⚠️ antonieta-frontend não encontrado no PM2."
+            echo "⚠️ PROD-ANTONIETA-FRONT não encontrado no PM2."
           fi
 
       - name: Salvar estado do PM2
