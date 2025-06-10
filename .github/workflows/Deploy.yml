@@ -3,7 +3,7 @@ name: Deploy local com runner
 on:
   push:
     branches:
-      - develop      # agora só dispara na branch develop
+      - develop      # só dispara na branch develop
 
 jobs:
   deploy:
@@ -15,36 +15,36 @@ jobs:
 
       - name: Autorizar repositório local como seguro
         run: |
-          git config --global --add safe.directory /opt/Pindamonhangaba.Antonieta
+          git config --global --add safe.directory /opt/DEV/ANTONIETA
 
       - name: Atualizar repositório
         run: |
-          cd /opt/Pindamonhangaba.Antonieta
-          git pull origin develop    # puxando da develop
+          cd /opt/DEV/ANTONIETA
+          git pull origin develop
 
       - name: Corrigir permissões do .output
-        run: chown -R runner:runner /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output || true
+        run: chown -R runner:runner /opt/DEV/ANTONIETA/Antonieta.Frontend/.output || true
 
       - name: Limpar build anterior do Nuxt
         run: |
-          rm -rf /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend/.output
+          rm -rf /opt/DEV/ANTONIETA/Antonieta.Frontend/.output
 
       - name: Instalar e buildar o frontend Vue (Nuxt 3)
         run: |
-          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Frontend
+          cd /opt/DEV/ANTONIETA/Antonieta.Frontend
           npm install
           node --max-old-space-size=4096 ./node_modules/.bin/nuxt build
 
       - name: Instalar dependências do backend Python
         run: |
-          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Backend
+          cd /opt/DEV/ANTONIETA/Antonieta.Backend
           python3 -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
 
       - name: Rodar migrations do banco de dados
         run: |
-          cd /opt/Pindamonhangaba.Antonieta/Antonieta.Backend
+          cd /opt/DEV/ANTONIETA/Antonieta.Backend
           source venv/bin/activate
           alembic upgrade head || true
 
