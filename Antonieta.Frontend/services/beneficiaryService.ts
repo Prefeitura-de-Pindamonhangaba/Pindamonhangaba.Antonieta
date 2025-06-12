@@ -4,7 +4,7 @@ import { useRuntimeConfig } from '#app'
 const BASE_URL = `${useRuntimeConfig().public.backendUrl}/beneficiary`
 
 export const beneficiaryService = {
-  async getAll(): Promise<Beneficiary[]> {
+  async getAll(): Promise<[Beneficiary[], number]> {
     try {
       const response = await fetch(`${BASE_URL}/`, {
         headers: {
@@ -16,8 +16,8 @@ export const beneficiaryService = {
         throw new Error('Failed to fetch beneficiaries')
       }
       
-      const data = await response.json()
-      return data[0] ?? []
+      const [beneficiaries, count] = await response.json()
+      return [beneficiaries, count]
     } catch (error) {
       console.error('Error fetching beneficiaries:', error)
       throw error
