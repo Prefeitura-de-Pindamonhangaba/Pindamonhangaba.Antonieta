@@ -4,7 +4,7 @@ import { useRuntimeConfig } from '#app'
 const BASE_URL = `${useRuntimeConfig().public.backendUrl}/ration-input`
 
 export const rationInputService = {
-  async getAll(): Promise<RationInput[]> {
+  async getAll(): Promise<[RationInput[], number]> {
     try {
       const response = await fetch(`${BASE_URL}/`, {
         headers: {
@@ -16,8 +16,8 @@ export const rationInputService = {
         throw new Error('Failed to fetch ration inputs')
       }
       
-      const data = await response.json()
-      return data[0] ?? []
+      const [inputs, count] = await response.json()
+      return [inputs, count]
     } catch (error) {
       console.error('Error fetching ration inputs:', error)
       throw error
