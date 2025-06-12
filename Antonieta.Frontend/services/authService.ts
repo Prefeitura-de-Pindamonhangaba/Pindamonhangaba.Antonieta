@@ -1,20 +1,7 @@
-interface User {
-  email: string;
-  full_name: string;
-}
+import type { User } from '../models/userModel'
+import { useRuntimeConfig } from '#app'
 
-interface UserCreate {
-  email: string;
-  password: string;
-  full_name: string;
-}
-
-interface Token {
-  access_token: string;
-  token_type: string;
-}
-
-const BASE_URL = useRuntimeConfig().public.backendUrl + '/auth'
+const BASE_URL = `${useRuntimeConfig().public.backendUrl}/auth`
 
 export const authService = {
   async register(user: UserCreate): Promise<User> {
@@ -34,26 +21,30 @@ export const authService = {
     return response.json()
   },
 
-  async login(email: string, password: string): Promise<Token> {
-    const formData = new URLSearchParams()
-    formData.append('username', email)
-    formData.append('password', password)
-    formData.append('grant_type', 'password')
-
-    const response = await fetch(`${BASE_URL}/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: formData
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Failed to authenticate')
+  async login(email: string, password: string): Promise<{ access_token: string }> {
+    try {
+      const response = await fetch(`${BASE_URL}/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          username: email,
+          password: password,
+          grant_type: 'password'
+        })
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Login failed')
+      }
+      
+      return response.json()
+    } catch (error) {
+      console.error('Error during login:', error)
+      throw error
     }
-
-    return response.json()
   },
 
   async getCurrentUser(): Promise<User> {

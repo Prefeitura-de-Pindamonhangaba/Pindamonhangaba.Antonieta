@@ -1,20 +1,27 @@
 import type { Distribution } from '../models/distributionModel'
+import { useRuntimeConfig } from '#app'
 
-const BASE_URL = useRuntimeConfig().public.backendUrl + '/distribution'
+const BASE_URL = `${useRuntimeConfig().public.backendUrl}/distributions`
 
 export const distributionService = {
   async getAll(): Promise<Distribution[]> {
-    const response = await fetch(BASE_URL, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    try {
+      const response = await fetch(`${BASE_URL}/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch distributions')
       }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch distributions')
+      
+      const data = await response.json()
+      return data[0] ?? []
+    } catch (error) {
+      console.error('Error fetching distributions:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async getById(id: number): Promise<Distribution> {

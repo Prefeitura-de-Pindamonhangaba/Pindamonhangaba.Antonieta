@@ -1,11 +1,27 @@
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
-      backendUrl: process.env.BACK_BASE_URL || 'http://localhost:8000'
+      backendUrl: process.env.BACK_BASE_URL
     }
   },
   devServer: {
-    port: Number(process.env.FRONTEND_PORT) || 5000,
+    port: Number(process.env.FRONTEND_PORT),
+    https: true
+  },
+  
+  nitro: {
+    devProxy: {
+      '/api': {
+        target: process.env.BACK_BASE_URL || 'https://api.pindamonhangaba.sp.gov.br',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+          'Access-Control-Allow-Credentials': 'true'
+        }
+      }
+    }
   },
   
   devtools: { enabled: true },
