@@ -1,83 +1,114 @@
 import type { Beneficiary } from '../models/beneficiary'
+import { useRuntimeConfig } from '#app'
 
-const BASE_URL = useRuntimeConfig().public.backendUrl + '/beneficiary'
+const BASE_URL = `${useRuntimeConfig().public.backendUrl}/beneficiary`
 
 export const beneficiaryService = {
-  async getAll(): Promise<Beneficiary[]> {
-    const response = await fetch(BASE_URL, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+  async getAll(): Promise<[Beneficiary[], number]> {
+    try {
+      const response = await fetch(`${BASE_URL}/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch beneficiaries')
       }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch beneficiaries')
+      
+      const [beneficiaries, count] = await response.json()
+      return [beneficiaries, count]
+    } catch (error) {
+      console.error('Error fetching beneficiaries:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async getById(id: number): Promise<Beneficiary> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    try {
+      const response = await fetch(`${BASE_URL}/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Failed to fetch beneficiary')
       }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch beneficiary')
+      
+      return response.json()
+    } catch (error) {
+      console.error('Error fetching beneficiary:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async create(beneficiary: Omit<Beneficiary, 'id'>): Promise<Beneficiary> {
-    const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      },
-      body: JSON.stringify(beneficiary)
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to create beneficiary')
+    try {
+      const response = await fetch(`${BASE_URL}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify(beneficiary)
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Failed to create beneficiary')
+      }
+      
+      return response.json()
+    } catch (error) {
+      console.error('Error creating beneficiary:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async update(id: number, beneficiary: Partial<Beneficiary>): Promise<Beneficiary> {
-    const response = await fetch(`${BASE_URL}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      },
-      body: JSON.stringify({
-        id,
-        ...beneficiary
+    try {
+      const response = await fetch(`${BASE_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({
+          id,
+          ...beneficiary
+        })
       })
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to update beneficiary')
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Failed to update beneficiary')
+      }
+      
+      return response.json()
+    } catch (error) {
+      console.error('Error updating beneficiary:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    try {
+      const response = await fetch(`${BASE_URL}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Failed to delete beneficiary')
       }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to delete beneficiary')
+    } catch (error) {
+      console.error('Error deleting beneficiary:', error)
+      throw error
     }
   }
 }

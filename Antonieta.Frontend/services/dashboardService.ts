@@ -1,3 +1,5 @@
+import { useRuntimeConfig } from '#app'
+
 interface DashboardData {
   total_amount: number;
   month: number;
@@ -25,7 +27,7 @@ interface BeneficiaryDashboardData {
   status: 'Pode Receber' | 'Próx. Limite' | 'Limite Atingido';
 }
 
-const BASE_URL = useRuntimeConfig().public.backendUrl + '/dashboard'
+const BASE_URL = `${useRuntimeConfig().public.backendUrl}/dashboard`
 
 export const dashboardService = {
   async getTotalInputsMonth(): Promise<DashboardData> {
@@ -82,5 +84,24 @@ export const dashboardService = {
     }
     
     return response.json()
-  }
+  },
+
+  async getCurrentStock(): Promise<number> {
+    try {
+      const response = await fetch(`${BASE_URL}/current-stock`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch current stock')
+      }
+      
+      return response.json()
+    } catch (error) {
+      console.error('Error fetching current stock:', error)
+      throw error
+    }
+  },
 }

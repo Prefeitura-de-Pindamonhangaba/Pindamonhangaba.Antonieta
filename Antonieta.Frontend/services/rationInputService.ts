@@ -1,20 +1,27 @@
 import type { RationInput } from '../models/rationInputModel'
+import { useRuntimeConfig } from '#app'
 
-const BASE_URL = useRuntimeConfig().public.backendUrl + '/ration-input'
+const BASE_URL = `${useRuntimeConfig().public.backendUrl}/ration-input`
 
 export const rationInputService = {
-  async getAll(): Promise<RationInput[]> {
-    const response = await fetch(BASE_URL, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+  async getAll(): Promise<[RationInput[], number]> {
+    try {
+      const response = await fetch(`${BASE_URL}/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch ration inputs')
       }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch ration inputs')
+      
+      const [inputs, count] = await response.json()
+      return [inputs, count]
+    } catch (error) {
+      console.error('Error fetching ration inputs:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async getById(id: number): Promise<RationInput> {
@@ -46,7 +53,7 @@ export const rationInputService = {
   },
 
   async create(rationInput: Omit<RationInput, 'id'>): Promise<RationInput> {
-    const response = await fetch(BASE_URL, {
+    const response = await fetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -54,7 +54,7 @@ import {
   GiftOutlined,
   InboxOutlined,
   LogoutOutlined,
-  BarChartOutlined // Add this import
+  StockOutlined // Add this import
 } from '@ant-design/icons-vue'
 import { useAuth } from '~/composables/useAuth' // Adjust the import based on your project structure
 
@@ -88,6 +88,12 @@ const mainMenuOptions: MenuOption[] = [
     key: 'inputs',
     icon: renderIcon(InboxOutlined),
     path: '/inputs'
+  },
+  {
+    label: 'Estoques',
+    key: 'ration-stocks',
+    icon: renderIcon(StockOutlined), // Changed from InboxOutlined to StockOutlined
+    path: '/ration_stock'
   }
 ]
 

@@ -1,20 +1,27 @@
 import type { Distribution } from '../models/distributionModel'
+import { useRuntimeConfig } from '#app'
 
-const BASE_URL = useRuntimeConfig().public.backendUrl + '/distribution'
+const BASE_URL = `${useRuntimeConfig().public.backendUrl}/distribution`
 
 export const distributionService = {
-  async getAll(): Promise<Distribution[]> {
-    const response = await fetch(BASE_URL, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+  async getAll(): Promise<[Distribution[], number]> {
+    try {
+      const response = await fetch(`${BASE_URL}/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch distributions')
       }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch distributions')
+      
+      const [distributions, count] = await response.json()
+      return [distributions, count]
+    } catch (error) {
+      console.error('Error fetching distributions:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async getById(id: number): Promise<Distribution> {
@@ -31,22 +38,28 @@ export const distributionService = {
     return response.json()
   },
 
-  async getByBeneficiaryId(beneficiaryId: number): Promise<Distribution[]> {
-    const response = await fetch(`${BASE_URL}/beneficiary/${beneficiaryId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+  async getByBeneficiaryId(beneficiaryId: number): Promise<[Distribution[], number]> {
+    try {
+      const response = await fetch(`${BASE_URL}/beneficiary/${beneficiaryId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch beneficiary distributions')
       }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch beneficiary distributions')
+      
+      const [distributions, count] = await response.json()
+      return [distributions, count]
+    } catch (error) {
+      console.error('Error fetching beneficiary distributions:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async create(distribution: Omit<Distribution, 'id'>): Promise<Distribution> {
-    const response = await fetch(BASE_URL, {
+    const response = await fetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

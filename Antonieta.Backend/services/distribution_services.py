@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from dtos.create_distribution_dto import create_distribution_dto
 from dtos.update_distribution_dto import update_distribution_dto
+from models.ration_stock_model import RationStock
 
 async def get_all_distribution_service(skip: int = 0, limit: int = 100) -> Tuple[List[Distribution], int]:
     """
@@ -42,19 +43,32 @@ async def get_distribution_by_id_service(distribution_id: int) -> Optional[Distr
 
 async def create_distribution_service(distribution_dto: create_distribution_dto) -> Distribution:
     """
-    Cria um novo ração no banco de dados.
-
-    Args:
-        distribution_dto: Dados do ração a ser criado.
-
-    Returns:
-        O objeto distribution criado.
+    Cria uma nova distribuição e atualiza o estoque.
     """
-
-    db_distribution = Distribution(**distribution_dto.model_dump())
-
     db = next(get_db())
     try:
+        # Verificar e atualizar o estoque
+        ration_stock = db.query(RationStock).filter(
+            RationStock.id == distribution_dto.ration_id
+        ).first()
+        
+        if not ration_stock:
+            raise HTTPException(
+                status_code=404,
+                detail="Ração não encontrada"
+            )
+            
+        if ration_stock.stock < distribution_dto.amount:
+            raise HTTPException(
+                status_code=400,
+                detail="Estoque insuficiente"
+            )
+            
+        # Deduzir do estoque
+        ration_stock.stock -= distribution_dto.amount
+        
+        # Criar a distribuição
+        db_distribution = Distribution(**distribution_dto.model_dump())
         db.add(db_distribution)
         db.commit()
         db.refresh(db_distribution)
@@ -64,25 +78,42 @@ async def create_distribution_service(distribution_dto: create_distribution_dto)
 
 async def update_distribution_service(distribution_dto: update_distribution_dto) -> Optional[Distribution]:
     """
-    Atualiza um ração existente no banco de dados.
-
-    Args:
-        distribution_dto: Dados atualizados do ração.
-
-    Returns:
-        O objeto distribution atualizado ou None se não encontrado.
+    Atualiza uma distribuição e ajusta o estoque.
     """
     db = next(get_db())
     try:
-        distribution = db.query(Distribution).filter(Distribution.id == distribution_dto.id).first()
-        if distribution:
-            update_data = distribution_dto.model_dump(exclude={'id'}, exclude_unset=True)
-
-            for key, value in update_data.items():
-                setattr(Distribution, key, value)
-            db.commit()
-            db.refresh(Distribution)
-        return distribution
+        # Buscar distribuição atual
+        current_distribution = db.query(Distribution).filter(
+            Distribution.id == distribution_dto.id
+        ).first()
+        
+        if not current_distribution:
+            return None
+            
+        # Calcular diferença na quantidade
+        amount_difference = distribution_dto.amount - current_distribution.amount
+        
+        # Verificar e atualizar estoque
+        ration_stock = db.query(RationStock).filter(
+            RationStock.id == current_distribution.ration_id
+        ).first()
+        
+        if ration_stock.stock < amount_difference:
+            raise HTTPException(
+                status_code=400,
+                detail="Estoque insuficiente"
+            )
+            
+        # Atualizar estoque
+        ration_stock.stock -= amount_difference
+        
+        # Atualizar distribuição
+        for key, value in distribution_dto.model_dump(exclude={'id'}).items():
+            setattr(current_distribution, key, value)
+            
+        db.commit()
+        db.refresh(current_distribution)
+        return current_distribution
     finally:
         db.close()
 

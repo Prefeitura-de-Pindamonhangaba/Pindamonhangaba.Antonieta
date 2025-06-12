@@ -1,42 +1,34 @@
-name: Deploy Produção Antonieta
+name: Deploy Local Antonieta
 
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   deploy:
     runs-on: self-hosted
 
     steps:
-      # 1) Obtém o código do workflow
-      - name: Checkout do código do Workflow
+      - name: Checkout do código
         uses: actions/checkout@v3
 
-      # 2) Marca o diretório de produção como seguro para o Git
-      - name: Marcar diretório de produção como seguro
-        run: |
-          git config --global --add safe.directory /opt/PRD/ANTONIETA
-
-      # 3) Atualiza o repositório via HTTPS + token
       - name: Atualizar repositório no servidor
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd /opt/PRD/ANTONIETA
+          cd /opt/DEV/ANTONIETA
           git remote set-url origin \
             https://x-access-token:${GITHUB_TOKEN}@github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.Antonieta.git
-          git fetch origin main
-          git reset --hard origin/main
+          git fetch origin develop
+          git reset --hard origin/develop
 
-      # 4) Limpa build anterior do Frontend
       - name: Limpar build do Frontend
-        run: rm -rf /opt/PRD/ANTONIETA/Antonieta.Frontend/.output
+        run: |
+          rm -rf /opt/DEV/ANTONIETA/Antonieta.Frontend/.output
 
-      # 5) Build do Frontend (Nuxt 3)
       - name: Build Frontend (Nuxt 3)
-        working-directory: /opt/PRD/ANTONIETA/Antonieta.Frontend
+        working-directory: /opt/DEV/ANTONIETA/Antonieta.Frontend
         run: |
           npm ci
           if ! npm list @tabler/icons-vue >/dev/null 2>&1; then
@@ -45,37 +37,31 @@ jobs:
           fi
           node --max-old-space-size=4096 node_modules/.bin/nuxt build
 
-      # 6) Instala dependências do Backend
       - name: Instalar dependências Backend
-        working-directory: /opt/PRD/ANTONIETA/Antonieta.Backend
+        working-directory: /opt/DEV/ANTONIETA/Antonieta.Backend
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
 
-      # 7) Rodar Alembic migrations
       - name: Rodar Alembic migrations
-        working-directory: /opt/PRD/ANTONIETA/Antonieta.Backend
+        working-directory: /opt/DEV/ANTONIETA/Antonieta.Backend
         run: |
           source venv/bin/activate
           alembic upgrade head || true
 
-      # 8) Reiniciar (ou iniciar) serviços no PM2
       - name: Reiniciar serviços PM2
         run: |
-          # Backend de produção
-          pm2 describe PROD-ANTONIETA-BACK &>/dev/null \
-            && pm2 restart PROD-ANTONIETA-BACK \
-            || pm2 start uvicorn --name PROD-ANTONIETA-BACK \
+          pm2 describe DEV-ANTONIETA-BACK &>/dev/null \
+            && pm2 restart DEV-ANTONIETA-BACK \
+            || pm2 start uvicorn --name DEV-ANTONIETA-BACK \
                  --interpreter python3 -- --host 0.0.0.0 --port 3000 main:app
 
-          # Frontend de produção
           pm2 describe PROD-ANTONIETA-FRONT &>/dev/null \
             && pm2 restart PROD-ANTONIETA-FRONT \
             || NITRO_PORT=3001 NITRO_HOST=0.0.0.0 \
-               pm2 start /opt/PRD/ANTONIETA/Antonieta.Frontend/.output/server/index.mjs \
+               pm2 start /opt/DEV/ANTONIETA/Antonieta.Frontend/.output/server/index.mjs \
                --name PROD-ANTONIETA-FRONT --interpreter node
 
-      # 9) Persiste o estado do PM2.
       - name: Salvar estado PM2
         run: pm2 save

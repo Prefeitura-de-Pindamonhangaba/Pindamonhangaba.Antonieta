@@ -88,14 +88,15 @@ const pageLoading = ref(true)
 async function fetchBeneficiaries() {
   try {
     loading.value = true
-    const [beneficiaries] = await beneficiaryService.getAll()
+    const [beneficiaries, total] = await beneficiaryService.getAll()
     tableData.value = beneficiaries
+    pagination.value.itemCount = total
   } catch (error) {
     console.error('Erro ao carregar beneficiários:', error)
     message.error('Erro ao carregar beneficiários')
   } finally {
     loading.value = false
-    pageLoading.value = false // Add this line to stop the page loading
+    pageLoading.value = false
   }
 }
 
@@ -141,9 +142,15 @@ const columns: DataTableColumns<Beneficiary> = [
   }
 ]
 
-const pagination = {
-  pageSize: 10
-}
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  itemCount: 0,
+  onUpdatePage: (page: number) => {
+    pagination.value.page = page
+    fetchBeneficiaries()
+  }
+})
 
 function handleEdit(beneficiary: Beneficiary) {
   selectedBeneficiary.value = beneficiary

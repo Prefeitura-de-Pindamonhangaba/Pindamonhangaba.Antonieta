@@ -1,20 +1,27 @@
 import type { RationStock } from '../models/rationStockModel'
+import { useRuntimeConfig } from '#app'
 
-const BASE_URL = useRuntimeConfig().public.backendUrl + '/ration-stock'
+const BASE_URL = `${useRuntimeConfig().public.backendUrl}/ration-stock`
 
 export const rationStockService = {
   async getAll(): Promise<RationStock[]> {
-    const response = await fetch(BASE_URL, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    try {
+      const response = await fetch(`${BASE_URL}/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch ration stocks')
       }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch ration stocks')
+      
+      const data = await response.json()
+      return data[0] ?? []
+    } catch (error) {
+      console.error('Error fetching ration stocks:', error)
+      throw error
     }
-    let listOfStocks = await response.json()
-    return listOfStocks[0] ?? []
   },
 
   async getById(id: number): Promise<RationStock> {
@@ -32,7 +39,7 @@ export const rationStockService = {
   },
 
   async create(rationStock: Omit<RationStock, 'id'>): Promise<RationStock> {
-    const response = await fetch(BASE_URL, {
+    const response = await fetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
