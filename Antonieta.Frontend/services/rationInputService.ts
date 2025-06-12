@@ -53,7 +53,7 @@ export const rationInputService = {
   },
 
   async create(rationInput: Omit<RationInput, 'id'>): Promise<RationInput> {
-    const response = await fetch(BASE_URL, {
+    const response = await fetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

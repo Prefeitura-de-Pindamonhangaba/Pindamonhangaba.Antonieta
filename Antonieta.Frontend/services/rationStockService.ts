@@ -39,7 +39,7 @@ export const rationStockService = {
   },
 
   async create(rationStock: Omit<RationStock, 'id'>): Promise<RationStock> {
-    const response = await fetch(BASE_URL, {
+    const response = await fetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

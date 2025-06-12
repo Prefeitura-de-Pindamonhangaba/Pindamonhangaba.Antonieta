@@ -4,7 +4,7 @@ const BASE_URL = useRuntimeConfig().public.backendUrl + '/ration_type'
 
 export const rationTypeService = {
   async getAll(): Promise<RationType[]> {
-    const response = await fetch(BASE_URL, {
+    const response = await fetch(`${BASE_URL}/`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -32,7 +32,7 @@ export const rationTypeService = {
   },
 
   async create(rationType: Omit<RationType, 'id'>): Promise<RationType> {
-    const response = await fetch(BASE_URL, {
+    const response = await fetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
