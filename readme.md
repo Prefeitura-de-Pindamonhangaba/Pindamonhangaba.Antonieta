@@ -1,5 +1,14 @@
 <div align="center">
-  <img src=".\Antonieta.Frontend\assets\Antonieta logotipo-02.svg" alt="Projeto Antonieta Banner" width="100%">
+  <img src=".\Antonieta.Frontend\assets\Antonieta logotipo-02.svg" alt="Projeto Antonieta Banner" width="50%">
+
+  [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+  [![FastAPI](https://img.shields.io/badge/FastAPI-0.95+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+  [![Vue.js](https://img.shields.io/badge/Vue.js-3.0+-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)](https://vuejs.org/)
+  [![Nuxt](https://img.shields.io/badge/Nuxt-3.0+-00DC82?style=for-the-badge&logo=nuxt.js&logoColor=white)](https://nuxt.com/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-4.5+-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+  [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-CC2927?style=for-the-badge&logo=swagger&logoColor=white)](https://www.sqlalchemy.org/)
+  [![Naive UI](https://img.shields.io/badge/Naive_UI-2.0+-18A058?style=for-the-badge&logo=vue.js&logoColor=white)](https://www.naiveui.com/)
 </div>
 
 # Projeto Antonieta - Sistema de Distribuição de Rações
