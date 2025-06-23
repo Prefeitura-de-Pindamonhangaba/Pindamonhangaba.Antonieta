@@ -1,5 +1,5 @@
 <template>
-  <n-modal :show="modelValue" @update:show="$emit('update:modelValue', $event)" preset="dialog" style="width: 600px">
+  <n-modal :show="modelValue" @update:show="$emit('update:modelValue', $event)" preset="dialog" style="width: 800px">
     <template #header>
       <div class="modal-header">
         <h3>{{ props.editMode ? 'Editar Beneficiário' : 'Cadastrar Novo Beneficiário' }}</h3>
@@ -43,6 +43,93 @@
             placeholder="Limite mensal em kg"
           />
         </n-form-item>
+
+        <n-form-item label="Nome da Mãe" path="mother_name">
+          <n-input 
+            v-model:value="formData.mother_name" 
+            clearable 
+            style="width: 100%" 
+            placeholder="Nome da mãe do beneficiário"/>
+        </n-form-item>
+
+        <n-form-item label="Data de Nascimento" path="birth_date">
+          <n-date-picker 
+            v-model:value="formData.birth_date"
+            type="date"
+            clearable
+            style="width: 100%"/>
+        </n-form-item>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Quantidade de Cães" path="qtd_dogs">
+              <n-input-number 
+                v-model:value="formData.qtd_dogs"
+                clearable
+                :min="0"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Cães Castrados" path="qtd_castred_dogs">
+              <n-input-number 
+                v-model:value="formData.qtd_castred_dogs"
+                clearable
+                :min="0"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Quantidade de Gatos" path="qtd_cats">
+              <n-input-number 
+                v-model:value="formData.qtd_cats"
+                clearable
+                :min="0"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Gatos Castrados" path="qtd_castred_cats">
+              <n-input-number 
+                v-model:value="formData.qtd_castred_cats"
+                clearable
+                :min="0"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Recebe Benefício do Governo" path="government_benefit">
+              <n-switch v-model:value="formData.government_benefit"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Recebe Cesta Básica" path="receives_basic_basket">
+              <n-switch v-model:value="formData.receives_basic_basket"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <n-form-item label="Como Soube do Projeto" path="how_did_you_hear">
+          <n-input 
+            v-model:value="formData.how_did_you_hear"
+            type="textarea"
+            clearable
+            style="width: 100%"/>
+        </n-form-item>
+
+        <n-form-item label="Observações" path="observations">
+          <n-input 
+            v-model:value="formData.observations"
+            type="textarea"
+            clearable
+            style="width: 100%"/>
+        </n-form-item>
       </n-form>
     </div>
     <template #action>
@@ -66,7 +153,10 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton } from 'naive-ui'
+import { 
+  NModal, NForm, NFormItem, NInput, NInputNumber, 
+  NButton, NGrid, NGridItem, NSwitch, NDatePicker 
+} from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
 import type { Beneficiary } from '~/models/beneficiaryModel'
 
@@ -89,7 +179,17 @@ const formData = ref({
   document: '',
   address: '',
   contact: '',
-  monthly_limit: null as number | null // Changed from limit to monthly_limit to match backend
+  monthly_limit: null as number | null,
+  mother_name: null as string | null,
+  birth_date: null as string | null,
+  qtd_dogs: 0,
+  qtd_castred_dogs: 0,
+  qtd_cats: 0,
+  qtd_castred_cats: 0,
+  government_benefit: false,
+  receives_basic_basket: false,
+  how_did_you_hear: null as string | null,
+  observations: null as string | null
 })
 
 const rules = {
@@ -122,7 +222,17 @@ watch(() => props.beneficiaryData, (newValue) => {
       document: newValue.document,
       address: newValue.address,
       contact: newValue.contact,
-      monthly_limit: newValue.monthly_limit
+      monthly_limit: newValue.monthly_limit,
+      mother_name: newValue.mother_name,
+      birth_date: newValue.birth_date,
+      qtd_dogs: newValue.qtd_dogs,
+      qtd_castred_dogs: newValue.qtd_castred_dogs,
+      qtd_cats: newValue.qtd_cats,
+      qtd_castred_cats: newValue.qtd_castred_cats,
+      government_benefit: newValue.government_benefit,
+      receives_basic_basket: newValue.receives_basic_basket,
+      how_did_you_hear: newValue.how_did_you_hear,
+      observations: newValue.observations
     }
   }
 }, { immediate: true })
@@ -173,7 +283,17 @@ const resetForm = () => {
     document: '',
     address: '',
     contact: '',
-    monthly_limit: null
+    monthly_limit: null,
+    mother_name: null,
+    birth_date: null,
+    qtd_dogs: 0,
+    qtd_castred_dogs: 0,
+    qtd_cats: 0,
+    qtd_castred_cats: 0,
+    government_benefit: false,
+    receives_basic_basket: false,
+    how_did_you_hear: null,
+    observations: null
   }
 }
 
