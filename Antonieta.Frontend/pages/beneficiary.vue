@@ -73,7 +73,7 @@ import {
 import { IconUserPlus, IconEdit, IconTrash } from '@tabler/icons-vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import type { DataTableColumns } from 'naive-ui'
-import type { Beneficiary } from '../models/beneficiary'
+import type { Beneficiary } from '../models/beneficiaryModel'
 import { beneficiaryService } from '~/services/beneficiaryService'
 
 const message = useMessage()

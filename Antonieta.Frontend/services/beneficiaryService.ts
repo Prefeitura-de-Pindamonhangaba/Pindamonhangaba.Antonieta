@@ -1,4 +1,4 @@
-import type { Beneficiary } from '../models/beneficiary'
+import type { Beneficiary } from '../models/beneficiaryModel'
 import { useRuntimeConfig } from '#app'
 
 const BASE_URL = `${useRuntimeConfig().public.backendUrl}/beneficiary`

@@ -115,7 +115,7 @@ import { IconPlus, IconUserPlus, IconCheck, IconAlertTriangle, IconX } from '@ta
 import DistributionModal from '../components/modals/DistributionModal.vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import InputModal from '../components/modals/InputModal.vue'
-import type { Beneficiary } from '../models/beneficiary'
+import type { Beneficiary } from '../models/beneficiaryModel'
 import { beneficiaryService } from '../services/beneficiaryService'
 import { rationStockService } from '../services/rationStockService'
 import { distributionService } from '~/services/distributionService'

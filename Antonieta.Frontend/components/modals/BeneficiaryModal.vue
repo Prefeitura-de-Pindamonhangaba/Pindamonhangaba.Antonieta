@@ -68,7 +68,7 @@
 import { ref, defineProps, defineEmits, watch } from 'vue'
 import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton } from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
-import type { Beneficiary } from '~/models/beneficiary'
+import type { Beneficiary } from '~/models/beneficiaryModel'
 
 const props = defineProps<{
   modelValue: boolean
