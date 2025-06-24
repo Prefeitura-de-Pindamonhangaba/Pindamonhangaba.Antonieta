@@ -12,23 +12,47 @@
 import { NConfigProvider, NMessageProvider } from 'naive-ui'
 
 const themeOverrides = {
-    common: {
-      primaryColor: '#f77800',
-      primaryColorHover: "#d46700",
-      primaryColorPressed: "#f77800", 
-      fontFamily: "'Montserrat', sans-serif",
-    },
+  common: {
+    primaryColor: '#f77800',
+    primaryColorHover: "#e66e00",
+    primaryColorPressed: "#d86400", 
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+  },
+  Button: {
+    fontSizeMedium: '14px',
+    heightMedium: '40px',
+    paddingMedium: '0 24px',
+  },
+  Card: {
+    borderRadius: '8px',
+    paddingMedium: '16px',
+  },
+  DataTable: {
+    thPaddingMedium: '12px 16px',
+    tdPaddingMedium: '12px 16px',
+  },
+  Form: {
+    labelFontSizeTopMedium: '14px',
+  },
+  Input: {
+    borderRadius: '4px',
+    heightMedium: '40px',
+  },
+  Modal: {
+    borderRadius: '8px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
   }
+}
 </script>
 
 <style>
-
 :root {
   --primary-color: #f77800;
   --primary-text: white;
   --success-color: #18a058;
   --warning-color: #f0a020;
   --error-color: #d03050;
+  --info-color: #2080f0;
   --background-light: #f5f5f5;
   --text-dark: #263238;
   --divider-color: #f77800;
@@ -134,5 +158,24 @@ body {
 .status-tag.error {
   background-color: var(--error-color);
   color: white;
+}
+
+/* Media queries para responsividade */
+@media (max-width: 768px) {
+  .page-header h1 {
+    font-size: 20px;
+  }
+  
+  .page-header .divider {
+    width: 80px;
+  }
+  
+  .modal-content {
+    padding: 16px;
+  }
+  
+  .modal-header, .modal-footer {
+    padding: 12px 16px;
+  }
 }
 </style>

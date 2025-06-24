@@ -45,5 +45,12 @@ watch(() => props.value, (newValue) => {
 <style scoped>
 .search-field {
   width: 300px;
+  transition: width 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .search-field {
+    width: 100%;
+  }
 }
 </style>

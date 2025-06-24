@@ -1,17 +1,29 @@
 <template>
-  <n-layout style="min-height: 100vh">
+  <div class="page-wrapper">
     <n-spin :show="loading" description="Carregando...">
-      <n-layout-content style="padding: 24px">
-        <slot />
-      </n-layout-content>
+      <slot></slot>
     </n-spin>
-  </n-layout>
+  </div>
 </template>
 
-<script setup lang="ts">
-import { NLayout, NLayoutContent, NSpin } from 'naive-ui'
-
-defineProps<{
-  loading: boolean
-}>()
+<script setup>
+defineProps({
+  loading: {
+    type: Boolean,
+    default: false
+  }
+})
 </script>
+
+<style scoped>
+.page-wrapper {
+  padding: 24px;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: 16px;
+  }
+}
+</style>
