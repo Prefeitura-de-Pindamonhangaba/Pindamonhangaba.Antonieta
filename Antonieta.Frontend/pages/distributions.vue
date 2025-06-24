@@ -7,8 +7,20 @@
         <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
       </n-space>
 
-      <!-- Action Buttons -->
-      <n-space>
+      <!-- Search and Action Buttons -->
+      <n-space justify="space-between" align="center">
+        <n-input
+          v-model:value="searchQuery"
+          placeholder="Buscar por beneficiário ou tipo de ração..."
+          clearable
+          style="width: 350px"
+          @update:value="handleSearch"
+        >
+          <template #prefix>
+            <n-icon><IconSearch /></n-icon>
+          </template>
+        </n-input>
+
         <n-button 
           type="primary" 
           style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
@@ -28,6 +40,7 @@
           :data="tableData"
           :pagination="pagination"
           :loading="loading"
+          @update:sorter="handleSort"
         />
       </n-card>
 
@@ -40,10 +53,10 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted } from 'vue'
+import { h, ref, onMounted, watch } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
-import { NCard, NDataTable, NButton, NIcon, NLayout, NLayoutContent, NSpace, NH1, NDivider, useMessage } from 'naive-ui'
-import { IconPlus } from '@tabler/icons-vue'
+import { NCard, NDataTable, NButton, NIcon, NLayout, NLayoutContent, NSpace, NH1, NDivider, NInput, useMessage } from 'naive-ui'
+import { IconPlus, IconSearch } from '@tabler/icons-vue'
 import DistributionModal from '../components/modals/DistributionModal.vue'
 import { distributionService } from '~/services/distributionService'
 import { beneficiaryService } from '~/services/beneficiaryService'
@@ -55,26 +68,78 @@ const message = useMessage()
 const loading = ref(false)
 const showDistributionModal = ref(false)
 const tableData = ref<Distribution[]>([])
+const allDistributions = ref<Distribution[]>([])
 const beneficiariesMap = ref<Map<number, string>>(new Map())
 const rationTypesMap = ref<Map<number, string>>(new Map())
 const pageLoading = ref(true)
+const searchQuery = ref('')
+
+// Adiciona a função de busca
+const handleSearch = (query: string) => {
+  if (!query) {
+    // Se a busca for limpa, mostre todas as distribuições
+    tableData.value = [...allDistributions.value]
+    return
+  }
+  
+  // Filtra distribuições por beneficiário ou tipo de ração
+  const normalizedQuery = query.toLowerCase().trim()
+  tableData.value = allDistributions.value.filter(distribution => 
+    (distribution.beneficiaryName?.toLowerCase().includes(normalizedQuery) || 
+     distribution.rationTypeName?.toLowerCase().includes(normalizedQuery))
+  )
+}
 
 // Função para buscar distribuições
 const fetchDistributions = async () => {
   try {
-    pageLoading.value = true
     loading.value = true
-    await Promise.all([loadBeneficiaries(), loadRationStocks()])
     
-    const [distributions] = await distributionService.getAll()
-    tableData.value = distributions.map(dist => ({
-      ...dist,
-      beneficiaryName: dist.beneficiary_id ? beneficiariesMap.value.get(dist.beneficiary_id) : 'N/A',
-      rationTypeName: rationTypesMap.value.get(dist.ration_id) || 'N/A'
-    }))
+    // Adiciona um pequeno atraso para mostrar o loading (apenas se estiver recarregando)
+    if (!pageLoading.value) {
+      const loadingMsg = message.loading('Atualizando lista de distribuições...', {
+        duration: 0
+      })
+      
+      await Promise.all([loadBeneficiaries(), loadRationStocks()])
+      
+      const [distributions, total] = await distributionService.getAll()
+      
+      loadingMsg.destroy()
+      message.success(`${distributions.length} distribuições carregadas com sucesso!`)
+      
+      const processedDistributions = distributions.map(dist => ({
+        ...dist,
+        beneficiaryName: dist.beneficiary_id ? beneficiariesMap.value.get(dist.beneficiary_id) : 'N/A',
+        rationTypeName: rationTypesMap.value.get(dist.ration_id) || 'N/A'
+      }))
+      
+      allDistributions.value = processedDistributions
+      tableData.value = processedDistributions
+      pagination.value.itemCount = total || distributions.length
+    } else {
+      // Carregamento inicial, sem mensagem
+      await Promise.all([loadBeneficiaries(), loadRationStocks()])
+      
+      const [distributions, total] = await distributionService.getAll()
+      
+      const processedDistributions = distributions.map(dist => ({
+        ...dist,
+        beneficiaryName: dist.beneficiary_id ? beneficiariesMap.value.get(dist.beneficiary_id) : 'N/A',
+        rationTypeName: rationTypesMap.value.get(dist.ration_id) || 'N/A'
+      }))
+      
+      allDistributions.value = processedDistributions
+      tableData.value = processedDistributions
+      pagination.value.itemCount = total || distributions.length
+    }
   } catch (error) {
     console.error('Error fetching distributions:', error)
-    message.error('Erro ao carregar distribuições')
+    message.error({
+      content: 'Erro ao carregar distribuições. Tente novamente.',
+      duration: 5000,
+      closable: true
+    })
   } finally {
     loading.value = false
     pageLoading.value = false
@@ -108,13 +173,55 @@ const loadRationStocks = async () => {
 // Atualiza o manipulador de envio para usar o serviço
 const handleDistributionSubmit = async (formData: Omit<Distribution, 'id'>) => {
   try {
+    const loadingMsg = message.loading('Registrando distribuição...', {
+      duration: 0
+    })
+    
     await distributionService.create(formData)
+    
+    loadingMsg.destroy()
     message.success('Distribuição registrada com sucesso')
+    
     await fetchDistributions()
   } catch (error) {
-    message.error('Erro ao registrar distribuição')
+    message.error({
+      content: 'Erro ao registrar distribuição. Tente novamente.',
+      duration: 5000,
+      closable: true
+    })
     console.error(error)
   }
+}
+
+// Ordenação
+const handleSort = (sorter: { columnKey: keyof Distribution, order: 'ascend' | 'descend' | false }) => {
+  const { columnKey, order } = sorter
+  
+  if (!order || !columnKey) {
+    fetchDistributions()
+    return
+  }
+
+  const sortedData = [...tableData.value]
+  
+  sortedData.sort((a, b) => {
+    const multiplier = order === 'ascend' ? 1 : -1
+    
+    if (columnKey === 'date') {
+      return (new Date(a.date).getTime() - new Date(b.date).getTime()) * multiplier
+    }
+    
+    if (columnKey === 'amount') {
+      return ((a.amount || 0) - (b.amount || 0)) * multiplier
+    }
+    
+    // Para beneficiaryName e rationTypeName
+    const aValue = String(a[columnKey as keyof Distribution] || '')
+    const bValue = String(b[columnKey as keyof Distribution] || '')
+    return aValue.localeCompare(bValue) * multiplier
+  })
+
+  tableData.value = sortedData
 }
 
 // Atualiza as colunas para corresponder ao modelo de Distribuição
@@ -122,7 +229,7 @@ const columns: DataTableColumns<Distribution> = [
   {
     title: 'Data',
     key: 'date',
-    sorter: true,
+    sorter: 'default',
     render(row) {
       return new Date(row.date).toLocaleString('pt-BR', {
         day: '2-digit',
@@ -136,6 +243,7 @@ const columns: DataTableColumns<Distribution> = [
   {
     title: 'Beneficiário',
     key: 'beneficiaryName',
+    sorter: 'default',
     render(row) {
       return row.beneficiaryName || 'N/A'
     }
@@ -143,6 +251,7 @@ const columns: DataTableColumns<Distribution> = [
   {
     title: 'Tipo de Ração',
     key: 'rationTypeName',
+    sorter: 'default',
     render(row) {
       return row.rationTypeName || 'N/A'
     }
@@ -150,19 +259,36 @@ const columns: DataTableColumns<Distribution> = [
   {
     title: 'Quantidade',
     key: 'amount',
+    sorter: 'default',
     render(row) {
       return `${row.amount} kg`
     }
   }
 ]
 
-const pagination = {
-  pageSize: 10
-}
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  itemCount: 0,
+  onUpdatePage: (page: number) => {
+    pagination.value.page = page
+    fetchDistributions()
+  }
+})
 
 // Carrega os dados quando o componente é montado
 onMounted(() => {
+  pageLoading.value = true
   fetchDistributions()
+})
+
+// Reset search when data is refreshed
+watch(() => allDistributions.value, () => {
+  if (!searchQuery.value) {
+    tableData.value = [...allDistributions.value]
+  } else {
+    handleSearch(searchQuery.value)
+  }
 })
 </script>
 
