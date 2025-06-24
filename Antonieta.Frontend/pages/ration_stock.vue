@@ -7,8 +7,20 @@
         <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
       </n-space>
 
-      <!-- Action Buttons -->
-      <n-space>
+      <!-- Search and Action Buttons -->
+      <n-space justify="space-between" align="center">
+        <n-input
+          v-model:value="searchQuery"
+          placeholder="Buscar por nome ou descrição..."
+          clearable
+          style="width: 300px"
+          @update:value="handleSearch"
+        >
+          <template #prefix>
+            <n-icon><IconSearch /></n-icon>
+          </template>
+        </n-input>
+
         <n-button
           type="primary"
           style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
@@ -28,6 +40,7 @@
           :data="tableData"
           :pagination="pagination"
           :loading="loading"
+          @update:sorter="handleSort"
           remote
         />
       </n-card>
@@ -100,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted } from 'vue'
+import { h, ref, onMounted, watch } from 'vue'
 import type { DataTableColumns, FormInst, FormRules } from 'naive-ui'
 import { 
   NCard, 
@@ -117,7 +130,7 @@ import {
   NInputNumber,
   useMessage 
 } from 'naive-ui'
-import { IconPlus, IconEdit, IconTrash } from '@tabler/icons-vue'
+import { IconPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-vue'
 import type { RationStock } from '~/models/rationStockModel'
 import { rationStockService } from '~/services/rationStockService'
 
@@ -131,6 +144,8 @@ const showDeleteModal = ref(false)
 const editMode = ref(false)
 const selectedId = ref<number | null>(null)
 const tableData = ref<RationStock[]>([])
+const allRationStocks = ref<RationStock[]>([])
+const searchQuery = ref('')
 
 const formValue = ref({
   name: '',
@@ -163,32 +178,78 @@ const rules: FormRules = {
   }
 }
 
+// Função de busca
+const handleSearch = (query: string) => {
+  if (!query) {
+    // Se a busca for limpa, mostre todas as rações
+    tableData.value = [...allRationStocks.value]
+    return
+  }
+  
+  // Filtra rações por nome ou descrição
+  const normalizedQuery = query.toLowerCase().trim()
+  tableData.value = allRationStocks.value.filter(stock => 
+    stock.name.toLowerCase().includes(normalizedQuery) || 
+    stock.description.toLowerCase().includes(normalizedQuery)
+  )
+}
+
+// Ordenação
+const handleSort = (sorter: { columnKey: keyof RationStock, order: 'ascend' | 'descend' | false }) => {
+  const { columnKey, order } = sorter
+  
+  if (!order || !columnKey) {
+    tableData.value = [...allRationStocks.value]
+    return
+  }
+
+  const sortedData = [...tableData.value]
+  
+  sortedData.sort((a, b) => {
+    const multiplier = order === 'ascend' ? 1 : -1
+    
+    if (columnKey === 'stock') {
+      return ((a[columnKey] || 0) - (b[columnKey] || 0)) * multiplier
+    }
+    
+    const aValue = String(a[columnKey] || '')
+    const bValue = String(b[columnKey] || '')
+    return aValue.localeCompare(bValue) * multiplier
+  })
+
+  tableData.value = sortedData
+}
+
 const pagination = ref({
   page: 1,
   pageSize: 10,
-  total: 0,
+  itemCount: 0,
   onChange: (page: number) => {
     pagination.value.page = page
-    fetchRationStocks()
+    // Não precisamos recarregar os dados do servidor, apenas paginar os dados locais
   }
 })
 
 const columns: DataTableColumns<RationStock> = [
   {
     title: 'Nome',
-    key: 'name'
+    key: 'name',
+    sorter: 'default'
   },
   {
     title: 'Descrição',
-    key: 'description'
+    key: 'description',
+    sorter: 'default'
   },
   {
     title: 'Unidade',
-    key: 'unit'
+    key: 'unit',
+    sorter: 'default'
   },
   {
     title: 'Estoque',
-    key: 'stock'
+    key: 'stock',
+    sorter: (row1: RationStock, row2: RationStock) => (row1.stock || 0) - (row2.stock || 0)
   },
   {
     title: 'Ações',
@@ -223,12 +284,35 @@ const columns: DataTableColumns<RationStock> = [
 async function fetchRationStocks() {
   try {
     loading.value = true
-    const stocks = await rationStockService.getAll()
-    tableData.value = stocks
-    pagination.value.total = stocks.length
+    
+    // Adiciona um pequeno atraso para mostrar o loading (apenas se estiver recarregando)
+    if (!pageLoading.value) {
+      const loadingMsg = message.loading('Atualizando estoque de rações...', {
+        duration: 0
+      })
+      
+      const stocks = await rationStockService.getAll()
+      
+      loadingMsg.destroy()
+      message.success(`${stocks.length} tipos de ração carregados com sucesso!`)
+      
+      allRationStocks.value = stocks
+      tableData.value = stocks
+      pagination.value.itemCount = stocks.length
+    } else {
+      // Carregamento inicial, sem mensagem
+      const stocks = await rationStockService.getAll()
+      allRationStocks.value = stocks
+      tableData.value = stocks
+      pagination.value.itemCount = stocks.length
+    }
   } catch (error) {
     console.error('Error fetching ration stocks:', error)
-    message.error('Erro ao carregar estoque de rações')
+    message.error({
+      content: 'Erro ao carregar estoque de rações. Tente novamente.',
+      duration: 5000,
+      closable: true
+    })
   } finally {
     loading.value = false
     pageLoading.value = false
@@ -251,12 +335,23 @@ async function confirmDelete() {
   if (!selectedId.value) return
 
   try {
+    const loadingMsg = message.loading('Excluindo ração...', {
+      duration: 0
+    })
+    
     await rationStockService.delete(selectedId.value)
+    
+    loadingMsg.destroy()
     message.success('Ração excluída com sucesso')
+    
     await fetchRationStocks()
   } catch (error) {
     console.error('Error deleting ration stock:', error)
-    message.error('Erro ao excluir ração')
+    message.error({
+      content: 'Erro ao excluir ração. Tente novamente.',
+      duration: 5000,
+      closable: true
+    })
   } finally {
     showDeleteModal.value = false
     selectedId.value = null
@@ -277,28 +372,49 @@ function closeModal() {
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate()
-
   try {
+    await formRef.value?.validate()
     submitLoading.value = true
+    
+    const loadingMsg = message.loading(editMode.value ? 'Atualizando ração...' : 'Adicionando ração...', {
+      duration: 0
+    })
+    
     if (editMode.value && selectedId.value) {
       await rationStockService.update(selectedId.value, formValue.value)
+      loadingMsg.destroy()
       message.success('Ração atualizada com sucesso')
     } else {
       await rationStockService.create(formValue.value)
+      loadingMsg.destroy()
       message.success('Ração adicionada com sucesso')
     }
+    
     closeModal()
     await fetchRationStocks()
   } catch (error) {
     console.error('Error submitting ration stock:', error)
-    message.error('Erro ao salvar ração')
+    message.error({
+      content: 'Erro ao salvar ração. Tente novamente.',
+      duration: 5000,
+      closable: true
+    })
   } finally {
     submitLoading.value = false
   }
 }
 
 onMounted(() => {
+  pageLoading.value = true
   fetchRationStocks()
+})
+
+// Reset search when data is refreshed
+watch(() => allRationStocks.value, () => {
+  if (!searchQuery.value) {
+    tableData.value = [...allRationStocks.value]
+  } else {
+    handleSearch(searchQuery.value)
+  }
 })
 </script>
