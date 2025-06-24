@@ -7,8 +7,20 @@
         <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
       </n-space>
 
-      <!-- Action Buttons -->
-      <n-space>
+      <!-- Search and Action Buttons -->
+      <n-space justify="space-between" align="center">
+        <n-input
+          v-model:value="searchQuery"
+          placeholder="Buscar por nome do beneficiário..."
+          clearable
+          style="width: 300px"
+          @update:value="handleSearch"
+        >
+          <template #prefix>
+            <n-icon><IconSearch /></n-icon>
+          </template>
+        </n-input>
+
         <n-button
           type="primary"
           style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
@@ -71,7 +83,7 @@ import {
   NDivider,
   useMessage
 } from 'naive-ui'
-import { IconUserPlus, IconEdit, IconTrash } from '@tabler/icons-vue'
+import { IconUserPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import type { DataTableColumns } from 'naive-ui'
 import type { Beneficiary } from '../models/beneficiaryModel'
@@ -85,11 +97,14 @@ const showDeleteModal = ref(false)
 const selectedBeneficiaryId = ref<number | null>(null)
 const selectedBeneficiary = ref<Beneficiary | null>(null)
 const pageLoading = ref(true)
+const searchQuery = ref('')
+const allBeneficiaries = ref<Beneficiary[]>([])
 
 async function fetchBeneficiaries() {
   try {
     loading.value = true
     const [beneficiaries, total] = await beneficiaryService.getAll()
+    allBeneficiaries.value = beneficiaries // Store original data
     tableData.value = beneficiaries
     pagination.value.itemCount = total
   } catch (error) {
@@ -263,6 +278,30 @@ onMounted(async () => {
 watch(showBeneficiaryModal, (newValue) => {
   if (!newValue) {
     selectedBeneficiary.value = null
+  }
+})
+
+// Add search handler
+const handleSearch = (query: string) => {
+  if (!query) {
+    // If search is cleared, show all beneficiaries
+    tableData.value = [...allBeneficiaries.value]
+    return
+  }
+  
+  // Filter beneficiaries by name
+  const normalizedQuery = query.toLowerCase().trim()
+  tableData.value = allBeneficiaries.value.filter(beneficiary => 
+    beneficiary.name.toLowerCase().includes(normalizedQuery)
+  )
+}
+
+// Reset search when data is refreshed
+watch(() => allBeneficiaries.value, () => {
+  if (!searchQuery.value) {
+    tableData.value = [...allBeneficiaries.value]
+  } else {
+    handleSearch(searchQuery.value)
   }
 })
 </script>
