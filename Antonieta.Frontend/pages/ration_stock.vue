@@ -2,39 +2,32 @@
   <page-wrapper :loading="pageLoading">
     <n-space vertical size="large">
       <!-- Header -->
-      <n-space vertical size="small">
-        <n-h1 style="color: #f77800; margin: 0">Estoque de Rações</n-h1>
-        <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
-      </n-space>
+      <div class="page-header">
+        <n-h1>Estoque de Rações</n-h1>
+        <n-divider class="divider" />
+      </div>
 
       <!-- Search and Action Buttons -->
       <n-space justify="space-between" align="center">
-        <n-input
+        <search-field
           v-model:value="searchQuery"
           placeholder="Buscar por nome ou descrição..."
-          clearable
-          style="width: 300px"
-          @update:value="handleSearch"
-        >
-          <template #prefix>
-            <n-icon><IconSearch /></n-icon>
-          </template>
-        </n-input>
+          @search="handleSearch"
+        />
 
-        <n-button
+        <app-button
           type="primary"
-          style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
           @click="showRationStockModal = true"
         >
           <template #icon>
             <n-icon><IconPlus /></n-icon>
           </template>
           Adicionar Nova Ração
-        </n-button>
+        </app-button>
       </n-space>
 
       <!-- Table -->
-      <n-card>
+      <n-card class="page-card">
         <n-data-table
           :columns="columns"
           :data="tableData"
@@ -52,49 +45,50 @@
         style="width: 600px"
         :title="editMode ? 'Editar Ração' : 'Nova Ração'"
       >
-        <n-form
-          ref="formRef"
-          :model="formValue"
-          :rules="rules"
-          label-placement="left"
-          label-width="auto"
-          require-mark-placement="right-hanging"
-          size="medium"
-        >
-          <n-form-item label="Nome" path="name">
-            <n-input v-model:value="formValue.name" placeholder="Nome da ração" />
-          </n-form-item>
+        <div class="modal-content">
+          <n-form
+            ref="formRef"
+            :model="formValue"
+            :rules="rules"
+            label-placement="left"
+            label-width="auto"
+            require-mark-placement="right-hanging"
+            size="medium"
+          >
+            <n-form-item label="Nome" path="name" class="form-item">
+              <n-input v-model:value="formValue.name" placeholder="Nome da ração" />
+            </n-form-item>
 
-          <n-form-item label="Descrição" path="description">
-            <n-input
-              v-model:value="formValue.description"
-              type="textarea"
-              placeholder="Descrição da ração"
-            />
-          </n-form-item>
+            <n-form-item label="Descrição" path="description" class="form-item">
+              <n-input
+                v-model:value="formValue.description"
+                type="textarea"
+                placeholder="Descrição da ração"
+              />
+            </n-form-item>
 
-          <n-form-item label="Unidade" path="unit">
-            <n-input v-model:value="formValue.unit" placeholder="Unidade (ex: kg)" />
-          </n-form-item>
+            <n-form-item label="Unidade" path="unit" class="form-item">
+              <n-input v-model:value="formValue.unit" placeholder="Unidade (ex: kg)" />
+            </n-form-item>
 
-          <n-form-item label="Estoque Inicial" path="stock">
-            <n-input-number v-model:value="formValue.stock" placeholder="Quantidade inicial" />
-          </n-form-item>
-        </n-form>
+            <n-form-item label="Estoque Inicial" path="stock" class="form-item">
+              <n-input-number v-model:value="formValue.stock" placeholder="Quantidade inicial" />
+            </n-form-item>
+          </n-form>
+        </div>
 
-        <template #footer>
+        <div class="modal-footer">
           <n-space justify="end">
-            <n-button @click="closeModal">Cancelar</n-button>
-            <n-button
+            <app-button @click="closeModal">Cancelar</app-button>
+            <app-button
               type="primary"
               :loading="submitLoading"
               @click="handleSubmit"
-              style="background-color: #f77800"
             >
               {{ editMode ? 'Atualizar' : 'Adicionar' }}
-            </n-button>
+            </app-button>
           </n-space>
-        </template>
+        </div>
       </n-modal>
 
       <!-- Delete Modal -->
@@ -418,3 +412,48 @@ watch(() => allRationStocks.value, () => {
   }
 })
 </script>
+
+<style scoped>
+.page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.divider {
+  width: 100px;
+  margin: 0;
+  background-color: #f77800;
+}
+
+.search-field {
+  width: 300px;
+}
+
+.app-button {
+  background-color: #f77800;
+  font-size: 14px;
+  padding: 12px 24px;
+}
+
+.page-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.modal-content {
+  padding: 16px;
+}
+
+.form-item {
+  margin-bottom: 16px;
+}
+
+.modal-footer {
+  padding: 16px;
+  text-align: right;
+}
+</style>

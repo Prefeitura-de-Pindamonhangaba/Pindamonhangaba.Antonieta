@@ -4,42 +4,41 @@
       <n-layout-content style="padding: 24px">
         <n-space vertical size="large">
           <!-- Header -->
-          <n-space vertical size="small">
-            <n-h1 style="color: #f77800; margin: 0">Dashboard</n-h1>
-            <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
-          </n-space>
+          <div class="page-header">
+            <n-h1>Dashboard</n-h1>
+            <n-divider class="divider" />
+          </div>
 
           <!-- Action Buttons -->
           <n-space>
-            <n-button 
+            <app-button 
               type="primary" 
-              style="font-size: 14px; padding: 12px 24px"
               @click="showDistributionModal = true"
             >
               <template #icon>
                 <n-icon><IconPlus /></n-icon>
               </template>
               Registrar Nova Saída
-            </n-button>
-            <n-button 
+            </app-button>
+            
+            <app-button 
               type="primary"
-              style="font-size: 14px; padding: 12px 24px"
               @click="showInputModal = true"
             >
               <template #icon>
                 <n-icon><IconPlus /></n-icon>
               </template>
               Registrar Nova Entrada
-            </n-button>
-            <n-button 
-              style="color: #f77800; border-color: #f77800; font-size: 14px; padding: 12px 24px"
+            </app-button>
+            
+            <app-button 
               @click="showBeneficiaryModal = true"
             >
               <template #icon>
                 <n-icon><IconUserPlus /></n-icon>
               </template>
               Adicionar Novo Beneficiário
-            </n-button>
+            </app-button>
           </n-space>
 
           <DistributionModal v-model="showDistributionModal" @submit="handleDistributionSubmit" />
@@ -48,47 +47,42 @@
 
           <!-- Summary Cards -->
           <n-grid x-gap="12" y-gap="12" cols="3" responsive="self">
-            <n-gi>
-              <n-card>
+            <n-grid-item>
+              <n-card class="page-card">
                 <n-space vertical align="center">
                   <n-text depth="3">Entrada Total (Mês)</n-text>
                   <n-statistic :value="`${total_inputs} kg`" />
                 </n-space>
               </n-card>
-            </n-gi>
-            <n-gi>
-              <n-card>
+            </n-grid-item>
+            <n-grid-item>
+              <n-card class="page-card">
                 <n-space vertical align="center">
                   <n-text depth="3">Saída Total (Mês)</n-text>
                   <n-statistic :value="`${total_distributions} kg`" />
                 </n-space>
               </n-card>
-            </n-gi>
-            <n-gi>
-              <n-card>
+            </n-grid-item>
+            <n-grid-item>
+              <n-card class="page-card">
                 <n-space vertical align="center">
                   <n-text depth="3">Estoque Atual</n-text>
                   <n-statistic :value="`${current_stock} kg`" />
                 </n-space>
               </n-card>
-            </n-gi>
+            </n-grid-item>
           </n-grid>
 
           <!-- Beneficiaries Table with Search -->
-          <n-card title="Beneficiários e Controle Mensal">
+          <n-card class="page-card" title="Beneficiários e Controle Mensal">
             <n-space vertical size="small">
               <!-- Search input -->
-              <n-input
+              <search-field
                 v-model:value="searchQuery"
                 placeholder="Buscar por nome de beneficiário..."
-                clearable
-                style="max-width: 300px; margin-bottom: 12px;"
-                @update:value="handleSearch"
-              >
-                <template #prefix>
-                  <n-icon><IconSearch /></n-icon>
-                </template>
-              </n-input>
+                @search="handleSearch"
+                style="margin-bottom: 12px;"
+              />
               
               <!-- Data table -->
               <n-data-table
@@ -450,5 +444,31 @@ onUnmounted(() => {
 <style scoped>
 .n-spin {
   min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.divider {
+  width: 100px;
+  margin: 0;
+  background-color: #f77800;
+}
+
+.app-button {
+  font-size: 14px;
+  padding: 12px 24px;
+}
+
+.page-card {
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-field {
+  max-width: 300px;
+  margin-bottom: 12px;
 }
 </style>

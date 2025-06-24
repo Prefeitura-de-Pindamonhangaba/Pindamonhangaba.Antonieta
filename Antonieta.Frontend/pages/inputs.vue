@@ -2,39 +2,32 @@
   <page-wrapper :loading="pageLoading">
     <n-space vertical size="large">
       <!-- Header -->
-      <n-space vertical size="small">
-        <n-h1 style="color: #f77800; margin: 0">Entradas de Ração</n-h1>
-        <n-divider style="width: 100px; margin: 0; background-color: #f77800" />
-      </n-space>
+      <div class="page-header">
+        <n-h1>Entradas de Ração</n-h1>
+        <n-divider class="divider" />
+      </div>
 
       <!-- Search and Action Buttons -->
       <n-space justify="space-between" align="center">
-        <n-input
+        <search-field
           v-model:value="searchQuery"
           placeholder="Buscar por tipo de ração..."
-          clearable
-          style="width: 300px"
-          @update:value="handleSearch"
-        >
-          <template #prefix>
-            <n-icon><IconSearch /></n-icon>
-          </template>
-        </n-input>
+          @search="handleSearch"
+        />
 
-        <n-button 
+        <app-button 
           type="primary" 
-          style="background-color: #f77800; font-size: 14px; padding: 12px 24px"
           @click="showInputModal = true"
         >
           <template #icon>
             <n-icon><IconPlus /></n-icon>
           </template>
           Registrar Nova Entrada
-        </n-button>
+        </app-button>
       </n-space>
 
       <!-- Table -->
-      <n-card>
+      <n-card class="page-card">
         <n-data-table
           :columns="columns"
           :data="tableData"
@@ -48,7 +41,6 @@
         v-model="showInputModal" 
         @submit="handleInputSubmit" 
       />
-  
     </n-space>
   </page-wrapper>
 </template>
@@ -273,4 +265,28 @@ watch(() => allInputs.value, () => {
 </script>
 
 <style scoped>
+.page-header {
+  color: #f77800;
+  margin: 0;
+}
+
+.divider {
+  width: 100px;
+  margin: 0;
+  background-color: #f77800;
+}
+
+.search-field {
+  width: 300px;
+}
+
+.app-button {
+  background-color: #f77800;
+  font-size: 14px;
+  padding: 12px 24px;
+}
+
+.page-card {
+  margin-top: 24px;
+}
 </style>
