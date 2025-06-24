@@ -62,6 +62,8 @@ const themeOverrides = {
 html, body {
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  height: 100%;
 }
 
 /* Estilos globais para aplicar a todos os cards */

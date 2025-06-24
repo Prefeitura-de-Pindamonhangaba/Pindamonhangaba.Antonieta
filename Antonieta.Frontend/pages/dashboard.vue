@@ -1,104 +1,100 @@
 <template>
-  <n-layout style="min-height: 100vh">
-    <n-spin :show="pageLoading" description="Carregando dashboard...">
-      <n-layout-content style="padding: 24px">
-        <n-space vertical size="large">
-          <!-- Header -->
-          <div class="page-header">
-            <n-h1>Dashboard</n-h1>
-            <n-divider class="divider" />
-          </div>
+  <page-wrapper :loading="pageLoading">
+    <n-space vertical size="large">
+      <!-- Header -->
+      <div class="page-header">
+        <n-h1>Dashboard</n-h1>
+        <n-divider class="divider" />
+      </div>
 
-          <!-- Action Buttons -->
-          <n-space>
-            <app-button 
-              type="primary" 
-              @click="showDistributionModal = true"
-            >
-              <template #icon>
-                <n-icon><IconPlus /></n-icon>
-              </template>
-              Registrar Nova Saída
-            </app-button>
-            
-            <app-button 
-              type="primary"
-              @click="showInputModal = true"
-            >
-              <template #icon>
-                <n-icon><IconPlus /></n-icon>
-              </template>
-              Registrar Nova Entrada
-            </app-button>
-            
-            <app-button 
-              @click="showBeneficiaryModal = true"
-            >
-              <template #icon>
-                <n-icon><IconUserPlus /></n-icon>
-              </template>
-              Adicionar Novo Beneficiário
-            </app-button>
-          </n-space>
+      <!-- Action Buttons -->
+      <n-space>
+        <app-button 
+          type="primary" 
+          @click="showDistributionModal = true"
+        >
+          <template #icon>
+            <n-icon><IconPlus /></n-icon>
+          </template>
+          Registrar Nova Saída
+        </app-button>
+        
+        <app-button 
+          type="primary"
+          @click="showInputModal = true"
+        >
+          <template #icon>
+            <n-icon><IconPlus /></n-icon>
+          </template>
+          Registrar Nova Entrada
+        </app-button>
+        
+        <app-button 
+          @click="showBeneficiaryModal = true"
+        >
+          <template #icon>
+            <n-icon><IconUserPlus /></n-icon>
+          </template>
+          Adicionar Novo Beneficiário
+        </app-button>
+      </n-space>
 
-          <DistributionModal v-model="showDistributionModal" @submit="handleDistributionSubmit" />
-          <InputModal v-model="showInputModal" @submit="handleInputSubmit" />
-          <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
+      <DistributionModal v-model="showDistributionModal" @submit="handleDistributionSubmit" />
+      <InputModal v-model="showInputModal" @submit="handleInputSubmit" />
+      <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
 
-          <!-- Summary Cards -->
-          <n-grid x-gap="12" y-gap="12" cols="3" responsive="self">
-            <n-grid-item>
-              <n-card class="page-card">
-                <n-space vertical align="center">
-                  <n-text depth="3">Entrada Total (Mês)</n-text>
-                  <n-statistic :value="`${total_inputs} kg`" />
-                </n-space>
-              </n-card>
-            </n-grid-item>
-            <n-grid-item>
-              <n-card class="page-card">
-                <n-space vertical align="center">
-                  <n-text depth="3">Saída Total (Mês)</n-text>
-                  <n-statistic :value="`${total_distributions} kg`" />
-                </n-space>
-              </n-card>
-            </n-grid-item>
-            <n-grid-item>
-              <n-card class="page-card">
-                <n-space vertical align="center">
-                  <n-text depth="3">Estoque Atual</n-text>
-                  <n-statistic :value="`${current_stock} kg`" />
-                </n-space>
-              </n-card>
-            </n-grid-item>
-          </n-grid>
-
-          <!-- Beneficiaries Table with Search -->
-          <n-card class="page-card" title="Beneficiários e Controle Mensal">
-            <n-space vertical size="small">
-              <!-- Search input -->
-              <search-field
-                v-model:value="searchQuery"
-                placeholder="Buscar por nome de beneficiário..."
-                @search="handleSearch"
-                style="margin-bottom: 12px;"
-              />
-              
-              <!-- Data table -->
-              <n-data-table
-                :loading="loading"
-                :columns="columns"
-                :data="tableData"
-                :pagination="pagination"
-                @update:sorter="handleSort"
-                remote
-              />
+      <!-- Summary Cards -->
+      <n-grid x-gap="12" y-gap="12" cols="3" responsive="self">
+        <n-grid-item>
+          <n-card class="page-card">
+            <n-space vertical align="center">
+              <n-text depth="3">Entrada Total (Mês)</n-text>
+              <n-statistic :value="`${total_inputs} kg`" />
             </n-space>
           </n-card>
+        </n-grid-item>
+        <n-grid-item>
+          <n-card class="page-card">
+            <n-space vertical align="center">
+              <n-text depth="3">Saída Total (Mês)</n-text>
+              <n-statistic :value="`${total_distributions} kg`" />
+            </n-space>
+          </n-card>
+        </n-grid-item>
+        <n-grid-item>
+          <n-card class="page-card">
+            <n-space vertical align="center">
+              <n-text depth="3">Estoque Atual</n-text>
+              <n-statistic :value="`${current_stock} kg`" />
+            </n-space>
+          </n-card>
+        </n-grid-item>
+      </n-grid>
+
+      <!-- Beneficiaries Table with Search -->
+      <n-card class="page-card" title="Beneficiários e Controle Mensal">
+        <n-space vertical size="small">
+          <!-- Search input -->
+          <search-field
+            v-model:value="searchQuery"
+            placeholder="Buscar por nome de beneficiário..."
+            @search="handleSearch"
+            style="margin-bottom: 12px;"
+          />
+          
+          <!-- Data table -->
+          <n-data-table
+            :loading="loading"
+            :columns="columns"
+            :data="tableData"
+            :pagination="pagination"
+            @update:sorter="handleSort"
+            remote
+          />
         </n-space>
-      </n-layout-content>
-    </n-spin>
-  </n-layout>
+      </n-card>
+    </n-space>
+  </page-wrapper>
 </template>
 
 <script setup lang="ts">
