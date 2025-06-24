@@ -155,7 +155,7 @@
 import { ref, defineProps, defineEmits, watch } from 'vue'
 import { 
   NModal, NForm, NFormItem, NInput, NInputNumber, 
-  NButton, NGrid, NGridItem, NSwitch, NDatePicker 
+  NButton, NGrid, NGridItem, NSwitch, NDatePicker, useMessage 
 } from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
 import type { Beneficiary } from '~/models/beneficiaryModel'
@@ -192,6 +192,8 @@ const formData = ref({
   observations: null as string | null
 })
 
+const message = useMessage()
+
 const rules = {
   name: {
     required: true,
@@ -209,7 +211,7 @@ const rules = {
     required: true,
     message: 'Por favor, informe o contato'
   },
-  limit: {
+  monthly_limit: {
     required: true,
     message: 'Por favor, informe o limite mensal'
   }
@@ -243,35 +245,77 @@ const handleSubmit = async () => {
     submitting.value = true
 
     const beneficiaryData = {
-      name: formData.value.name,
-      document: formData.value.document,
-      address: formData.value.address,
-      contact: formData.value.contact,
-      monthly_limit: formData.value.monthly_limit || 0
+      ...formData.value,
+      monthly_limit: formData.value.monthly_limit || 0,
+      qtd_dogs: formData.value.qtd_dogs || 0,
+      qtd_castred_dogs: formData.value.qtd_castred_dogs || 0,
+      qtd_cats: formData.value.qtd_cats || 0,
+      qtd_castred_cats: formData.value.qtd_castred_cats || 0,
+      government_benefit: formData.value.government_benefit || false,
+      receives_basic_basket: formData.value.receives_basic_basket || false
     }
 
     if (props.editMode && props.beneficiaryData) {
+      // Mostra mensagem "Atualizando..."
+      const loadingMsg = message.loading('Atualizando beneficiário...', {
+        duration: 0 // Não fecha automaticamente
+      })
+      
       const updatedBeneficiary = await beneficiaryService.update(
         props.beneficiaryData.id,
         beneficiaryData
       )
-      window.$message?.success('Beneficiário atualizado com sucesso!')
+      
+      // Fecha a mensagem de loading
+      loadingMsg.destroy()
+      
+      // Mostra sucesso com detalhes
+      message.success(`Beneficiário ${updatedBeneficiary.name} atualizado com sucesso!`)
       emit('update', props.beneficiaryData.id, updatedBeneficiary)
     } else {
+      // Mostra mensagem "Cadastrando..."
+      const loadingMsg = message.loading('Cadastrando novo beneficiário...', {
+        duration: 0 // Não fecha automaticamente
+      })
+      
       const newBeneficiary = await beneficiaryService.create(beneficiaryData)
-      window.$message?.success('Beneficiário cadastrado com sucesso!')
+      
+      // Fecha a mensagem de loading
+      loadingMsg.destroy()
+      
+      // Mostra sucesso com detalhes
+      message.success(`Beneficiário ${newBeneficiary.name} cadastrado com sucesso!`)
       emit('submit', newBeneficiary)
     }
 
-    emit('update:modelValue', false)
-    resetForm()
+    // Adicione feedback sonoro (opcional)
+    const audio = new Audio('/sounds/success.mp3')  // Se você tiver um arquivo de som
+    audio.play().catch(() => {}) // Ignora erros se o navegador bloquear
+
+    // Fecha o modal com um pequeno atraso para que o usuário veja a confirmação
+    setTimeout(() => {
+      emit('update:modelValue', false)
+      resetForm()
+    }, 500)
+    
   } catch (error) {
+    console.error('Erro detalhado:', error)
+    
+    // Feedback de erro mais detalhado
     if (error instanceof Error) {
-      window.$message?.error(error.message)
+      message.error({
+        content: error.message,
+        duration: 5000, // 5 segundos
+        closable: true
+      })
     } else {
-      window.$message?.error(props.editMode ? 'Erro ao atualizar beneficiário' : 'Erro ao cadastrar beneficiário')
+      const actionType = props.editMode ? 'atualizar' : 'cadastrar'
+      message.error({
+        content: `Erro ao ${actionType} beneficiário. Tente novamente.`,
+        duration: 5000,
+        closable: true
+      })
     }
-    console.error('Error:', error)
   } finally {
     submitting.value = false
   }

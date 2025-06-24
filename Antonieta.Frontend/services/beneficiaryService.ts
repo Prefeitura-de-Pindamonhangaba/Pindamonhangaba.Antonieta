@@ -69,7 +69,7 @@ export const beneficiaryService = {
 
   async update(id: number, beneficiary: Partial<Beneficiary>): Promise<Beneficiary> {
     try {
-      const response = await fetch(`${BASE_URL}/${id}`, {
+      const response = await fetch(`${BASE_URL}/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

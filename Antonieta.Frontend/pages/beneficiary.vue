@@ -120,13 +120,35 @@ const handleSearch = (query: string) => {
 async function fetchBeneficiaries() {
   try {
     loading.value = true
-    const [beneficiaries, total] = await beneficiaryService.getAll()
-    allBeneficiaries.value = beneficiaries // Store original data
-    tableData.value = beneficiaries
-    pagination.value.itemCount = total
+    
+    // Adiciona um pequeno atraso para mostrar o loading (apenas se estiver recarregando, não no carregamento inicial)
+    if (!pageLoading.value) {
+      const loadingMsg = message.loading('Atualizando lista de beneficiários...', {
+        duration: 0
+      })
+      
+      const [beneficiaries, total] = await beneficiaryService.getAll()
+      
+      loadingMsg.destroy()
+      message.success(`${total} beneficiários carregados com sucesso!`)
+      
+      allBeneficiaries.value = beneficiaries
+      tableData.value = beneficiaries
+      pagination.value.itemCount = total
+    } else {
+      // Carregamento inicial, sem mensagem
+      const [beneficiaries, total] = await beneficiaryService.getAll()
+      allBeneficiaries.value = beneficiaries
+      tableData.value = beneficiaries
+      pagination.value.itemCount = total
+    }
   } catch (error) {
     console.error('Erro ao carregar beneficiários:', error)
-    message.error('Erro ao carregar beneficiários')
+    message.error({
+      content: 'Erro ao carregar beneficiários. Tente novamente.',
+      duration: 5000,
+      closable: true
+    })
   } finally {
     loading.value = false
     pageLoading.value = false
@@ -249,12 +271,24 @@ async function confirmDelete() {
   if (selectedBeneficiaryId.value !== null) {
     try {
       loading.value = true
+      
+      const loadingMsg = message.loading('Excluindo beneficiário...', {
+        duration: 0
+      })
+      
       await beneficiaryService.delete(selectedBeneficiaryId.value)
-      message.success('Beneficiário excluído com sucesso')
+      
+      loadingMsg.destroy()
+      message.success('Beneficiário excluído com sucesso!')
+      
       await fetchBeneficiaries()
       showDeleteModal.value = false
     } catch (error) {
-      message.error('Erro ao excluir beneficiário')
+      message.error({
+        content: 'Erro ao excluir beneficiário. Tente novamente.',
+        duration: 5000,
+        closable: true
+      })
     } finally {
       loading.value = false
     }
