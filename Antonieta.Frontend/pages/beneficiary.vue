@@ -11,7 +11,7 @@
       <n-space justify="space-between" align="center">
         <n-input
           v-model:value="searchQuery"
-          placeholder="Buscar por nome do beneficiário..."
+          placeholder="Buscar por nome ou documento..."
           clearable
           style="width: 300px"
           @update:value="handleSearch"
@@ -81,6 +81,7 @@ import {
   NIcon,
   NH1,
   NDivider,
+  NInput,
   useMessage
 } from 'naive-ui'
 import { IconUserPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-vue'
@@ -99,6 +100,22 @@ const selectedBeneficiary = ref<Beneficiary | null>(null)
 const pageLoading = ref(true)
 const searchQuery = ref('')
 const allBeneficiaries = ref<Beneficiary[]>([])
+
+// Adicione a função de busca
+const handleSearch = (query: string) => {
+  if (!query) {
+    // If search is cleared, show all beneficiaries
+    tableData.value = [...allBeneficiaries.value]
+    return
+  }
+  
+  // Filter beneficiaries by name or document
+  const normalizedQuery = query.toLowerCase().trim()
+  tableData.value = allBeneficiaries.value.filter(beneficiary => 
+    beneficiary.name.toLowerCase().includes(normalizedQuery) || 
+    beneficiary.document.toLowerCase().includes(normalizedQuery)
+  )
+}
 
 async function fetchBeneficiaries() {
   try {
@@ -280,21 +297,6 @@ watch(showBeneficiaryModal, (newValue) => {
     selectedBeneficiary.value = null
   }
 })
-
-// Add search handler
-const handleSearch = (query: string) => {
-  if (!query) {
-    // If search is cleared, show all beneficiaries
-    tableData.value = [...allBeneficiaries.value]
-    return
-  }
-  
-  // Filter beneficiaries by name
-  const normalizedQuery = query.toLowerCase().trim()
-  tableData.value = allBeneficiaries.value.filter(beneficiary => 
-    beneficiary.name.toLowerCase().includes(normalizedQuery)
-  )
-}
 
 // Reset search when data is refreshed
 watch(() => allBeneficiaries.value, () => {
