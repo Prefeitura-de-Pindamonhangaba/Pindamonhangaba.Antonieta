@@ -1,76 +1,70 @@
 <template>
-  <n-layout style="min-height: 100vh; background-color: #f5f5f5">
-    <n-layout-content position="absolute" style="top: 0; right: 0; bottom: 0; left: 0">
-      <n-grid cols="1" item-responsive responsive="screen" style="height: 100%">
-        <n-gi>
-          <n-space vertical align="center" justify="center" style="min-height: 100vh">
-            <n-space vertical align="center" :size="24">
-              <n-space justify="center">
-                <img
-                  src="/assets/logo_projeto_antonieta.svg"
-                  alt="Logo Projeto Antonieta"
-                  width="200px"
-                />
-              </n-space>
-              <n-card
-                style="width: 100%; max-width: 420px; padding: 20px"
-                :bordered="true"
-                :shadow="false"
+  <div class="login-container">
+    <n-space vertical align="center" justify="center" style="min-height: 100vh; width: 100%">
+      <n-space vertical align="center" :size="24">
+        <n-space justify="center">
+          <img
+            src="/assets/logo_projeto_antonieta.svg"
+            alt="Logo Projeto Antonieta"
+            width="200px"
+          />
+        </n-space>
+        <n-card
+          class="login-card"
+          :bordered="true"
+          :shadow="false"
+        >
+          <n-form 
+            ref="formRef" 
+            :model="formValue" 
+            :rules="rules"
+            @keydown.enter.prevent="handleSubmit"
+          >
+            <n-form-item path="email" label="E-mail">
+              <n-input
+                v-model:value="formValue.email"
+                placeholder="Digite seu e-mail"
+                type="email"
               >
-                <n-form 
-                  ref="formRef" 
-                  :model="formValue" 
-                  :rules="rules"
-                  @keydown.enter.prevent="handleSubmit"
-                >
-                  <n-form-item path="email" label="E-mail">
-                    <n-input
-                      v-model:value="formValue.email"
-                      placeholder="Digite seu e-mail"
-                      type="email"
-                    >
-                      <template #prefix>
-                        <n-icon><mail-outline /></n-icon>
-                      </template>
-                    </n-input>
-                  </n-form-item>
+                <template #prefix>
+                  <n-icon><mail-outline /></n-icon>
+                </template>
+              </n-input>
+            </n-form-item>
 
-                  <n-form-item path="password" label="Senha">
-                    <n-input
-                      v-model:value="formValue.password"
-                      type="password"
-                      placeholder="Digite sua senha"
-                      show-password-on="click"
-                    >
-                      <template #prefix>
-                        <n-icon><lock-closed-outline /></n-icon>
-                      </template>
-                    </n-input>
-                  </n-form-item>
+            <n-form-item path="password" label="Senha">
+              <n-input
+                v-model:value="formValue.password"
+                type="password"
+                placeholder="Digite sua senha"
+                show-password-on="click"
+              >
+                <template #prefix>
+                  <n-icon><lock-closed-outline /></n-icon>
+                </template>
+              </n-input>
+            </n-form-item>
 
-                  <div class="flex justify-between items-center">
-                    <!-- TODO - Implementar esqueceu a senha -->
-                    <!-- <n-checkbox v-model:checked="rememberMe"> Lembrar-me </n-checkbox> -->
-                    <!-- <n-button text> Esqueceu a senha? </n-button> -->
-                  </div>
+            <div class="flex justify-between items-center">
+              <!-- TODO - Implementar esqueceu a senha -->
+              <!-- <n-checkbox v-model:checked="rememberMe"> Lembrar-me </n-checkbox> -->
+              <!-- <n-button text> Esqueceu a senha? </n-button> -->
+            </div>
 
-                  <n-button
-                    class=""
-                    type="primary"
-                    block
-                    @click="handleSubmit"
-                    :loading="loading"
-                  >
-                    Entrar
-                  </n-button>
-                </n-form>
-              </n-card>
-            </n-space>
-          </n-space>
-        </n-gi>
-      </n-grid>
-    </n-layout-content>
-  </n-layout>
+            <n-button
+              class=""
+              type="primary"
+              block
+              @click="handleSubmit"
+              :loading="loading"
+            >
+              Entrar
+            </n-button>
+          </n-form>
+        </n-card>
+      </n-space>
+    </n-space>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -141,4 +135,27 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
+.login-container {
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--background-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 </style>

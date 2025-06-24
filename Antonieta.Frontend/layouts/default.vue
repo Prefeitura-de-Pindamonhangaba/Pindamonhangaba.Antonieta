@@ -1,7 +1,9 @@
 <template>
-  <n-layout has-sider style="height: 100vh; overflow: hidden;">
+  <template v-if="isLoginPage">
+    <slot />
+  </template>
+  <n-layout v-else has-sider style="height: 100vh; overflow: hidden;">
     <n-layout-sider
-      v-if="!isLoginPage"
       bordered
       collapse-mode="width"
       :collapsed-width="64"
@@ -39,12 +41,7 @@
       </div>
     </n-layout-sider>
     <n-layout-content 
-      :style="
-        [
-          contentStyle, 
-          { 'margin-left': !isLoginPage ? (collapsed ? '64px' : '240px') : '0' }
-        ]
-      "
+      :style="contentStyleComputed"
     >
       <slot />
     </n-layout-content>
@@ -52,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted } from 'vue'
+import { h, ref, onMounted, computed } from 'vue'
 import type { Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
 import { NLayout, NLayoutSider, NLayoutContent, NMenu, NIcon } from 'naive-ui'
@@ -120,8 +117,12 @@ function renderIcon(icon: Component) {
 
 const isLoginPage = computed(() => route.path === '/login')
 
-const contentStyle = computed(() => ({
-  padding: isLoginPage.value ? '0' : '20px'
+const contentStyleComputed = computed(() => ({
+  padding: '20px',
+  marginLeft: collapsed.value ? '64px' : '240px',
+  transition: 'margin-left 0.3s ease',
+  height: '100vh',
+  overflowY: 'auto'
 }))
 
 const menuStyle = computed(() => ({
@@ -235,5 +236,6 @@ async function handleMenuClick(key: string) {
   height: 100vh;
   overflow-y: auto; /* Permite rolagem apenas no conteúdo */
   margin-left: v-bind(collapsed ? '64px' : '240px'); /* Ajusta a margem baseado no estado do sidebar */
+  transition: margin-left 0.3s ease;
 }
 </style>
