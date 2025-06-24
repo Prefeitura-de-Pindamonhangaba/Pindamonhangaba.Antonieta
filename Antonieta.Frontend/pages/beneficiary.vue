@@ -28,6 +28,7 @@
           :data="tableData"
           :pagination="pagination"
           :loading="loading"
+          @update:sorter="handleSort"
         />
       </n-card>
 
@@ -100,15 +101,39 @@ async function fetchBeneficiaries() {
   }
 }
 
+// Add sort state
+const sorter = ref<{ columnKey: keyof Beneficiary | null, order: 'ascend' | 'descend' | false }>({
+  columnKey: null,
+  order: false
+})
+
 const columns: DataTableColumns<Beneficiary> = [
-  { title: 'Nome', key: 'name' },
-  { title: 'Documento', key: 'document' },
-  { title: 'Endereço', key: 'address' },
-  { title: 'Contato', key: 'contact' },
+  { 
+    title: 'Nome', 
+    key: 'name',
+    sorter: 'default'
+  },
+  { 
+    title: 'Documento', 
+    key: 'document',
+    sorter: 'default'
+  },
+  { 
+    title: 'Endereço', 
+    key: 'address',
+    sorter: 'default'
+  },
+  { 
+    title: 'Contato', 
+    key: 'contact',
+    sorter: 'default'
+  },
   {
     title: 'Limite Mensal',
     key: 'monthly_limit',
-    render: (row: Beneficiary) => `${row.monthly_limit} kg`
+    sorter: (row1: Beneficiary, row2: Beneficiary) => 
+      (row1.monthly_limit || 0) - (row2.monthly_limit || 0),
+    render: (row: Beneficiary) => `${row.monthly_limit || 0} kg`
   },
   {
     title: 'Ações',
@@ -141,6 +166,32 @@ const columns: DataTableColumns<Beneficiary> = [
     }
   }
 ]
+
+// Replace the handleSort function
+const handleSort = (sorter: { columnKey: keyof Beneficiary, order: 'ascend' | 'descend' | false }) => {
+  const { columnKey, order } = sorter
+  
+  if (!order || !columnKey) {
+    fetchBeneficiaries()
+    return
+  }
+
+  const sortedData = [...tableData.value]
+  
+  sortedData.sort((a, b) => {
+    const multiplier = order === 'ascend' ? 1 : -1
+    
+    if (columnKey === 'monthly_limit') {
+      return ((a[columnKey] || 0) - (b[columnKey] || 0)) * multiplier
+    }
+    
+    const aValue = String(a[columnKey] || '')
+    const bValue = String(b[columnKey] || '')
+    return aValue.localeCompare(bValue) * multiplier
+  })
+
+  tableData.value = sortedData
+}
 
 const pagination = ref({
   page: 1,
