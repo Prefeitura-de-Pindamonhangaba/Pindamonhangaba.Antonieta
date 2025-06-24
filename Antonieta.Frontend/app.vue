@@ -48,6 +48,7 @@ const themeOverrides = {
 <style>
 :root {
   --primary-color: #f77800;
+  --primary-color-hover: #D26600;
   --primary-text: white;
   --success-color: #18a058;
   --warning-color: #f0a020;

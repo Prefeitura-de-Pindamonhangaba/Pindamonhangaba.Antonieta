@@ -181,11 +181,11 @@ async function handleMenuClick(key: string) {
 }
 
 :deep(.n-menu-item:hover) {
-  color: #f77800;
+  color: var(--primary-color-hover);
 }
 
 :deep(.n-menu-item--selected) {
-  color: #f77800;
+  color: var(--primary-color);
   background-color: #fff8e1;
 }
 

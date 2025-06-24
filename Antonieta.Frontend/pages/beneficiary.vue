@@ -79,6 +79,7 @@ import {
 } from 'naive-ui'
 import { IconUserPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
+import ActionButtons from '../components/ActionButtons.vue'
 import type { DataTableColumns } from 'naive-ui'
 import type { Beneficiary } from '../models/beneficiaryModel'
 import { beneficiaryService } from '~/services/beneficiaryService'
@@ -186,29 +187,9 @@ const columns: DataTableColumns<Beneficiary> = [
     title: 'Ações',
     key: 'actions',
     render(row) {
-      return h(NSpace, { justify: 'center', align: 'center' }, {
-        default: () => [
-          h(
-            NButton,
-            {
-              size: 'small',
-              quaternary: true,
-              style: { color: '#f77800' },
-              onClick: () => handleEdit(row)
-            },
-            { default: () => h(IconEdit) }
-          ),
-          h(
-            NButton,
-            {
-              size: 'small',
-              quaternary: true,
-              style: { color: '#d03050' },
-              onClick: () => handleDelete(row)
-            },
-            { default: () => h(IconTrash) }
-          )
-        ]
+      return h(ActionButtons, {
+        onEdit: () => handleEdit(row),
+        onDelete: () => handleDelete(row)
       })
     }
   }

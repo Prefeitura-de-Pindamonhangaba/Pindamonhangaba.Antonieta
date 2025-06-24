@@ -127,6 +127,7 @@ import {
 import { IconPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-vue'
 import type { RationStock } from '~/models/rationStockModel'
 import { rationStockService } from '~/services/rationStockService'
+import ActionButtons from '../components/ActionButtons.vue'
 
 const message = useMessage()
 const formRef = ref<FormInst | null>(null)
@@ -249,27 +250,9 @@ const columns: DataTableColumns<RationStock> = [
     title: 'Ações',
     key: 'actions',
     render(row) {
-      return h(NSpace, { justify: 'end' }, {
-        default: () => [
-          h(
-            NButton,
-            {
-              quaternary: true,
-              type: 'info',
-              onClick: () => handleEdit(row)
-            },
-            { icon: () => h(IconEdit) }
-          ),
-          h(
-            NButton,
-            {
-              quaternary: true,
-              type: 'error',
-              onClick: () => handleDelete(row.id)
-            },
-            { icon: () => h(IconTrash) }
-          )
-        ]
+      return h(ActionButtons, {
+        onEdit: () => handleEdit(row),
+        onDelete: () => handleDelete(row.id)
       })
     }
   }
