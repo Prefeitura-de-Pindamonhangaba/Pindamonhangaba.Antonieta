@@ -1,5 +1,5 @@
 <template>
-  <n-modal :show="modelValue" @update:show="$emit('update:modelValue', $event)" preset="dialog" style="width: 600px">
+  <n-modal :show="modelValue" @update:show="$emit('update:modelValue', $event)" preset="dialog" style="width: 800px">
     <template #header>
       <div class="modal-header">
         <h3>{{ props.editMode ? 'Editar Beneficiário' : 'Cadastrar Novo Beneficiário' }}</h3>
@@ -43,6 +43,93 @@
             placeholder="Limite mensal em kg"
           />
         </n-form-item>
+
+        <n-form-item label="Nome da Mãe" path="mother_name">
+          <n-input 
+            v-model:value="formData.mother_name" 
+            clearable 
+            style="width: 100%" 
+            placeholder="Nome da mãe do beneficiário"/>
+        </n-form-item>
+
+        <n-form-item label="Data de Nascimento" path="birth_date">
+          <n-date-picker 
+            v-model:value="formData.birth_date"
+            type="date"
+            clearable
+            style="width: 100%"/>
+        </n-form-item>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Quantidade de Cães" path="qtd_dogs">
+              <n-input-number 
+                v-model:value="formData.qtd_dogs"
+                clearable
+                :min="0"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Cães Castrados" path="qtd_castred_dogs">
+              <n-input-number 
+                v-model:value="formData.qtd_castred_dogs"
+                clearable
+                :min="0"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Quantidade de Gatos" path="qtd_cats">
+              <n-input-number 
+                v-model:value="formData.qtd_cats"
+                clearable
+                :min="0"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Gatos Castrados" path="qtd_castred_cats">
+              <n-input-number 
+                v-model:value="formData.qtd_castred_cats"
+                clearable
+                :min="0"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Recebe Benefício do Governo" path="government_benefit">
+              <n-switch v-model:value="formData.government_benefit"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Recebe Cesta Básica" path="receives_basic_basket">
+              <n-switch v-model:value="formData.receives_basic_basket"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <n-form-item label="Como Soube do Projeto" path="how_did_you_hear">
+          <n-input 
+            v-model:value="formData.how_did_you_hear"
+            type="textarea"
+            clearable
+            style="width: 100%"/>
+        </n-form-item>
+
+        <n-form-item label="Observações" path="observations">
+          <n-input 
+            v-model:value="formData.observations"
+            type="textarea"
+            clearable
+            style="width: 100%"/>
+        </n-form-item>
       </n-form>
     </div>
     <template #action>
@@ -66,9 +153,12 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton } from 'naive-ui'
+import { 
+  NModal, NForm, NFormItem, NInput, NInputNumber, 
+  NButton, NGrid, NGridItem, NSwitch, NDatePicker, useMessage 
+} from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
-import type { Beneficiary } from '~/models/beneficiary'
+import type { Beneficiary } from '~/models/beneficiaryModel'
 
 const props = defineProps<{
   modelValue: boolean
@@ -89,8 +179,20 @@ const formData = ref({
   document: '',
   address: '',
   contact: '',
-  monthly_limit: null as number | null // Changed from limit to monthly_limit to match backend
+  monthly_limit: null as number | null,
+  mother_name: null as string | null,
+  birth_date: null as string | null,
+  qtd_dogs: 0,
+  qtd_castred_dogs: 0,
+  qtd_cats: 0,
+  qtd_castred_cats: 0,
+  government_benefit: false,
+  receives_basic_basket: false,
+  how_did_you_hear: null as string | null,
+  observations: null as string | null
 })
+
+const message = useMessage()
 
 const rules = {
   name: {
@@ -109,7 +211,7 @@ const rules = {
     required: true,
     message: 'Por favor, informe o contato'
   },
-  limit: {
+  monthly_limit: {
     required: true,
     message: 'Por favor, informe o limite mensal'
   }
@@ -122,7 +224,17 @@ watch(() => props.beneficiaryData, (newValue) => {
       document: newValue.document,
       address: newValue.address,
       contact: newValue.contact,
-      monthly_limit: newValue.monthly_limit
+      monthly_limit: newValue.monthly_limit,
+      mother_name: newValue.mother_name,
+      birth_date: newValue.birth_date,
+      qtd_dogs: newValue.qtd_dogs,
+      qtd_castred_dogs: newValue.qtd_castred_dogs,
+      qtd_cats: newValue.qtd_cats,
+      qtd_castred_cats: newValue.qtd_castred_cats,
+      government_benefit: newValue.government_benefit,
+      receives_basic_basket: newValue.receives_basic_basket,
+      how_did_you_hear: newValue.how_did_you_hear,
+      observations: newValue.observations
     }
   }
 }, { immediate: true })
@@ -133,35 +245,77 @@ const handleSubmit = async () => {
     submitting.value = true
 
     const beneficiaryData = {
-      name: formData.value.name,
-      document: formData.value.document,
-      address: formData.value.address,
-      contact: formData.value.contact,
-      monthly_limit: formData.value.monthly_limit || 0
+      ...formData.value,
+      monthly_limit: formData.value.monthly_limit || 0,
+      qtd_dogs: formData.value.qtd_dogs || 0,
+      qtd_castred_dogs: formData.value.qtd_castred_dogs || 0,
+      qtd_cats: formData.value.qtd_cats || 0,
+      qtd_castred_cats: formData.value.qtd_castred_cats || 0,
+      government_benefit: formData.value.government_benefit || false,
+      receives_basic_basket: formData.value.receives_basic_basket || false
     }
 
     if (props.editMode && props.beneficiaryData) {
+      // Mostra mensagem "Atualizando..."
+      const loadingMsg = message.loading('Atualizando beneficiário...', {
+        duration: 0 // Não fecha automaticamente
+      })
+      
       const updatedBeneficiary = await beneficiaryService.update(
         props.beneficiaryData.id,
         beneficiaryData
       )
-      window.$message?.success('Beneficiário atualizado com sucesso!')
+      
+      // Fecha a mensagem de loading
+      loadingMsg.destroy()
+      
+      // Mostra sucesso com detalhes
+      message.success(`Beneficiário ${updatedBeneficiary.name} atualizado com sucesso!`)
       emit('update', props.beneficiaryData.id, updatedBeneficiary)
     } else {
+      // Mostra mensagem "Cadastrando..."
+      const loadingMsg = message.loading('Cadastrando novo beneficiário...', {
+        duration: 0 // Não fecha automaticamente
+      })
+      
       const newBeneficiary = await beneficiaryService.create(beneficiaryData)
-      window.$message?.success('Beneficiário cadastrado com sucesso!')
+      
+      // Fecha a mensagem de loading
+      loadingMsg.destroy()
+      
+      // Mostra sucesso com detalhes
+      message.success(`Beneficiário ${newBeneficiary.name} cadastrado com sucesso!`)
       emit('submit', newBeneficiary)
     }
 
-    emit('update:modelValue', false)
-    resetForm()
+    // Adicione feedback sonoro (opcional)
+    const audio = new Audio('/sounds/success.mp3')  // Se você tiver um arquivo de som
+    audio.play().catch(() => {}) // Ignora erros se o navegador bloquear
+
+    // Fecha o modal com um pequeno atraso para que o usuário veja a confirmação
+    setTimeout(() => {
+      emit('update:modelValue', false)
+      resetForm()
+    }, 500)
+    
   } catch (error) {
+    console.error('Erro detalhado:', error)
+    
+    // Feedback de erro mais detalhado
     if (error instanceof Error) {
-      window.$message?.error(error.message)
+      message.error({
+        content: error.message,
+        duration: 5000, // 5 segundos
+        closable: true
+      })
     } else {
-      window.$message?.error(props.editMode ? 'Erro ao atualizar beneficiário' : 'Erro ao cadastrar beneficiário')
+      const actionType = props.editMode ? 'atualizar' : 'cadastrar'
+      message.error({
+        content: `Erro ao ${actionType} beneficiário. Tente novamente.`,
+        duration: 5000,
+        closable: true
+      })
     }
-    console.error('Error:', error)
   } finally {
     submitting.value = false
   }
@@ -173,7 +327,17 @@ const resetForm = () => {
     document: '',
     address: '',
     contact: '',
-    monthly_limit: null
+    monthly_limit: null,
+    mother_name: null,
+    birth_date: null,
+    qtd_dogs: 0,
+    qtd_castred_dogs: 0,
+    qtd_cats: 0,
+    qtd_castred_cats: 0,
+    government_benefit: false,
+    receives_basic_basket: false,
+    how_did_you_hear: null,
+    observations: null
   }
 }
 

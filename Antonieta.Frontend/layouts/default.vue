@@ -1,7 +1,9 @@
 <template>
-  <n-layout has-sider>
+  <template v-if="isLoginPage">
+    <slot />
+  </template>
+  <n-layout v-else has-sider style="height: 100vh; overflow: hidden;">
     <n-layout-sider
-      v-if="!isLoginPage"
       bordered
       collapse-mode="width"
       :collapsed-width="64"
@@ -10,6 +12,7 @@
       show-trigger
       @collapse="collapsed = true"
       @expand="collapsed = false"
+      style="position: fixed; z-index: 100;"
     >
       <div class="logo-container">
         <img
@@ -25,6 +28,7 @@
           :collapsed-icon-size="22"
           :options="mainMenuOptions"
           @update:value="handleMenuClick"
+          class="main-menu"
         />
         <n-menu
           :collapsed="collapsed"
@@ -36,14 +40,16 @@
         />
       </div>
     </n-layout-sider>
-    <n-layout-content :style="contentStyle">
+    <n-layout-content 
+      :style="contentStyleComputed"
+    >
       <slot />
     </n-layout-content>
   </n-layout>
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted } from 'vue'
+import { h, ref, onMounted, computed } from 'vue'
 import type { Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
 import { NLayout, NLayoutSider, NLayoutContent, NMenu, NIcon } from 'naive-ui'
@@ -111,8 +117,12 @@ function renderIcon(icon: Component) {
 
 const isLoginPage = computed(() => route.path === '/login')
 
-const contentStyle = computed(() => ({
-  padding: isLoginPage.value ? '0' : '20px'
+const contentStyleComputed = computed(() => ({
+  padding: '20px',
+  marginLeft: collapsed.value ? '64px' : '240px',
+  transition: 'margin-left 0.3s ease',
+  height: '100vh',
+  overflowY: 'auto'
 }))
 
 const menuStyle = computed(() => ({
@@ -152,24 +162,44 @@ async function handleMenuClick(key: string) {
 }
 
 .logo {
-  height: v-bind(collapsed ? '50px' : '120px');
+  height: v-bind(collapsed ? '50px' : '100px'); /* Reduzi um pouco a altura do logo */
   width: auto;
   transition: all 0.3s ease;
 }
 
 .menu-container {
-  height: calc(100vh - 150px);
+  height: calc(100vh - 120px); /* Ajustado para o tamanho do logo reduzido */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow: hidden;
+}
+
+.main-menu {
+  flex: 1;
+  overflow-y: auto; /* Permite rolagem apenas no menu principal se necessário */
+  padding-bottom: 8px;
+  max-height: calc(100vh - 240px); /* Garante que o menu principal não empurre o menu de rodapé para fora */
 }
 
 .footer-menu {
+  flex-shrink: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 8px 0;
+  margin-bottom: 0;
+  position: sticky;
+  bottom: 0;
+  background-color: #ffffff; /* Garante que o fundo seja opaco */
+  z-index: 10; /* Garante que fique acima do conteúdo principal */
 }
 
 :deep(.n-layout-sider) {
   background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Usa a altura total da viewport */
+  position: fixed; /* Fixa o sidebar */
+  left: 0;
 }
 
 :deep(.n-menu) {
@@ -181,15 +211,31 @@ async function handleMenuClick(key: string) {
 }
 
 :deep(.n-menu-item:hover) {
-  color: #f77800;
+  color: var(--primary-color-hover);
 }
 
 :deep(.n-menu-item--selected) {
-  color: #f77800;
+  color: var(--primary-color);
   background-color: #fff8e1;
 }
 
-:deep(.footer-menu .n-menu-item) {
-  margin-bottom: 0;
+:deep(.n-layout-sider-scroll-container) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden; /* Impede qualquer overflow */
+}
+
+/* Ajuste para o conteúdo principal */
+:deep(.n-layout) {
+  height: 100vh;
+  overflow: hidden; /* Impede overflow na tela principal */
+}
+
+:deep(.n-layout-content) {
+  height: 100vh;
+  overflow-y: auto; /* Permite rolagem apenas no conteúdo */
+  margin-left: v-bind(collapsed ? '64px' : '240px'); /* Ajusta a margem baseado no estado do sidebar */
+  transition: margin-left 0.3s ease;
 }
 </style>

@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   },
   devServer: {
     port: Number(process.env.FRONTEND_PORT),
-    https: true
+    https: false
   },
   
   nitro: {
@@ -31,7 +31,10 @@ export default defineNuxtConfig({
     themeConfig: {
       shared: {
         common: {
-          primaryColor: '#f77800'
+          primaryColor: 'var(--primary-color)',
+          primaryColorHover: '#e66e00',
+          primaryColorPressed: '#d86400',
+          // ... outras cores
         }
       }
     }
