@@ -10,55 +10,55 @@
       size="medium"
       style="max-width: 640px"
     >
+      <!-- Select de Beneficiário -->
       <n-form-item label="Beneficiário" path="beneficiary_id">
         <n-select
           v-model:value="formData.beneficiary_id"
-          :options="beneficiaryOptions"
-          placeholder="Buscar e selecionar beneficiário..."
-          :loading="!beneficiaryOptions.length"
-          clearable
           filterable
-          :filter="filterBeneficiaries"
-          :render-label="renderBeneficiaryLabel"
-          :render-option="renderBeneficiaryOption"
+          placeholder="Selecione um beneficiário"
+          :options="beneficiaryOptions"
+          :loading="loadingBeneficiaries"
+          clearable
         />
       </n-form-item>
 
+      <!-- Select de Ração -->
       <n-form-item label="Tipo de Ração" path="ration_id">
         <n-select
           v-model:value="formData.ration_id"
-          :options="rationOptions"
-          placeholder="Buscar e selecionar tipo de ração..."
-          :loading="!rationOptions.length"
-          clearable
           filterable
-          :filter="filterRations"
-          :render-label="renderRationLabel"
-          :render-option="renderRationOption"
+          placeholder="Selecione um tipo de ração"
+          :options="rationOptions"
+          :loading="loadingRations"
+          clearable
         />
       </n-form-item>
 
+      <!-- Input de Quantidade -->
       <n-form-item label="Quantidade (kg)" path="amount">
         <n-input-number
           v-model:value="formData.amount"
           :min="1"
+          :max="maxAmount"
           :precision="0"
-          placeholder="Informe a quantidade em kg"
+          placeholder="Digite a quantidade"
+          style="width: 100%"
         />
       </n-form-item>
     </n-form>
 
     <template #action>
       <n-space justify="end">
-        <n-button @click="handleCancel" :disabled="loading">Cancelar</n-button>
+        <n-button @click="handleCancel" :disabled="loading">
+          Cancelar
+        </n-button>
         <n-button
           type="primary"
           :loading="loading"
-          :disabled="loading"
           style="background-color: #f77800"
           @click="handleSubmit"
         >
-          {{ loading ? 'Salvando...' : 'Registrar' }}
+          {{ loading ? 'Registrando...' : 'Registrar' }}
         </n-button>
       </n-space>
     </template>
@@ -66,28 +66,33 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted, computed } from 'vue'
-import type { FormInst, FormRules, SelectOption } from 'naive-ui'
-import { NModal, NForm, NFormItem, NInput, NInputNumber, NButton, NSelect, NSpace, useMessage } from 'naive-ui'
+import { ref, onMounted, computed } from 'vue'
+import type { FormInst, FormRules } from 'naive-ui'
+import { 
+  NModal, NForm, NFormItem, NInputNumber, NButton, 
+  NSelect, NSpace, NText, useMessage 
+} from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
+import { rationStockService } from '~/services/rationStockService'
+import { distributionService } from '~/services/distributionService'
 import type { Distribution } from '~/models/distributionModel'
 import type { Beneficiary } from '~/models/beneficiaryModel'
 import type { RationStock } from '~/models/rationStockModel'
-import { rationStockService } from '~/services/rationStockService'
-import { distributionService } from '~/services/distributionService'
 
 const props = defineProps<{
   modelValue: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
-  (e: 'submit', formData: Distribution): void
+  'update:modelValue': [value: boolean]
+  'submit': [formData: Distribution]
 }>()
 
 const message = useMessage()
 const formRef = ref<FormInst | null>(null)
 const loading = ref(false)
+const loadingBeneficiaries = ref(false)
+const loadingRations = ref(false)
 const beneficiaries = ref<Beneficiary[]>([])
 const rationStocks = ref<RationStock[]>([])
 
@@ -103,152 +108,137 @@ const formData = ref({
   date: new Date().toISOString()
 })
 
-// Computed para opções com dados completos
+// Opções para os selects - formato simples do Naive UI
 const beneficiaryOptions = computed(() => 
   beneficiaries.value.map(beneficiary => ({
-    label: `${beneficiary.name} - ${beneficiary.document}`,
-    value: beneficiary.id,
-    beneficiary: beneficiary
+    label: beneficiary.name,
+    value: beneficiary.id
   }))
 )
 
 const rationOptions = computed(() => 
-  rationStocks.value.map(ration => ({
-    label: `${ration.name} (${ration.stock} kg disponível)`,
-    value: ration.id,
-    ration: ration
-  }))
+  rationStocks.value
+    .filter(ration => ration.stock > 0) // Apenas com estoque
+    .map(ration => ({
+      label: `${ration.name} (${ration.stock}kg disponível)`,
+      value: ration.id
+    }))
 )
 
-// Funções de filtro customizadas para busca
-const filterBeneficiaries = (pattern: string, option: SelectOption) => {
-  const beneficiary = option.beneficiary as Beneficiary
-  const searchPattern = pattern.toLowerCase()
+// Computeds para itens selecionados
+const selectedBeneficiary = computed(() => {
+  if (!formData.value.beneficiary_id) return null
+  return beneficiaries.value.find(b => b.id === formData.value.beneficiary_id) || null
+})
+
+const selectedRation = computed(() => {
+  if (!formData.value.ration_id) return null
+  return rationStocks.value.find(r => r.id === formData.value.ration_id) || null
+})
+
+// Quantidade máxima permitida
+const maxAmount = computed(() => {
+  if (!selectedRation.value) return 999
   
-  return (
-    beneficiary.name.toLowerCase().includes(searchPattern) ||
-    beneficiary.document.toLowerCase().includes(searchPattern) ||
-    (beneficiary.contact && beneficiary.contact.toLowerCase().includes(searchPattern))
-  )
-}
-
-const filterRations = (pattern: string, option: SelectOption) => {
-  const ration = option.ration as RationStock
-  const searchPattern = pattern.toLowerCase()
+  const stockLimit = selectedRation.value.stock
+  const monthlyLimit = selectedBeneficiary.value?.monthly_limit || 999
   
-  return (
-    ration.name.toLowerCase().includes(searchPattern) ||
-    (ration.description && ration.description.toLowerCase().includes(searchPattern))
-  )
-}
+  return Math.min(stockLimit, monthlyLimit)
+})
 
-// Funções de renderização customizadas
-const renderBeneficiaryLabel = (option: SelectOption) => {
-  const beneficiary = option.beneficiary as Beneficiary
-  return h('div', { style: { display: 'flex', flexDirection: 'column' } }, [
-    h('span', { style: { fontWeight: '500' } }, beneficiary.name),
-    h('span', { style: { fontSize: '12px', color: '#999' } }, `Doc: ${beneficiary.document}`)
-  ])
-}
-
-const renderBeneficiaryOption = ({ node, option }: { node: any, option: SelectOption }) => {
-  const beneficiary = option.beneficiary as Beneficiary
-  return h('div', { style: { padding: '4px 0' } }, [
-    h('div', { style: { fontWeight: '500' } }, beneficiary.name),
-    h('div', { style: { fontSize: '12px', color: '#666' } }, `Documento: ${beneficiary.document}`),
-    h('div', { style: { fontSize: '12px', color: '#999' } }, `Limite mensal: ${beneficiary.monthly_limit} kg`)
-  ])
-}
-
-const renderRationLabel = (option: SelectOption) => {
-  const ration = option.ration as RationStock
-  return h('div', { style: { display: 'flex', justifyContent: 'space-between' } }, [
-    h('span', ration.name),
-    h('span', { style: { fontSize: '12px', color: '#999' } }, `${ration.stock} kg`)
-  ])
-}
-
-const renderRationOption = ({ node, option }: { node: any, option: SelectOption }) => {
-  const ration = option.ration as RationStock
-  return h('div', { style: { padding: '4px 0' } }, [
-    h('div', { style: { fontWeight: '500' } }, ration.name),
-    h('div', { style: { fontSize: '12px', color: '#666' } }, ration.description),
-    h('div', { style: { fontSize: '12px', color: ration.stock > 0 ? '#18a058' : '#d03050' } }, 
-      `Estoque: ${ration.stock} kg`)
-  ])
-}
-
+// Regras de validação
 const rules: FormRules = {
   beneficiary_id: {
     required: true,
     type: 'number',
-    message: 'Por favor, selecione o beneficiário',
+    message: 'Selecione um beneficiário',
     trigger: 'change'
   },
   ration_id: {
     required: true,
     type: 'number',
-    message: 'Por favor, selecione o tipo de ração',
+    message: 'Selecione um tipo de ração',
     trigger: 'change'
   },
   amount: {
     required: true,
     type: 'number',
-    message: 'Por favor, informe a quantidade',
-    trigger: ['blur', 'change']
+    message: 'Informe a quantidade',
+    trigger: ['blur', 'change'],
+    validator: (rule, value) => {
+      if (!value || value <= 0) {
+        return new Error('A quantidade deve ser maior que 0')
+      }
+      if (value > maxAmount.value) {
+        return new Error(`Máximo permitido: ${maxAmount.value}kg`)
+      }
+      return true
+    }
   }
 }
 
+// Carregar dados
 const loadBeneficiaries = async () => {
   try {
-    const [beneficiariesData] = await beneficiaryService.getAll()
-    beneficiaries.value = beneficiariesData
+    loadingBeneficiaries.value = true
+    const [data] = await beneficiaryService.getAll()
+    beneficiaries.value = data
   } catch (error) {
-    console.error('Error loading beneficiaries:', error)
+    console.error('Erro ao carregar beneficiários:', error)
     message.error('Erro ao carregar beneficiários')
+  } finally {
+    loadingBeneficiaries.value = false
   }
 }
 
 const loadRationStocks = async () => {
   try {
-    const rationStocksData = await rationStockService.getAll()
-    rationStocks.value = rationStocksData
+    loadingRations.value = true
+    const data = await rationStockService.getAll()
+    rationStocks.value = data
   } catch (error) {
-    console.error('Error loading ration types:', error)
+    console.error('Erro ao carregar rações:', error)
     message.error('Erro ao carregar tipos de ração')
+  } finally {
+    loadingRations.value = false
   }
 }
 
-const submitDistribution = async (data: Distribution) => {
+// Submeter distribuição
+const handleSubmit = async () => {
   try {
-    await distributionService.create(data)
-    message.success('Distribuição registrada com sucesso!')
-  } catch (error) {
-    console.error('Error submitting distribution:', error)
-    message.error('Erro ao registrar distribuição')
-  }
-}
+    const isValid = await new Promise((resolve) => {
+      formRef.value?.validate((errors) => {
+        resolve(!errors)
+      })
+    })
 
-onMounted(() => {
-  Promise.all([loadBeneficiaries(), loadRationStocks()])
-})
+    if (!isValid) return
 
-const handleSubmit = () => {
-  formRef.value?.validate(async (errors) => {
-    if (!errors) {
-      try {
-        loading.value = true
-        await submitDistribution(formData.value)
-        show.value = false
-        resetForm()
-      } catch (error) {
-        console.error('Error submitting distribution:', error)
-        message.error('Erro ao registrar distribuição')
-      } finally {
-        loading.value = false
-      }
+    loading.value = true
+
+    const distributionData = {
+      beneficiary_id: formData.value.beneficiary_id!,
+      ration_id: formData.value.ration_id!,
+      amount: formData.value.amount!,
+      date: new Date().toISOString()
     }
-  })
+
+    const response = await distributionService.create(distributionData)
+    
+    message.success('Distribuição registrada com sucesso!')
+    emit('submit', response)
+    
+    // Fechar modal e resetar
+    show.value = false
+    resetForm()
+    
+  } catch (error) {
+    console.error('Erro ao registrar distribuição:', error)
+    message.error('Erro ao registrar distribuição')
+  } finally {
+    loading.value = false
+  }
 }
 
 const resetForm = () => {
@@ -265,19 +255,61 @@ const handleCancel = () => {
   show.value = false
   resetForm()
 }
+
+// Carregar dados ao montar
+onMounted(() => {
+  Promise.all([loadBeneficiaries(), loadRationStocks()])
+})
 </script>
 
 <style scoped>
-:deep(.n-select) {
-  min-height: 34px;
+.info-box {
+  margin-top: 4px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #f77800;
 }
 
-:deep(.n-base-selection-label) {
-  line-height: 1.4;
+/* Estilo customizado para os selects */
+:deep(.n-base-selection) {
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
+:deep(.n-base-selection:hover) {
+  border-color: #f77800;
+}
+
+:deep(.n-base-selection.n-base-selection--focus) {
+  border-color: #f77800;
+  box-shadow: 0 0 0 2px rgba(247, 120, 0, 0.2);
+}
+
+/* Estilo do dropdown */
+:deep(.n-base-select-menu) {
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilo das opções */
 :deep(.n-base-select-option) {
-  min-height: 60px;
-  padding: 8px 12px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 2px 4px;
+  transition: all 0.2s ease;
+}
+
+:deep(.n-base-select-option:hover) {
+  background-color: #f8f9fa;
+}
+
+:deep(.n-base-select-option.n-base-select-option--selected) {
+  background-color: #f77800;
+  color: white;
+}
+
+:deep(.n-base-select-option.n-base-select-option--selected:hover) {
+  background-color: #e56b00;
 }
 </style>

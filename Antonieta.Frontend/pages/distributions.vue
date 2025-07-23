@@ -163,28 +163,28 @@ const loadRationStocks = async () => {
   }
 }
 
-// Atualiza o manipulador de envio para usar o serviço
-const handleDistributionSubmit = async (formData: Omit<Distribution, 'id'>) => {
-  try {
-    const loadingMsg = message.loading('Registrando distribuição...', {
-      duration: 0
-    })
+// // Atualiza o manipulador de envio para usar o serviço
+// const handleDistributionSubmit = async (formData: Omit<Distribution, 'id'>) => {
+//   try {
+//     const loadingMsg = message.loading('Registrando distribuição...', {
+//       duration: 0
+//     })
     
-    await distributionService.create(formData)
+//     await distributionService.create(formData)
     
-    loadingMsg.destroy()
-    message.success('Distribuição registrada com sucesso')
+//     loadingMsg.destroy()
+//     message.success('Distribuição registrada com sucesso')
     
-    await fetchDistributions()
-  } catch (error) {
-    message.error({
-      content: 'Erro ao registrar distribuição. Tente novamente.',
-      duration: 5000,
-      closable: true
-    })
-    console.error(error)
-  }
-}
+//     await fetchDistributions()
+//   } catch (error) {
+//     message.error({
+//       content: 'Erro ao registrar distribuição. Tente novamente.',
+//       duration: 5000,
+//       closable: true
+//     })
+//     console.error(error)
+//   }
+// }
 
 // Ordenação
 const handleSort = (sorter: { columnKey: keyof Distribution, order: 'ascend' | 'descend' | false }) => {
