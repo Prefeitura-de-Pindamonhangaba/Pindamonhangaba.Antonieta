@@ -194,9 +194,13 @@ const formData = ref({
 
 function timestamp_to_date(timestamp: number): string {
   const data = new Date(timestamp);
-  const ano = data.getFullYear();
-  const mes = (data.getMonth() + 1).toString().padStart(2, '0'); // Mês é base 0, então adicionamos 1
-  const dia = data.getDate().toString().padStart(2, '0');
+
+  // Adiciona 1 dia ao timestamp
+  data.setUTCDate(data.getUTCDate() + 1); // Incrementa o dia UTC
+
+  const ano = data.getUTCFullYear();
+  const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
+  const dia = data.getUTCDate().toString().padStart(2, '0'); // Altere de padStart(1, '0') para padStart(2, '0') para dias como '01'
 
   return `${ano}-${mes}-${dia}`;
 }
