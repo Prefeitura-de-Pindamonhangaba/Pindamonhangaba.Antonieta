@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted, watch } from 'vue'
+import { h, ref, onMounted, watch, computed } from 'vue'
 import {
   NLayout,
   NLayoutContent,
@@ -107,24 +107,82 @@ const pageLoading = ref(true)
 const searchQuery = ref('')
 const allBeneficiaries = ref<Beneficiary[]>([])
 
-// Função placeholder para exportar dados
+// Objeto interno para organizar dados de exportação
+const exportData = computed(() => {
+  return allBeneficiaries.value.map(beneficiary => ({
+    telefone: beneficiary.contact || 'Não informado',
+    documento: beneficiary.document || 'Não informado',
+    adicional1: beneficiary.name || 'Não informado', // Nome como Adicional 1
+  }))
+})
+
+// Função para exportar dados (agora usando o objeto interno)
 const handleExport = () => {
+  // Log do objeto organizado para verificação
+  console.log('📊 Dados organizados para exportação:', exportData.value)
+  
+  // Exemplo de como acessar os dados organizados
+  const dadosSimplificados = exportData.value.map(item => ({
+    Telefone: item.telefone,
+    Documento: item.documento,
+    'Adicional 1': item.adicional1
+  }))
+  
+  console.log('📋 Dados simplificados (Telefone, Documento, Adicional 1):', dadosSimplificados)
+  
   message.info({
-    content: 'Funcionalidade de exportação será implementada em breve',
-    duration: 3000,
+    content: `${exportData.value.length} beneficiários organizados para exportação. Verifique o console para ver os dados.`,
+    duration: 4000,
     closable: true
   })
 }
 
-// Adicione a função de busca
+// Função para obter resumo dos dados organizados
+const getExportSummary = computed(() => {
+  const total = exportData.value.length
+  const comTelefone = exportData.value.filter(item => item.telefone !== 'Não informado').length
+  const comDocumento = exportData.value.filter(item => item.documento !== 'Não informado').length
+  const comNome = exportData.value.filter(item => item.adicional1 !== 'Não informado').length
+  
+  return {
+    total,
+    comTelefone,
+    comDocumento,
+    comNome,
+    porcentagemCompletos: Math.round((Math.min(comTelefone, comDocumento, comNome) / total) * 100)
+  }
+})
+
+// Função para obter dados formatados para diferentes tipos de exportação
+const getFormattedExportData = (formato: 'simples' | 'completo' = 'simples') => {
+  if (formato === 'simples') {
+    return exportData.value.map(item => ({
+      'Telefone': item.telefone,
+      'Documento': item.documento,
+      'Adicional 1': item.adicional1
+    }))
+  }
+  
+  return exportData.value.map(item => ({
+    'Telefone': item.telefone,
+    'Documento': item.documento,
+    'Adicional 1': item.adicional1,
+  }))
+}
+
+// Watch para atualizar dados quando beneficiários mudarem
+watch(allBeneficiaries, () => {
+  const summary = getExportSummary.value
+  console.log('📈 Resumo dos dados organizados:', summary)
+}, { deep: true })
+
+// Resto do código permanece igual...
 const handleSearch = (query: string) => {
   if (!query) {
-    // If search is cleared, show all beneficiaries
     tableData.value = [...allBeneficiaries.value]
     return
   }
   
-  // Filter beneficiaries by name or document
   const normalizedQuery = query.toLowerCase().trim()
   tableData.value = allBeneficiaries.value.filter(beneficiary => 
     beneficiary.name.toLowerCase().includes(normalizedQuery) || 
@@ -136,7 +194,6 @@ async function fetchBeneficiaries() {
   try {
     loading.value = true
     
-    // Adiciona um pequeno atraso para mostrar o loading (apenas se estiver recarregando, não no carregamento inicial)
     if (!pageLoading.value) {
       const loadingMsg = message.loading('Atualizando lista de beneficiários...', {
         duration: 0
@@ -151,7 +208,6 @@ async function fetchBeneficiaries() {
       tableData.value = beneficiaries
       pagination.value.itemCount = total
     } else {
-      // Carregamento inicial, sem mensagem
       const [beneficiaries, total] = await beneficiaryService.getAll()
       allBeneficiaries.value = beneficiaries
       tableData.value = beneficiaries
@@ -170,7 +226,6 @@ async function fetchBeneficiaries() {
   }
 }
 
-// Add sort state
 const sorter = ref<{ columnKey: keyof Beneficiary | null, order: 'ascend' | 'descend' | false }>({
   columnKey: null,
   order: false
@@ -216,7 +271,6 @@ const columns: DataTableColumns<Beneficiary> = [
   }
 ]
 
-// Replace the handleSort function
 const handleSort = (sorter: { columnKey: keyof Beneficiary, order: 'ascend' | 'descend' | false }) => {
   const { columnKey, order } = sorter
   
@@ -290,18 +344,6 @@ async function confirmDelete() {
   }
 }
 
-// // Add these functions after handleEdit
-// const handleBeneficiarySubmit = async (beneficiary: Beneficiary) => {
-//   try {
-//     await beneficiaryService.create(beneficiary)
-//     message.success('Beneficiário cadastrado com sucesso')
-//     await fetchBeneficiaries()
-//   } catch (error) {
-//     message.error('Erro ao cadastrar beneficiário')
-//     console.error(error)
-//   }
-// }
-
 const handleBeneficiaryUpdate = async (id: number, updatedData: Beneficiary) => {
   try {
     await beneficiaryService.update(id, updatedData)
@@ -315,7 +357,6 @@ const handleBeneficiaryUpdate = async (id: number, updatedData: Beneficiary) => 
   }
 }
 
-// Update onMounted to set initial loading state
 onMounted(async () => {
   pageLoading.value = true
   await fetchBeneficiaries()
@@ -327,7 +368,6 @@ watch(showBeneficiaryModal, (newValue) => {
   }
 })
 
-// Reset search when data is refreshed
 watch(() => allBeneficiaries.value, () => {
   if (!searchQuery.value) {
     tableData.value = [...allBeneficiaries.value]
