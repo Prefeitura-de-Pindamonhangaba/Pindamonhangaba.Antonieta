@@ -363,23 +363,23 @@ const handleDistributionSubmit = async (formData: any) => {
   }
 }
 
-const handleBeneficiarySubmit = async (formData: Beneficiary) => {
-  try {
-    const loadingMsg = message.loading('Cadastrando beneficiário...', {
-      duration: 0
-    })
+// const handleBeneficiarySubmit = async (formData: Beneficiary) => {
+//   try {
+//     const loadingMsg = message.loading('Cadastrando beneficiário...', {
+//       duration: 0
+//     })
     
-    await beneficiaryService.create(formData)
+//     await beneficiaryService.create(formData)
     
-    loadingMsg.destroy()
-    message.success('Beneficiário cadastrado com sucesso')
+//     loadingMsg.destroy()
+//     message.success('Beneficiário cadastrado com sucesso')
     
-    await fetchDashboardData()
-  } catch (error) {
-    message.error('Erro ao cadastrar beneficiário')
-    console.error(error)
-  }
-}
+//     await fetchDashboardData()
+//   } catch (error) {
+//     message.error('Erro ao cadastrar beneficiário')
+//     console.error(error)
+//   }
+// }
 
 const handleInputSubmit = async (formData: any) => {
   try {
