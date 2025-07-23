@@ -269,17 +269,17 @@ async function confirmDelete() {
   }
 }
 
-// Add these functions after handleEdit
-const handleBeneficiarySubmit = async (beneficiary: Beneficiary) => {
-  try {
-    await beneficiaryService.create(beneficiary)
-    message.success('Beneficiário cadastrado com sucesso')
-    await fetchBeneficiaries()
-  } catch (error) {
-    message.error('Erro ao cadastrar beneficiário')
-    console.error(error)
-  }
-}
+// // Add these functions after handleEdit
+// const handleBeneficiarySubmit = async (beneficiary: Beneficiary) => {
+//   try {
+//     await beneficiaryService.create(beneficiary)
+//     message.success('Beneficiário cadastrado com sucesso')
+//     await fetchBeneficiaries()
+//   } catch (error) {
+//     message.error('Erro ao cadastrar beneficiário')
+//     console.error(error)
+//   }
+// }
 
 const handleBeneficiaryUpdate = async (id: number, updatedData: Beneficiary) => {
   try {

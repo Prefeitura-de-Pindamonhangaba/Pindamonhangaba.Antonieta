@@ -3,6 +3,19 @@ import { useRuntimeConfig } from '#app'
 
 const BASE_URL = `${useRuntimeConfig().public.backendUrl}/beneficiary`
 
+function timestamp_to_date(timestamp: number): string {
+  const data = new Date(timestamp);
+
+  // Adiciona 1 dia ao timestamp
+  data.setUTCDate(data.getUTCDate() + 1); // Incrementa o dia UTC
+
+  const ano = data.getUTCFullYear();
+  const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
+  const dia = data.getUTCDate().toString().padStart(2, '0'); // Altere de padStart(1, '0') para padStart(2, '0') para dias como '01'
+
+  return `${ano}-${mes}-${dia}`;
+}
+
 export const beneficiaryService = {
   async getAll(): Promise<[Beneficiary[], number]> {
     try {
@@ -45,6 +58,10 @@ export const beneficiaryService = {
   },
 
   async create(beneficiary: Omit<Beneficiary, 'id'>): Promise<Beneficiary> {
+    console.log('🔄 beneficiaryService.create chamado')
+    if(beneficiary.birth_date.toString().length > 10) {
+      beneficiary.birth_date = timestamp_to_date(beneficiary.birth_date as unknown as number);
+    }
     try {
       const response = await fetch(`${BASE_URL}/`, {
         method: 'POST',
@@ -68,6 +85,10 @@ export const beneficiaryService = {
   },
 
   async update(id: number, beneficiary: Partial<Beneficiary>): Promise<Beneficiary> {
+    console.log('🔄 beneficiaryService.update chamado', { id, beneficiary })
+    if(beneficiary.birth_date.toString().length > 10) {
+      beneficiary.birth_date = timestamp_to_date(beneficiary.birth_date as unknown as number);
+    }
     try {
       const response = await fetch(`${BASE_URL}/`, {
         method: 'PUT',

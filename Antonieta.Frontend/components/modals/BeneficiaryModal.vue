@@ -179,18 +179,31 @@ const formData = ref({
   document: '',
   address: '',
   contact: '',
-  monthly_limit: null as number | null,
-  mother_name: null as string | null,
-  birth_date: null as string | null,
+  monthly_limit: 4,
+  mother_name: '',
+  birth_date: '2025-01-01',
   qtd_dogs: 0,
   qtd_castred_dogs: 0,
   qtd_cats: 0,
   qtd_castred_cats: 0,
   government_benefit: false,
   receives_basic_basket: false,
-  how_did_you_hear: null as string | null,
-  observations: null as string | null
+  how_did_you_hear: '',
+  observations: ''
 })
+
+function timestamp_to_date(timestamp: number): string {
+  const data = new Date(timestamp);
+
+  // Adiciona 1 dia ao timestamp
+  data.setUTCDate(data.getUTCDate() + 1); // Incrementa o dia UTC
+
+  const ano = data.getUTCFullYear();
+  const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
+  const dia = data.getUTCDate().toString().padStart(2, '0'); // Altere de padStart(1, '0') para padStart(2, '0') para dias como '01'
+
+  return `${ano}-${mes}-${dia}`;
+}
 
 const message = useMessage()
 
@@ -226,7 +239,7 @@ watch(() => props.beneficiaryData, (newValue) => {
       contact: newValue.contact,
       monthly_limit: newValue.monthly_limit,
       mother_name: newValue.mother_name,
-      birth_date: newValue.birth_date,
+      birth_date: timestamp_to_date(newValue.birth_date),
       qtd_dogs: newValue.qtd_dogs,
       qtd_castred_dogs: newValue.qtd_castred_dogs,
       qtd_cats: newValue.qtd_cats,
