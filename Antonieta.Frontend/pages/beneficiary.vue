@@ -15,15 +15,27 @@
           @search="handleSearch"
         />
 
-        <app-button 
-          type="primary"
-          @click="showBeneficiaryModal = true"
-        >
-          <template #icon>
-            <n-icon><IconUserPlus /></n-icon>
-          </template>
-          Adicionar Novo Beneficiário
-        </app-button>
+        <n-space align="center">
+          <app-button 
+            type="primary"
+            @click="handleExport"
+          >
+            <template #icon>
+              <n-icon><IconDownload /></n-icon>
+            </template>
+            Exportar Dados
+          </app-button>
+
+          <app-button 
+            type="primary"
+            @click="showBeneficiaryModal = true"
+          >
+            <template #icon>
+              <n-icon><IconUserPlus /></n-icon>
+            </template>
+            Adicionar Novo Beneficiário
+          </app-button>
+        </n-space>
       </n-space>
 
       <!-- Table -->
@@ -77,7 +89,7 @@ import {
   NInput,
   useMessage
 } from 'naive-ui'
-import { IconUserPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-vue'
+import { IconUserPlus, IconEdit, IconTrash, IconSearch, IconDownload } from '@tabler/icons-vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import ActionButtons from '../components/ActionButtons.vue'
 import type { DataTableColumns } from 'naive-ui'
@@ -94,6 +106,15 @@ const selectedBeneficiary = ref<Beneficiary | null>(null)
 const pageLoading = ref(true)
 const searchQuery = ref('')
 const allBeneficiaries = ref<Beneficiary[]>([])
+
+// Função placeholder para exportar dados
+const handleExport = () => {
+  message.info({
+    content: 'Funcionalidade de exportação será implementada em breve',
+    duration: 3000,
+    closable: true
+  })
+}
 
 // Adicione a função de busca
 const handleSearch = (query: string) => {
