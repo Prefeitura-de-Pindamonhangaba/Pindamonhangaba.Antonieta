@@ -15,15 +15,27 @@
           @search="handleSearch"
         />
 
-        <app-button 
-          type="primary"
-          @click="showBeneficiaryModal = true"
-        >
-          <template #icon>
-            <n-icon><IconUserPlus /></n-icon>
-          </template>
-          Adicionar Novo Beneficiário
-        </app-button>
+        <n-space align="center">
+          <app-button 
+            type="primary"
+            @click="handleExport"
+          >
+            <template #icon>
+              <n-icon><IconDownload /></n-icon>
+            </template>
+            Exportar Dados
+          </app-button>
+
+          <app-button 
+            type="primary"
+            @click="showBeneficiaryModal = true"
+          >
+            <template #icon>
+              <n-icon><IconUserPlus /></n-icon>
+            </template>
+            Adicionar Novo Beneficiário
+          </app-button>
+        </n-space>
       </n-space>
 
       <!-- Table -->
@@ -62,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted, watch } from 'vue'
+import { h, ref, onMounted, watch, computed } from 'vue'
 import {
   NLayout,
   NLayoutContent,
@@ -77,12 +89,13 @@ import {
   NInput,
   useMessage
 } from 'naive-ui'
-import { IconUserPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-vue'
+import { IconUserPlus, IconEdit, IconTrash, IconSearch, IconDownload } from '@tabler/icons-vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import ActionButtons from '../components/ActionButtons.vue'
 import type { DataTableColumns } from 'naive-ui'
 import type { Beneficiary } from '../models/beneficiaryModel'
 import { beneficiaryService } from '~/services/beneficiaryService'
+import * as XLSX from 'xlsx'
 
 const message = useMessage()
 const tableData = ref<Beneficiary[]>([])
@@ -95,15 +108,96 @@ const pageLoading = ref(true)
 const searchQuery = ref('')
 const allBeneficiaries = ref<Beneficiary[]>([])
 
-// Adicione a função de busca
+// Objeto interno para organizar dados de exportação
+const exportData = computed(() => {
+  return allBeneficiaries.value.map(beneficiary => ({
+    telefone: beneficiary.contact || 'Não informado',
+    documento: beneficiary.document || 'Não informado',
+    adicional1: beneficiary.name || 'Não informado', // Nome como Adicional 1
+  }))
+})
+
+// Função para exportar dados para Excel - versão simples
+const handleExport = () => {
+  try {
+    if (exportData.value.length === 0) {
+      message.warning('Não há dados para exportar')
+      return
+    }
+
+    // Criar dados simples para Excel
+    const dados = exportData.value.map(item => ({
+      'Telefone': item.telefone,
+      'Documento': item.documento,
+      'Adicional 1': item.adicional1
+    }))
+
+    // Criar e baixar Excel
+    const ws = XLSX.utils.json_to_sheet(dados)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Beneficiários')
+    
+    // Nome do arquivo com data atual
+    const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')
+    const nomeArquivo = `beneficiarios_${hoje}.xlsx`
+    
+    // Baixar arquivo
+    XLSX.writeFile(wb, nomeArquivo)
+
+    message.success(`Arquivo ${nomeArquivo} baixado com sucesso!`)
+
+  } catch (error) {
+    console.error('Erro ao exportar:', error)
+    message.error('Erro ao exportar dados')
+  }
+}
+
+// Função para obter resumo dos dados organizados
+const getExportSummary = computed(() => {
+  const total = exportData.value.length
+  const comTelefone = exportData.value.filter(item => item.telefone !== 'Não informado').length
+  const comDocumento = exportData.value.filter(item => item.documento !== 'Não informado').length
+  const comNome = exportData.value.filter(item => item.adicional1 !== 'Não informado').length
+  
+  return {
+    total,
+    comTelefone,
+    comDocumento,
+    comNome,
+    porcentagemCompletos: Math.round((Math.min(comTelefone, comDocumento, comNome) / total) * 100)
+  }
+})
+
+// Função para obter dados formatados para diferentes tipos de exportação
+const getFormattedExportData = (formato: 'simples' | 'completo' = 'simples') => {
+  if (formato === 'simples') {
+    return exportData.value.map(item => ({
+      'Telefone': item.telefone,
+      'Documento': item.documento,
+      'Adicional 1': item.adicional1
+    }))
+  }
+  
+  return exportData.value.map(item => ({
+    'Telefone': item.telefone,
+    'Documento': item.documento,
+    'Adicional 1': item.adicional1,
+  }))
+}
+
+// Watch para atualizar dados quando beneficiários mudarem
+watch(allBeneficiaries, () => {
+  const summary = getExportSummary.value
+  console.log('📈 Resumo dos dados organizados:', summary)
+}, { deep: true })
+
+// Resto do código permanece igual...
 const handleSearch = (query: string) => {
   if (!query) {
-    // If search is cleared, show all beneficiaries
     tableData.value = [...allBeneficiaries.value]
     return
   }
   
-  // Filter beneficiaries by name or document
   const normalizedQuery = query.toLowerCase().trim()
   tableData.value = allBeneficiaries.value.filter(beneficiary => 
     beneficiary.name.toLowerCase().includes(normalizedQuery) || 
@@ -115,7 +209,6 @@ async function fetchBeneficiaries() {
   try {
     loading.value = true
     
-    // Adiciona um pequeno atraso para mostrar o loading (apenas se estiver recarregando, não no carregamento inicial)
     if (!pageLoading.value) {
       const loadingMsg = message.loading('Atualizando lista de beneficiários...', {
         duration: 0
@@ -130,7 +223,6 @@ async function fetchBeneficiaries() {
       tableData.value = beneficiaries
       pagination.value.itemCount = total
     } else {
-      // Carregamento inicial, sem mensagem
       const [beneficiaries, total] = await beneficiaryService.getAll()
       allBeneficiaries.value = beneficiaries
       tableData.value = beneficiaries
@@ -149,7 +241,6 @@ async function fetchBeneficiaries() {
   }
 }
 
-// Add sort state
 const sorter = ref<{ columnKey: keyof Beneficiary | null, order: 'ascend' | 'descend' | false }>({
   columnKey: null,
   order: false
@@ -195,7 +286,6 @@ const columns: DataTableColumns<Beneficiary> = [
   }
 ]
 
-// Replace the handleSort function
 const handleSort = (sorter: { columnKey: keyof Beneficiary, order: 'ascend' | 'descend' | false }) => {
   const { columnKey, order } = sorter
   
@@ -269,18 +359,6 @@ async function confirmDelete() {
   }
 }
 
-// // Add these functions after handleEdit
-// const handleBeneficiarySubmit = async (beneficiary: Beneficiary) => {
-//   try {
-//     await beneficiaryService.create(beneficiary)
-//     message.success('Beneficiário cadastrado com sucesso')
-//     await fetchBeneficiaries()
-//   } catch (error) {
-//     message.error('Erro ao cadastrar beneficiário')
-//     console.error(error)
-//   }
-// }
-
 const handleBeneficiaryUpdate = async (id: number, updatedData: Beneficiary) => {
   try {
     await beneficiaryService.update(id, updatedData)
@@ -294,7 +372,6 @@ const handleBeneficiaryUpdate = async (id: number, updatedData: Beneficiary) => 
   }
 }
 
-// Update onMounted to set initial loading state
 onMounted(async () => {
   pageLoading.value = true
   await fetchBeneficiaries()
@@ -306,7 +383,6 @@ watch(showBeneficiaryModal, (newValue) => {
   }
 })
 
-// Reset search when data is refreshed
 watch(() => allBeneficiaries.value, () => {
   if (!searchQuery.value) {
     tableData.value = [...allBeneficiaries.value]
