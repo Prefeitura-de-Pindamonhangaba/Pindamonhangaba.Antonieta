@@ -24,7 +24,8 @@
     "nuxt": "^3.17.2",
     "nuxtjs-naive-ui": "^1.0.2",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@vicons/ionicons5": "^0.13.0",
