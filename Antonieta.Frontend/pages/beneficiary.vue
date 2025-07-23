@@ -95,6 +95,7 @@ import ActionButtons from '../components/ActionButtons.vue'
 import type { DataTableColumns } from 'naive-ui'
 import type { Beneficiary } from '../models/beneficiaryModel'
 import { beneficiaryService } from '~/services/beneficiaryService'
+import * as XLSX from 'xlsx'
 
 const message = useMessage()
 const tableData = ref<Beneficiary[]>([])
@@ -116,25 +117,39 @@ const exportData = computed(() => {
   }))
 })
 
-// Função para exportar dados (agora usando o objeto interno)
+// Função para exportar dados para Excel - versão simples
 const handleExport = () => {
-  // Log do objeto organizado para verificação
-  console.log('📊 Dados organizados para exportação:', exportData.value)
-  
-  // Exemplo de como acessar os dados organizados
-  const dadosSimplificados = exportData.value.map(item => ({
-    Telefone: item.telefone,
-    Documento: item.documento,
-    'Adicional 1': item.adicional1
-  }))
-  
-  console.log('📋 Dados simplificados (Telefone, Documento, Adicional 1):', dadosSimplificados)
-  
-  message.info({
-    content: `${exportData.value.length} beneficiários organizados para exportação. Verifique o console para ver os dados.`,
-    duration: 4000,
-    closable: true
-  })
+  try {
+    if (exportData.value.length === 0) {
+      message.warning('Não há dados para exportar')
+      return
+    }
+
+    // Criar dados simples para Excel
+    const dados = exportData.value.map(item => ({
+      'Telefone': item.telefone,
+      'Documento': item.documento,
+      'Adicional 1': item.adicional1
+    }))
+
+    // Criar e baixar Excel
+    const ws = XLSX.utils.json_to_sheet(dados)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Beneficiários')
+    
+    // Nome do arquivo com data atual
+    const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')
+    const nomeArquivo = `beneficiarios_${hoje}.xlsx`
+    
+    // Baixar arquivo
+    XLSX.writeFile(wb, nomeArquivo)
+
+    message.success(`Arquivo ${nomeArquivo} baixado com sucesso!`)
+
+  } catch (error) {
+    console.error('Erro ao exportar:', error)
+    message.error('Erro ao exportar dados')
+  }
 }
 
 // Função para obter resumo dos dados organizados
