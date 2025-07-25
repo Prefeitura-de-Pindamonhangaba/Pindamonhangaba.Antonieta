@@ -6,7 +6,7 @@ from database import get_db
 from dtos.create_beneficiary_dto import create_beneficiary_dto
 from dtos.update_beneficiary_dto import update_beneficiary_dto
 
-async def get_all_beneficiaries_service(skip: int = 0, limit: int = 100) -> Tuple[List[Beneficiary], int]:
+async def get_all_beneficiaries_service(skip: int = 0, limit: int = 1000) -> Tuple[List[Beneficiary], int]:
     """
     Retorna todos os beneficiários do banco de dados.
     Obtém a sessão do DB internamente.
