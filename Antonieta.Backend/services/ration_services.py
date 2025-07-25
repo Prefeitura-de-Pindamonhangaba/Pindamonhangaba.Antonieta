@@ -6,7 +6,7 @@ from database import get_db
 from dtos.create_ration_dto import create_ration_dto
 from dtos.update_ration_dto import update_ration_dto
 
-async def get_all_ration_service(skip: int = 0, limit: int = 100) -> Tuple[List[Ration], int]:
+async def get_all_ration_service(skip: int = 0, limit: int = 1000) -> Tuple[List[Ration], int]:
     """
     Retorna todos os raçãos do banco de dados.
     Obtém a sessão do DB internamente.

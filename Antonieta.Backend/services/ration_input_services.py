@@ -6,7 +6,7 @@ from database import get_db
 from dtos.create_ration_input_dto import create_ration_input_dto
 from dtos.update_ration_input_dto import update_ration_input_dto
 
-async def get_all_ration_input_service(skip: int = 0, limit: int = 100) -> Tuple[List[RationInput], int]:
+async def get_all_ration_input_service(skip: int = 0, limit: int = 1000) -> Tuple[List[RationInput], int]:
     """
     Retorna todos os registros de entrada de ração do banco de dados.
     """

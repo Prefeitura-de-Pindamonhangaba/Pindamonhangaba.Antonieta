@@ -7,7 +7,7 @@ from dtos.create_distribution_dto import create_distribution_dto
 from dtos.update_distribution_dto import update_distribution_dto
 from models.ration_stock_model import RationStock
 
-async def get_all_distribution_service(skip: int = 0, limit: int = 100) -> Tuple[List[Distribution], int]:
+async def get_all_distribution_service(skip: int = 0, limit: int = 1000) -> Tuple[List[Distribution], int]:
     """
     Retorna todos os raçãos do banco de dados.
     Obtém a sessão do DB internamente.
