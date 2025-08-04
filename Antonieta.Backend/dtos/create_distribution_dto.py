@@ -7,5 +7,5 @@ class create_distribution_dto(BaseModel):
     """
     ration_id: int
     beneficiary_id: int
-    amount: int
+    amount: float
     date: datetime
