@@ -179,7 +179,7 @@ const formData = ref({
   document: '',
   address: '',
   contact: '',
-  monthly_limit: 4,
+  monthly_limit: 4.5,
   mother_name: '',
   birth_date: '2025-01-01',
   qtd_dogs: 0,
