@@ -38,10 +38,11 @@
       <n-form-item label="Quantidade (kg)" path="amount">
         <n-input-number
           v-model:value="formData.amount"
-          :min="1"
+          :min="0.1"
           :max="maxAmount"
-          :precision="0"
-          placeholder="Digite a quantidade"
+          :precision="2"
+          :step="0.25"
+          placeholder="Digite a quantidade (ex: 1.75)"
           style="width: 100%"
         />
       </n-form-item>
@@ -104,11 +105,11 @@ const show = computed({
 const formData = ref({
   beneficiary_id: null as number | null,
   ration_id: null as number | null,
-  amount: null as number | null,
+  amount: null as number | null, // Agora aceita float
   date: new Date().toISOString()
 })
 
-// Opções para os selects - formato simples do Naive UI
+// Opções para os selects
 const beneficiaryOptions = computed(() => 
   beneficiaries.value.map(beneficiary => ({
     label: beneficiary.name,
@@ -118,7 +119,7 @@ const beneficiaryOptions = computed(() =>
 
 const rationOptions = computed(() => 
   rationStocks.value
-    .filter(ration => ration.stock > 0) // Apenas com estoque
+    .filter(ration => ration.stock > 0)
     .map(ration => ({
       label: `${ration.name} (${ration.stock}kg disponível)`,
       value: ration.id
@@ -136,17 +137,17 @@ const selectedRation = computed(() => {
   return rationStocks.value.find(r => r.id === formData.value.ration_id) || null
 })
 
-// Quantidade máxima permitida
+// Quantidade máxima permitida (agora com decimais)
 const maxAmount = computed(() => {
-  if (!selectedRation.value) return 999
+  if (!selectedRation.value) return 999.99
   
   const stockLimit = selectedRation.value.stock
-  const monthlyLimit = selectedBeneficiary.value?.monthly_limit || 999
+  const monthlyLimit = selectedBeneficiary.value?.monthly_limit || 999.99
   
   return Math.min(stockLimit, monthlyLimit)
 })
 
-// Regras de validação
+// Regras de validação atualizadas para float
 const rules: FormRules = {
   beneficiary_id: {
     required: true,
@@ -169,8 +170,15 @@ const rules: FormRules = {
       if (!value || value <= 0) {
         return new Error('A quantidade deve ser maior que 0')
       }
+      if (value < 0.1) {
+        return new Error('A quantidade mínima é 0.1kg')
+      }
       if (value > maxAmount.value) {
-        return new Error(`Máximo permitido: ${maxAmount.value}kg`)
+        return new Error(`Máximo permitido: ${maxAmount.value.toFixed(2)}kg`)
+      }
+      // Verificar se tem no máximo 2 casas decimais
+      if (Number(value.toFixed(2)) !== value) {
+        return new Error('Máximo 2 casas decimais permitidas')
       }
       return true
     }
@@ -220,9 +228,11 @@ const handleSubmit = async () => {
     const distributionData = {
       beneficiary_id: formData.value.beneficiary_id!,
       ration_id: formData.value.ration_id!,
-      amount: formData.value.amount!,
+      amount: Number(formData.value.amount!.toFixed(2)), // Garantir 2 casas decimais
       date: new Date().toISOString()
     }
+
+    console.log('📦 Enviando distribuição:', distributionData)
 
     const response = await distributionService.create(distributionData)
     

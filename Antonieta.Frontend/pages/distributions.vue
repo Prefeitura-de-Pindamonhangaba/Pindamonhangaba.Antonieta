@@ -252,10 +252,9 @@ const columns: DataTableColumns<Distribution> = [
   {
     title: 'Quantidade',
     key: 'amount',
-    sorter: 'default',
-    render(row) {
-      return `${row.amount} kg`
-    }
+    sorter: (row1: Distribution, row2: Distribution) => 
+      row1.amount - row2.amount,
+    render: (row: Distribution) => `${row.amount.toFixed(2)} kg` // Mostrar com 2 casas decimais
   }
 ]
 
