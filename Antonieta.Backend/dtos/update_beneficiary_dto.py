@@ -9,7 +9,7 @@ class update_beneficiary_dto(BaseModel):
     document: str
     address: str
     contact: str
-    monthly_limit: int  # Add monthly_limit field
+    monthly_limit: float  # Add monthly_limit field
     mother_name: str = None  # Optional field for mother's name
     birth_date: str = None  # Optional field for birth date
     qtd_dogs: int = 0  # Optional field for quantity of dogs
