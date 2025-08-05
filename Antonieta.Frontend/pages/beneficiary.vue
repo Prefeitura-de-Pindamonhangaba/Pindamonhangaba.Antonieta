@@ -361,7 +361,6 @@ async function confirmDelete() {
 
 const handleBeneficiaryUpdate = async (id: number, updatedData: Beneficiary) => {
   try {
-    await beneficiaryService.update(id, updatedData)
     message.success('Beneficiário atualizado com sucesso')
     await fetchBeneficiaries()
   } catch (error) {

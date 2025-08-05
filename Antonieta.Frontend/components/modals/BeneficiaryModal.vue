@@ -41,6 +41,9 @@
             clearable 
             style="width: 100%" 
             placeholder="Limite mensal em kg"
+            :precision="2"
+            :step="0.1"
+            :min="0"
           />
         </n-form-item>
 
