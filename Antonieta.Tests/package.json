@@ -1,0 +1,29 @@
+{
+  "name": "antonieta.tests",
+  "version": "1.0.0",
+  "description": "Testes E2E para o sistema Antonieta",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    
+    "test:beneficiarios": "playwright test --grep=\"Beneficiários\"",
+    "test:distribuicoes": "playwright test --grep=\"Distribuições\"", 
+    "test:estoque": "playwright test --grep=\"Estoque\"",
+    
+    "test:chrome": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:mobile": "playwright test --project=mobile-chrome",
+    
+    "test:dev": "cross-env FRONTEND_URL=http://localhost:3000 BACKEND_URL=http://localhost:8000 playwright test",
+    "test:staging": "cross-env FRONTEND_URL=https://staging.antonieta.com BACKEND_URL=https://api-staging.antonieta.com playwright test",
+    "test:prod": "cross-env FRONTEND_URL=https://antonieta.com BACKEND_URL=https://api.antonieta.com playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.3.1"
+  }
+}
