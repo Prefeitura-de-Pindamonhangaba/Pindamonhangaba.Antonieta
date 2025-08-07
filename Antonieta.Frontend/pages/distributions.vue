@@ -238,7 +238,7 @@ const columns: DataTableColumns<Distribution> = [
     title: 'Data',
     key: 'date',
     sorter: 'default',
-    width: 150,
+    width: 110,
     render(row) {
       return formatDate(row.date)
     }
@@ -247,6 +247,7 @@ const columns: DataTableColumns<Distribution> = [
     title: 'Beneficiário',
     key: 'beneficiaryName',
     sorter: 'default',
+    minWidth: 180,
     render(row) {
       return row.beneficiaryName || 'N/A'
     }
@@ -255,6 +256,7 @@ const columns: DataTableColumns<Distribution> = [
     title: 'Tipo de Ração',
     key: 'rationTypeName',
     sorter: 'default',
+    minWidth: 160,
     render(row) {
       return row.rationTypeName || 'N/A'
     }
@@ -264,7 +266,7 @@ const columns: DataTableColumns<Distribution> = [
     key: 'amount',
     sorter: (row1: Distribution, row2: Distribution) => 
       row1.amount - row2.amount,
-    width: 120,
+    width: 130,
     render: (row: Distribution) => `${row.amount.toFixed(2)} kg`
   },
   // Coluna de observações
