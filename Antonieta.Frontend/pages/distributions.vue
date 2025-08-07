@@ -38,51 +38,17 @@
         />
       </n-card>
 
+      <!-- ✅ ATUALIZADO: Modal de nova distribuição -->
       <DistributionModal 
         v-model="showDistributionModal"
         @submit="handleDistributionSubmit"
       />
 
-      <!-- ✅ NOVO: Modal para visualizar observações completas -->
-      <n-modal
-        v-model:show="showObservationsModal"
-        preset="card"
-        title="Observações da Distribuição"
-        style="width: 600px"
-      >
-        <div class="observations-modal">
-          <div class="distribution-info">
-            <n-text strong>📋 Distribuição</n-text>
-            <br>
-            <n-text depth="2" style="font-size: 14px">
-              👤 {{ selectedDistribution?.beneficiaryName }}
-            </n-text>
-            <br>
-            <n-text depth="2" style="font-size: 14px">
-              🥫 {{ selectedDistribution?.rationTypeName }} - {{ selectedDistribution?.amount.toFixed(2) }}kg
-            </n-text>
-            <br>
-            <n-text depth="2" style="font-size: 14px">
-              📅 {{ selectedDistribution ? formatDate(selectedDistribution.date) : '' }}
-            </n-text>
-          </div>
-          
-          <n-divider />
-          
-          <div class="observations-content">
-            <n-text strong>📝 Observações:</n-text>
-            <div class="observations-text">
-              {{ selectedDistribution?.observations || 'Nenhuma observação registrada.' }}
-            </div>
-          </div>
-        </div>
-        
-        <template #action>
-          <n-button @click="showObservationsModal = false">
-            Fechar
-          </n-button>
-        </template>
-      </n-modal>
+      <!-- ✅ NOVO: Modal de detalhes extraído -->
+      <DistributionDetailsModal
+        v-model="showDetailsModal"
+        :distribution="selectedDistribution"
+      />
     </n-space>
   </page-wrapper>
 </template>
@@ -91,16 +57,16 @@
 import { h, ref, onMounted, watch } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 import { 
-  NCard, NDataTable, NButton, NIcon, NLayout, NLayoutContent, 
-  NSpace, NH1, NDivider, NInput, NModal, NText, NTooltip, useMessage 
+  NCard, NDataTable, NButton, NIcon, NSpace, NH1, NDivider, 
+  NTooltip, useMessage 
 } from 'naive-ui'
-import { IconPlus, IconSearch, IconEye, IconFileText } from '@tabler/icons-vue'
+import { IconPlus, IconEye, IconFileText } from '@tabler/icons-vue'
 import DistributionModal from '../components/modals/DistributionModal.vue'
+import DistributionDetailsModal from '../components/modals/DistributionDetailsModal.vue' // ✅ NOVO
 import { distributionService } from '~/services/distributionService'
 import { beneficiaryService } from '~/services/beneficiaryService'
-import { rationTypeService } from '~/services/rationTypeService'
-import type { Distribution } from '~/models/distributionModel'
 import { rationStockService } from '~/services/rationStockService'
+import type { Distribution } from '~/models/distributionModel'
 
 const message = useMessage()
 const loading = ref(false)
@@ -112,17 +78,17 @@ const rationTypesMap = ref<Map<number, string>>(new Map())
 const pageLoading = ref(true)
 const searchQuery = ref('')
 
-// ✅ NOVO: Estado para modal de observações
-const showObservationsModal = ref(false)
+// ✅ ATUALIZADO: Estado para modal de detalhes
+const showDetailsModal = ref(false)
 const selectedDistribution = ref<Distribution | null>(null)
 
-// ✅ NOVO: Função para mostrar observações
-const showObservations = (distribution: Distribution) => {
+// ✅ ATUALIZADO: Função para mostrar detalhes
+const showDistributionDetails = (distribution: Distribution) => {
   selectedDistribution.value = distribution
-  showObservationsModal.value = true
+  showDetailsModal.value = true
 }
 
-// ✅ NOVO: Função para formatar data
+// Função para formatar data
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleString('pt-BR', {
     day: '2-digit',
@@ -133,7 +99,7 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// ✅ ATUALIZADO: Busca incluindo observações
+// Busca incluindo observações
 const handleSearch = (query: string) => {
   if (!query) {
     tableData.value = [...allDistributions.value]
@@ -144,7 +110,7 @@ const handleSearch = (query: string) => {
   tableData.value = allDistributions.value.filter(distribution => 
     (distribution.beneficiaryName?.toLowerCase().includes(normalizedQuery) || 
      distribution.rationTypeName?.toLowerCase().includes(normalizedQuery) ||
-     distribution.observations?.toLowerCase().includes(normalizedQuery)) // ✅ NOVO: Buscar nas observações
+     distribution.observations?.toLowerCase().includes(normalizedQuery))
   )
 }
 
@@ -226,10 +192,9 @@ const loadRationStocks = async () => {
   }
 }
 
-// ✅ NOVO: Manipulador de envio de distribuição
+// Manipulador de envio de distribuição
 const handleDistributionSubmit = async (newDistribution: Distribution) => {
   try {
-    // Recarregar lista após nova distribuição
     await fetchDistributions()
     showDistributionModal.value = false
   } catch (error) {
@@ -302,7 +267,7 @@ const columns: DataTableColumns<Distribution> = [
     width: 120,
     render: (row: Distribution) => `${row.amount.toFixed(2)} kg`
   },
-  // ✅ NOVO: Coluna de observações
+  // Coluna de observações
   {
     title: 'Observações',
     key: 'observations',
@@ -314,7 +279,6 @@ const columns: DataTableColumns<Distribution> = [
         }, 'Sem observações')
       }
 
-      // Se a observação é muito longa, truncar e mostrar botão para ver completa
       const maxLength = 50
       const truncated = row.observations.length > maxLength
       const displayText = truncated 
@@ -322,7 +286,6 @@ const columns: DataTableColumns<Distribution> = [
         : row.observations
 
       return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
-        // Texto das observações (truncado se necessário)
         h('span', { 
           title: row.observations,
           style: { 
@@ -332,12 +295,12 @@ const columns: DataTableColumns<Distribution> = [
           } 
         }, displayText),
         
-        // Botão para ver observações completas (se truncado)
+        // ✅ ATUALIZADO: Botão usa função atualizada
         truncated && h(NButton, {
           size: 'tiny',
           text: true,
           type: 'primary',
-          onClick: () => showObservations(row),
+          onClick: () => showDistributionDetails(row),
           style: { fontSize: '12px' }
         }, {
           default: () => 'Ver mais',
@@ -346,21 +309,21 @@ const columns: DataTableColumns<Distribution> = [
       ])
     }
   },
-  // ✅ NOVO: Coluna de ações (se precisar de mais ações no futuro)
+  // Coluna de ações
   {
     title: 'Ações',
     key: 'actions',
     width: 80,
     render(row) {
       return h('div', { style: { display: 'flex', gap: '4px' } }, [
-        // Botão para ver observações (sempre visível se há observações)
-        row.observations && h(NTooltip, { trigger: 'hover' }, {
-          default: () => 'Ver observações completas',
+        // ✅ ATUALIZADO: Botão sempre visível para ver detalhes
+        h(NTooltip, { trigger: 'hover' }, {
+          default: () => 'Ver detalhes da distribuição',
           trigger: () => h(NButton, {
             size: 'small',
             text: true,
             type: 'info',
-            onClick: () => showObservations(row)
+            onClick: () => showDistributionDetails(row)
           }, {
             icon: () => h(NIcon, { size: 16 }, { default: () => h(IconFileText) })
           })
@@ -422,44 +385,8 @@ watch(() => allDistributions.value, () => {
   margin-top: 24px;
 }
 
-/* ✅ NOVO: Estilos para modal de observações */
-.observations-modal {
-  padding: 8px 0;
-}
-
-.distribution-info {
-  background-color: #f8f9fa;
-  padding: 12px;
-  border-radius: 6px;
-  border-left: 4px solid #f77800;
-}
-
-.observations-content {
-  margin-top: 16px;
-}
-
-.observations-text {
-  margin-top: 8px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border-left: 4px solid #52c41a;
-  font-size: 14px;
-  line-height: 1.6;
-  white-space: pre-wrap; /* Preserva quebras de linha */
-  word-break: break-word;
-}
-
-/* ✅ NOVO: Estilo para linha da tabela com observações */
+/* Estilo para linha da tabela com observações */
 :deep(.n-data-table-td) {
   vertical-align: top;
-}
-
-/* ✅ NOVO: Estilo para texto truncado */
-.observation-truncated {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 </style>
