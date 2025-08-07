@@ -238,7 +238,7 @@ const columns: DataTableColumns<Distribution> = [
     title: 'Data',
     key: 'date',
     sorter: 'default',
-    width: 110,
+    minWidth: 110,
     render(row) {
       return formatDate(row.date)
     }
