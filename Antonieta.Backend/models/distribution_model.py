@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Float
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Float, String
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -12,3 +12,4 @@ class Distribution(Base):
     date = Column(DateTime, nullable=False)
     ration = relationship("RationStock", back_populates="distributions")
     beneficiary = relationship("Beneficiary", back_populates="distributions")
+    observations = Column(String, nullable=True)

@@ -4,6 +4,7 @@ export interface Distribution {
   ration_id: number
   amount: number 
   date: string
+  observations?: string | null
   beneficiary?: {
     id: number
     name: string
@@ -21,6 +22,7 @@ export interface DistributionCreate {
   ration_id: number
   amount: number 
   date: string
+  observations?: string | null
 }
 
 export interface DistributionUpdate {
@@ -28,4 +30,5 @@ export interface DistributionUpdate {
   ration_id?: number
   amount?: number
   date?: string
+  observations?: string | null
 }
