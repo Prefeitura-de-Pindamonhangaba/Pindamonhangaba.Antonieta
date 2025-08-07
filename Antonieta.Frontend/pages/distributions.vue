@@ -11,7 +11,7 @@
       <n-space justify="space-between" align="center">
         <search-field
           v-model:value="searchQuery"
-          placeholder="Buscar por beneficiário ou tipo de ração..."
+          placeholder="Buscar por beneficiário, ração ou observações..."
           @search="handleSearch"
         />
 
@@ -34,13 +34,55 @@
           :pagination="pagination"
           :loading="loading"
           @update:sorter="handleSort"
+          :row-key="(row: Distribution) => row.id"
         />
       </n-card>
 
       <DistributionModal 
-        v-model="showDistributionModal" 
-        @submit="handleDistributionSubmit" 
+        v-model="showDistributionModal"
+        @submit="handleDistributionSubmit"
       />
+
+      <!-- ✅ NOVO: Modal para visualizar observações completas -->
+      <n-modal
+        v-model:show="showObservationsModal"
+        preset="card"
+        title="Observações da Distribuição"
+        style="width: 600px"
+      >
+        <div class="observations-modal">
+          <div class="distribution-info">
+            <n-text strong>📋 Distribuição</n-text>
+            <br>
+            <n-text depth="2" style="font-size: 14px">
+              👤 {{ selectedDistribution?.beneficiaryName }}
+            </n-text>
+            <br>
+            <n-text depth="2" style="font-size: 14px">
+              🥫 {{ selectedDistribution?.rationTypeName }} - {{ selectedDistribution?.amount.toFixed(2) }}kg
+            </n-text>
+            <br>
+            <n-text depth="2" style="font-size: 14px">
+              📅 {{ selectedDistribution ? formatDate(selectedDistribution.date) : '' }}
+            </n-text>
+          </div>
+          
+          <n-divider />
+          
+          <div class="observations-content">
+            <n-text strong>📝 Observações:</n-text>
+            <div class="observations-text">
+              {{ selectedDistribution?.observations || 'Nenhuma observação registrada.' }}
+            </div>
+          </div>
+        </div>
+        
+        <template #action>
+          <n-button @click="showObservationsModal = false">
+            Fechar
+          </n-button>
+        </template>
+      </n-modal>
     </n-space>
   </page-wrapper>
 </template>
@@ -48,8 +90,11 @@
 <script setup lang="ts">
 import { h, ref, onMounted, watch } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
-import { NCard, NDataTable, NButton, NIcon, NLayout, NLayoutContent, NSpace, NH1, NDivider, NInput, useMessage } from 'naive-ui'
-import { IconPlus, IconSearch } from '@tabler/icons-vue'
+import { 
+  NCard, NDataTable, NButton, NIcon, NLayout, NLayoutContent, 
+  NSpace, NH1, NDivider, NInput, NModal, NText, NTooltip, useMessage 
+} from 'naive-ui'
+import { IconPlus, IconSearch, IconEye, IconFileText } from '@tabler/icons-vue'
 import DistributionModal from '../components/modals/DistributionModal.vue'
 import { distributionService } from '~/services/distributionService'
 import { beneficiaryService } from '~/services/beneficiaryService'
@@ -67,19 +112,39 @@ const rationTypesMap = ref<Map<number, string>>(new Map())
 const pageLoading = ref(true)
 const searchQuery = ref('')
 
-// Adiciona a função de busca
+// ✅ NOVO: Estado para modal de observações
+const showObservationsModal = ref(false)
+const selectedDistribution = ref<Distribution | null>(null)
+
+// ✅ NOVO: Função para mostrar observações
+const showObservations = (distribution: Distribution) => {
+  selectedDistribution.value = distribution
+  showObservationsModal.value = true
+}
+
+// ✅ NOVO: Função para formatar data
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// ✅ ATUALIZADO: Busca incluindo observações
 const handleSearch = (query: string) => {
   if (!query) {
-    // Se a busca for limpa, mostre todas as distribuições
     tableData.value = [...allDistributions.value]
     return
   }
   
-  // Filtra distribuições por beneficiário ou tipo de ração
   const normalizedQuery = query.toLowerCase().trim()
   tableData.value = allDistributions.value.filter(distribution => 
     (distribution.beneficiaryName?.toLowerCase().includes(normalizedQuery) || 
-     distribution.rationTypeName?.toLowerCase().includes(normalizedQuery))
+     distribution.rationTypeName?.toLowerCase().includes(normalizedQuery) ||
+     distribution.observations?.toLowerCase().includes(normalizedQuery)) // ✅ NOVO: Buscar nas observações
   )
 }
 
@@ -88,7 +153,6 @@ const fetchDistributions = async () => {
   try {
     loading.value = true
     
-    // Adiciona um pequeno atraso para mostrar o loading (apenas se estiver recarregando)
     if (!pageLoading.value) {
       const loadingMsg = message.loading('Atualizando lista de distribuições...', {
         duration: 0
@@ -111,7 +175,6 @@ const fetchDistributions = async () => {
       tableData.value = processedDistributions
       pagination.value.itemCount = total || distributions.length
     } else {
-      // Carregamento inicial, sem mensagem
       await Promise.all([loadBeneficiaries(), loadRationStocks()])
       
       const [distributions, total] = await distributionService.getAll()
@@ -163,28 +226,16 @@ const loadRationStocks = async () => {
   }
 }
 
-// // Atualiza o manipulador de envio para usar o serviço
-// const handleDistributionSubmit = async (formData: Omit<Distribution, 'id'>) => {
-//   try {
-//     const loadingMsg = message.loading('Registrando distribuição...', {
-//       duration: 0
-//     })
-    
-//     await distributionService.create(formData)
-    
-//     loadingMsg.destroy()
-//     message.success('Distribuição registrada com sucesso')
-    
-//     await fetchDistributions()
-//   } catch (error) {
-//     message.error({
-//       content: 'Erro ao registrar distribuição. Tente novamente.',
-//       duration: 5000,
-//       closable: true
-//     })
-//     console.error(error)
-//   }
-// }
+// ✅ NOVO: Manipulador de envio de distribuição
+const handleDistributionSubmit = async (newDistribution: Distribution) => {
+  try {
+    // Recarregar lista após nova distribuição
+    await fetchDistributions()
+    showDistributionModal.value = false
+  } catch (error) {
+    console.error('Error handling distribution submit:', error)
+  }
+}
 
 // Ordenação
 const handleSort = (sorter: { columnKey: keyof Distribution, order: 'ascend' | 'descend' | false }) => {
@@ -208,7 +259,6 @@ const handleSort = (sorter: { columnKey: keyof Distribution, order: 'ascend' | '
       return ((a.amount || 0) - (b.amount || 0)) * multiplier
     }
     
-    // Para beneficiaryName e rationTypeName
     const aValue = String(a[columnKey as keyof Distribution] || '')
     const bValue = String(b[columnKey as keyof Distribution] || '')
     return aValue.localeCompare(bValue) * multiplier
@@ -217,20 +267,15 @@ const handleSort = (sorter: { columnKey: keyof Distribution, order: 'ascend' | '
   tableData.value = sortedData
 }
 
-// Atualiza as colunas para corresponder ao modelo de Distribuição
+// ✅ ATUALIZADO: Colunas com observações
 const columns: DataTableColumns<Distribution> = [
   {
     title: 'Data',
     key: 'date',
     sorter: 'default',
+    width: 150,
     render(row) {
-      return new Date(row.date).toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      return formatDate(row.date)
     }
   },
   {
@@ -254,7 +299,74 @@ const columns: DataTableColumns<Distribution> = [
     key: 'amount',
     sorter: (row1: Distribution, row2: Distribution) => 
       row1.amount - row2.amount,
-    render: (row: Distribution) => `${row.amount.toFixed(2)} kg` // Mostrar com 2 casas decimais
+    width: 120,
+    render: (row: Distribution) => `${row.amount.toFixed(2)} kg`
+  },
+  // ✅ NOVO: Coluna de observações
+  {
+    title: 'Observações',
+    key: 'observations',
+    width: 200,
+    render(row) {
+      if (!row.observations || row.observations.trim() === '') {
+        return h('span', { 
+          style: { color: '#999', fontStyle: 'italic' } 
+        }, 'Sem observações')
+      }
+
+      // Se a observação é muito longa, truncar e mostrar botão para ver completa
+      const maxLength = 50
+      const truncated = row.observations.length > maxLength
+      const displayText = truncated 
+        ? row.observations.substring(0, maxLength) + '...'
+        : row.observations
+
+      return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
+        // Texto das observações (truncado se necessário)
+        h('span', { 
+          title: row.observations,
+          style: { 
+            flex: 1,
+            fontSize: '13px',
+            lineHeight: '1.4'
+          } 
+        }, displayText),
+        
+        // Botão para ver observações completas (se truncado)
+        truncated && h(NButton, {
+          size: 'tiny',
+          text: true,
+          type: 'primary',
+          onClick: () => showObservations(row),
+          style: { fontSize: '12px' }
+        }, {
+          default: () => 'Ver mais',
+          icon: () => h(NIcon, { size: 14 }, { default: () => h(IconEye) })
+        })
+      ])
+    }
+  },
+  // ✅ NOVO: Coluna de ações (se precisar de mais ações no futuro)
+  {
+    title: 'Ações',
+    key: 'actions',
+    width: 80,
+    render(row) {
+      return h('div', { style: { display: 'flex', gap: '4px' } }, [
+        // Botão para ver observações (sempre visível se há observações)
+        row.observations && h(NTooltip, { trigger: 'hover' }, {
+          default: () => 'Ver observações completas',
+          trigger: () => h(NButton, {
+            size: 'small',
+            text: true,
+            type: 'info',
+            onClick: () => showObservations(row)
+          }, {
+            icon: () => h(NIcon, { size: 16 }, { default: () => h(IconFileText) })
+          })
+        })
+      ])
+    }
   }
 ]
 
@@ -308,5 +420,46 @@ watch(() => allDistributions.value, () => {
 
 .page-card {
   margin-top: 24px;
+}
+
+/* ✅ NOVO: Estilos para modal de observações */
+.observations-modal {
+  padding: 8px 0;
+}
+
+.distribution-info {
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #f77800;
+}
+
+.observations-content {
+  margin-top: 16px;
+}
+
+.observations-text {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #52c41a;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap; /* Preserva quebras de linha */
+  word-break: break-word;
+}
+
+/* ✅ NOVO: Estilo para linha da tabela com observações */
+:deep(.n-data-table-td) {
+  vertical-align: top;
+}
+
+/* ✅ NOVO: Estilo para texto truncado */
+.observation-truncated {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
