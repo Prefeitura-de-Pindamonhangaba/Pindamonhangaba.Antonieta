@@ -9,3 +9,4 @@ class create_distribution_dto(BaseModel):
     beneficiary_id: int
     amount: float
     date: datetime
+    observations: str | None = None
