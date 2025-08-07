@@ -152,7 +152,13 @@
                 v-model:value="formData.birth_date"
                 type="date"
                 clearable
-                style="width: 100%"/>
+                style="width: 100%"
+                placeholder="DD/MM/AAAA"
+                :format="dateFormat"
+                :value-format="dateValueFormat"
+                :actions="datePickerActions"
+                @update:value="onDateChange"
+              />
             </n-form-item>
           </n-grid-item>
         </n-grid>
@@ -291,55 +297,49 @@ const emit = defineEmits<{
 const formRef = ref()
 const submitting = ref(false)
 
-// ✅ NOVO: FormData com campos de endereço estruturados
-const formData = ref({
-  name: '',
-  document: '',
-  
-  // ✅ ENDEREÇO ESTRUTURADO
-  street: '',
-  number: '',
-  neighborhood: '',
-  city: 'Pindamonhangaba',
-  state: 'SP',
-  zip_code: '',
-  complement: '',
-  
-  contact: '',
-  monthly_limit: 4.5,
-  mother_name: '',
-  birth_date: '2025-01-01',
-  qtd_dogs: 0,
-  qtd_castred_dogs: 0,
-  qtd_cats: 0,
-  qtd_castred_cats: 0,
-  government_benefit: false,
-  receives_basic_basket: false,
-  how_did_you_hear: '',
-  observations: ''
-})
+// ✅ NOVO: Formatação de data
+const dateFormat = 'dd/MM/yyyy'
+const dateValueFormat = 'yyyy-MM-dd'
 
-// ✅ NOVO: Opções de estados
-const stateOptions = [
-  { label: 'São Paulo', value: 'SP' },
-  { label: 'Rio de Janeiro', value: 'RJ' },
-  { label: 'Minas Gerais', value: 'MG' },
-  { label: 'Espírito Santo', value: 'ES' },
-  // Adicione outros estados conforme necessário
-]
+// ✅ NOVO: Configuração para fechar automaticamente após seleção
+const datePickerActions = null // Remove os botões de ação padrão
 
-function timestamp_to_date(timestamp: number): string {
-  const data = new Date(timestamp);
-  data.setUTCDate(data.getUTCDate() + 1);
-  const ano = data.getUTCFullYear();
-  const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
-  const dia = data.getUTCDate().toString().padStart(2, '0');
-  return `${ano}-${mes}-${dia}`;
+// ✅ NOVO: Função para lidar com mudança de data
+const onDateChange = (value: number | null) => {
+  // A data já foi atualizada pelo v-model, não precisa fazer nada especial
+  // O picker fechará automaticamente quando actions é null
+  console.log('📅 Data selecionada:', value)
+}
+
+// ✅ NOVO: Função para converter string YYYY-MM-DD para timestamp
+function dateStringToTimestamp(dateString: string): number | null {
+  if (!dateString) return null
+  const date = new Date(dateString + 'T00:00:00.000Z')
+  return date.getTime()
+}
+
+// ✅ NOVO: Função para converter timestamp para string YYYY-MM-DD
+function timestampToDateString(timestamp: number | string): string | null {
+  if (!timestamp) return null
+  
+  let date: Date
+  if (typeof timestamp === 'string') {
+    // Se já é string, assumir formato YYYY-MM-DD
+    return timestamp
+  } else {
+    // Se é timestamp, converter
+    date = new Date(timestamp)
+  }
+  
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  
+  return `${year}-${month}-${day}`
 }
 
 const message = useMessage()
 
-// ✅ ATUALIZADO: Rules para nova estrutura
 const rules = {
   name: {
     required: true,
@@ -367,7 +367,42 @@ const rules = {
   }
 }
 
-// ✅ ATUALIZADO: Watch para nova estrutura
+// ✅ ATUALIZADO: FormData com data como timestamp para o date-picker
+const formData = ref({
+  name: '',
+  document: '',
+  
+  // ✅ ENDEREÇO ESTRUTURADO
+  street: '',
+  number: '',
+  neighborhood: '',
+  city: 'Pindamonhangaba',
+  state: 'SP',
+  zip_code: '',
+  complement: '',
+  
+  contact: '',
+  monthly_limit: 4.5,
+  mother_name: '',
+  birth_date: null as number | null, // ✅ timestamp para o date-picker
+  qtd_dogs: 0,
+  qtd_castred_dogs: 0,
+  qtd_cats: 0,
+  qtd_castred_cats: 0,
+  government_benefit: false,
+  receives_basic_basket: false,
+  how_did_you_hear: '',
+  observations: ''
+})
+
+const stateOptions = [
+  { label: 'São Paulo', value: 'SP' },
+  { label: 'Rio de Janeiro', value: 'RJ' },
+  { label: 'Minas Gerais', value: 'MG' },
+  { label: 'Espírito Santo', value: 'ES' },
+]
+
+// ✅ ATUALIZADO: Watch para nova estrutura de data
 watch(() => props.beneficiaryData, (newValue) => {
   if (newValue && props.editMode) {
     formData.value = {
@@ -385,16 +420,21 @@ watch(() => props.beneficiaryData, (newValue) => {
       
       contact: newValue.contact,
       monthly_limit: newValue.monthly_limit,
-      mother_name: newValue.mother_name,
-      birth_date: timestamp_to_date(newValue.birth_date),
-      qtd_dogs: newValue.qtd_dogs,
-      qtd_castred_dogs: newValue.qtd_castred_dogs,
-      qtd_cats: newValue.qtd_cats,
-      qtd_castred_cats: newValue.qtd_castred_cats,
-      government_benefit: newValue.government_benefit,
-      receives_basic_basket: newValue.receives_basic_basket,
-      how_did_you_hear: newValue.how_did_you_hear,
-      observations: newValue.observations
+      mother_name: newValue.mother_name || '',
+      // ✅ NOVO: Converter data para timestamp se necessário
+      birth_date: newValue.birth_date ? (
+        typeof newValue.birth_date === 'number' 
+          ? newValue.birth_date 
+          : dateStringToTimestamp(newValue.birth_date)
+      ) : null,
+      qtd_dogs: newValue.qtd_dogs || 0,
+      qtd_castred_dogs: newValue.qtd_castred_dogs || 0,
+      qtd_cats: newValue.qtd_cats || 0,
+      qtd_castred_cats: newValue.qtd_castred_cats || 0,
+      government_benefit: newValue.government_benefit || false,
+      receives_basic_basket: newValue.receives_basic_basket || false,
+      how_did_you_hear: newValue.how_did_you_hear || '',
+      observations: newValue.observations || ''
     }
   }
 }, { immediate: true })
@@ -404,9 +444,11 @@ const handleSubmit = async () => {
     await formRef.value?.validate()
     submitting.value = true
 
-    // ✅ REMOVIDO: address (agora usa campos estruturados)
+    // ✅ NOVO: Preparar dados com data formatada
     const beneficiaryData = {
       ...formData.value,
+      // ✅ NOVO: Converter timestamp para string YYYY-MM-DD para o backend
+      birth_date: formData.value.birth_date ? timestampToDateString(formData.value.birth_date) : null,
       monthly_limit: formData.value.monthly_limit || 0,
       qtd_dogs: formData.value.qtd_dogs || 0,
       qtd_castred_dogs: formData.value.qtd_castred_dogs || 0,
@@ -415,6 +457,8 @@ const handleSubmit = async () => {
       government_benefit: formData.value.government_benefit || false,
       receives_basic_basket: formData.value.receives_basic_basket || false
     }
+
+    console.log('📅 Data formatada para envio:', beneficiaryData.birth_date)
 
     if (props.editMode && props.beneficiaryData) {
       const loadingMsg = message.loading('Atualizando beneficiário...', {
@@ -468,7 +512,7 @@ const handleSubmit = async () => {
   }
 }
 
-// ✅ ATUALIZADO: Reset form para nova estrutura
+// ✅ ATUALIZADO: Reset form
 const resetForm = () => {
   formData.value = {
     name: '',
@@ -485,16 +529,16 @@ const resetForm = () => {
     
     contact: '',
     monthly_limit: null,
-    mother_name: null,
-    birth_date: null,
+    mother_name: '',
+    birth_date: null, // ✅ NOVO: null para timestamp
     qtd_dogs: 0,
     qtd_castred_dogs: 0,
     qtd_cats: 0,
     qtd_castred_cats: 0,
     government_benefit: false,
     receives_basic_basket: false,
-    how_did_you_hear: null,
-    observations: null
+    how_did_you_hear: '',
+    observations: ''
   }
 }
 
