@@ -43,13 +43,13 @@
       <InputModal v-model="showInputModal" @submit="handleInputSubmit" />
       <BeneficiaryModal v-model="showBeneficiaryModal" @submit="handleBeneficiarySubmit" />
 
-      <!-- Summary Cards -->
+      <!-- ✅ ATUALIZADO: Summary Cards com formatação correta -->
       <n-grid x-gap="12" y-gap="12" cols="3" responsive="self">
         <n-grid-item>
           <n-card class="page-card">
             <n-space vertical align="center">
               <n-text depth="3">Entrada Total (Mês)</n-text>
-              <n-statistic :value="`${total_inputs} kg`" />
+              <n-statistic :value="formatWeight(total_inputs)" />
             </n-space>
           </n-card>
         </n-grid-item>
@@ -57,7 +57,8 @@
           <n-card class="page-card">
             <n-space vertical align="center">
               <n-text depth="3">Saída Total (Mês)</n-text>
-              <n-statistic :value="`${total_distributions} kg`" />
+              <!-- ✅ CORRIGIDO: Formatação com 2 casas decimais -->
+              <n-statistic :value="formatWeight(total_distributions)" />
             </n-space>
           </n-card>
         </n-grid-item>
@@ -65,7 +66,7 @@
           <n-card class="page-card">
             <n-space vertical align="center">
               <n-text depth="3">Estoque Atual</n-text>
-              <n-statistic :value="`${current_stock} kg`" />
+              <n-statistic :value="formatWeight(current_stock)" />
             </n-space>
           </n-card>
         </n-grid-item>
@@ -175,6 +176,12 @@ const sorter = ref<{ columnKey: keyof BeneficiaryData | null, order: 'ascend' | 
   order: false
 })
 
+// ✅ NOVO: Função para formatar pesos com 2 casas decimais
+const formatWeight = (value: number): string => {
+  if (value === 0) return '0,00 kg'
+  return `${value.toFixed(2).replace('.', ',')} kg`
+}
+
 // Handle search function
 const handleSearch = (query: string) => {
   if (!query) {
@@ -218,6 +225,7 @@ const handleSort = (sorter: { columnKey: keyof BeneficiaryData, order: 'ascend' 
   tableData.value = sortedData
 }
 
+// ✅ ATUALIZADO: Colunas da tabela com formatação correta
 const columns: DataTableColumns<BeneficiaryData> = [
   {
     title: 'Nome',
@@ -229,7 +237,7 @@ const columns: DataTableColumns<BeneficiaryData> = [
     key: 'limite_mensal',
     sorter: 'default',
     render(row) {
-      return `${row.limite_mensal} kg`
+      return formatWeight(row.limite_mensal) // ✅ ATUALIZADO: Usar função de formatação
     }
   },
   {
@@ -237,7 +245,7 @@ const columns: DataTableColumns<BeneficiaryData> = [
     key: 'recebido_mes',
     sorter: 'default',
     render(row) {
-      return `${row.recebido_mes} kg`
+      return formatWeight(row.recebido_mes) // ✅ ATUALIZADO: Usar função de formatação
     }
   },
   {
@@ -363,23 +371,23 @@ const handleDistributionSubmit = async (formData: any) => {
   }
 }
 
-// const handleBeneficiarySubmit = async (formData: Beneficiary) => {
-//   try {
-//     const loadingMsg = message.loading('Cadastrando beneficiário...', {
-//       duration: 0
-//     })
+const handleBeneficiarySubmit = async (formData: Beneficiary) => {
+  try {
+    const loadingMsg = message.loading('Cadastrando beneficiário...', {
+      duration: 0
+    })
     
-//     await beneficiaryService.create(formData)
+    await beneficiaryService.create(formData)
     
-//     loadingMsg.destroy()
-//     message.success('Beneficiário cadastrado com sucesso')
+    loadingMsg.destroy()
+    message.success('Beneficiário cadastrado com sucesso')
     
-//     await fetchDashboardData()
-//   } catch (error) {
-//     message.error('Erro ao cadastrar beneficiário')
-//     console.error(error)
-//   }
-// }
+    await fetchDashboardData()
+  } catch (error) {
+    message.error('Erro ao cadastrar beneficiário')
+    console.error(error)
+  }
+}
 
 const handleInputSubmit = async (formData: any) => {
   try {
@@ -466,5 +474,12 @@ onUnmounted(() => {
 .search-field {
   max-width: 300px;
   margin-bottom: 12px;
+}
+
+/* ✅ NOVO: Estilo para estatísticas */
+:deep(.n-statistic .n-statistic-value) {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #f77800;
 }
 </style>
