@@ -1,5 +1,5 @@
 <template>
-  <n-modal :show="modelValue" @update:show="$emit('update:modelValue', $event)" preset="dialog" style="width: 800px">
+  <n-modal :show="modelValue" @update:show="$emit('update:modelValue', $event)" preset="dialog" style="width: 900px">
     <template #header>
       <div class="modal-header">
         <h3>{{ props.editMode ? 'Editar Beneficiário' : 'Cadastrar Novo Beneficiário' }}</h3>
@@ -7,61 +7,160 @@
     </template>
     <div class="modal-content">
       <n-form ref="formRef" :model="formData" :rules="rules">
-        <n-form-item label="Nome" path="name">
+        <!-- Dados Pessoais -->
+        <n-divider title-placement="left">
+          <span style="font-weight: 600; color: #f77800;">Dados Pessoais</span>
+        </n-divider>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Nome" path="name">
+              <n-input 
+                v-model:value="formData.name" 
+                clearable 
+                style="width: 100%" 
+                placeholder="Nome completo do beneficiário"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Documento" path="document">
+              <n-input 
+                v-model:value="formData.document" 
+                clearable 
+                style="width: 100%" 
+                placeholder="CPF ou RG"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Contato" path="contact">
+              <n-input 
+                v-model:value="formData.contact" 
+                clearable 
+                style="width: 100%" 
+                placeholder="Telefone ou e-mail"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Limite Mensal (kg)" path="monthly_limit">
+              <n-input-number 
+                v-model:value="formData.monthly_limit" 
+                clearable 
+                style="width: 100%" 
+                placeholder="Limite mensal em kg"
+                :precision="2"
+                :step="0.1"
+                :min="0"
+              />
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <!-- ✅ NOVO: Endereço Estruturado -->
+        <n-divider title-placement="left">
+          <span style="font-weight: 600; color: #f77800;">Endereço</span>
+        </n-divider>
+
+        <n-form-item label="Rua/Avenida" path="street">
           <n-input 
-            v-model:value="formData.name" 
+            v-model:value="formData.street" 
             clearable 
             style="width: 100%" 
-            placeholder="Nome do beneficiário"/>
-        </n-form-item>
-        <n-form-item label="Documento" path="document">
-          <n-input 
-            v-model:value="formData.document" 
-            clearable 
-            style="width: 100%" 
-            placeholder="CPF ou RG"/>
-        </n-form-item>
-        <n-form-item label="Endereço" path="address">
-          <n-input 
-            v-model:value="formData.address" 
-            clearable 
-            style="width: 100%" 
-            placeholder="Endereço completo"/>
-        </n-form-item>
-        <n-form-item label="Contato" path="contact">
-          <n-input 
-            v-model:value="formData.contact" 
-            clearable 
-            style="width: 100%" 
-            placeholder="Telefone ou e-mail"/>
-        </n-form-item>
-        <n-form-item label="Limite Mensal (kg)" path="monthly_limit">
-          <n-input-number 
-            v-model:value="formData.monthly_limit" 
-            clearable 
-            style="width: 100%" 
-            placeholder="Limite mensal em kg"
-            :precision="2"
-            :step="0.1"
-            :min="0"
-          />
+            placeholder="Rua, Avenida, Travessa, etc."/>
         </n-form-item>
 
-        <n-form-item label="Nome da Mãe" path="mother_name">
-          <n-input 
-            v-model:value="formData.mother_name" 
-            clearable 
-            style="width: 100%" 
-            placeholder="Nome da mãe do beneficiário"/>
-        </n-form-item>
+        <n-grid :cols="4" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Número" path="number">
+              <n-input 
+                v-model:value="formData.number" 
+                clearable 
+                style="width: 100%" 
+                placeholder="123"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Complemento" path="complement">
+              <n-input 
+                v-model:value="formData.complement" 
+                clearable 
+                style="width: 100%" 
+                placeholder="Apt, Casa, etc."/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="CEP" path="zip_code">
+              <n-input 
+                v-model:value="formData.zip_code" 
+                clearable 
+                style="width: 100%" 
+                placeholder="12345-678"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Bairro" path="neighborhood">
+              <n-input 
+                v-model:value="formData.neighborhood" 
+                clearable 
+                style="width: 100%" 
+                placeholder="Centro, Vila, etc."/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
 
-        <n-form-item label="Data de Nascimento" path="birth_date">
-          <n-date-picker 
-            v-model:value="formData.birth_date"
-            type="date"
-            clearable
-            style="width: 100%"/>
-        </n-form-item>
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Cidade" path="city">
+              <n-input 
+                v-model:value="formData.city" 
+                clearable 
+                style="width: 100%" 
+                placeholder="Pindamonhangaba"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Estado" path="state">
+              <n-select
+                v-model:value="formData.state"
+                :options="stateOptions"
+                placeholder="SP"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <!-- Dados Pessoais Adicionais -->
+        <n-divider title-placement="left">
+          <span style="font-weight: 600; color: #f77800;">Dados Adicionais</span>
+        </n-divider>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Nome da Mãe" path="mother_name">
+              <n-input 
+                v-model:value="formData.mother_name" 
+                clearable 
+                style="width: 100%" 
+                placeholder="Nome da mãe do beneficiário"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Data de Nascimento" path="birth_date">
+              <n-date-picker 
+                v-model:value="formData.birth_date"
+                type="date"
+                clearable
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <!-- Dados dos Animais -->
+        <n-divider title-placement="left">
+          <span style="font-weight: 600; color: #f77800;">Dados dos Animais</span>
+        </n-divider>
 
         <n-grid :cols="2" :x-gap="12">
           <n-grid-item>
@@ -105,6 +204,11 @@
           </n-grid-item>
         </n-grid>
 
+        <!-- Benefícios Sociais -->
+        <n-divider title-placement="left">
+          <span style="font-weight: 600; color: #f77800;">Benefícios Sociais</span>
+        </n-divider>
+
         <n-grid :cols="2" :x-gap="12">
           <n-grid-item>
             <n-form-item label="Recebe Benefício do Governo" path="government_benefit">
@@ -118,11 +222,18 @@
           </n-grid-item>
         </n-grid>
 
+        <!-- Informações Adicionais -->
+        <n-divider title-placement="left">
+          <span style="font-weight: 600; color: #f77800;">Informações Adicionais</span>
+        </n-divider>
+
         <n-form-item label="Como Soube do Projeto" path="how_did_you_hear">
           <n-input 
             v-model:value="formData.how_did_you_hear"
             type="textarea"
             clearable
+            :rows="2"
+            placeholder="Ex: Redes Sociais, Amigos, etc."
             style="width: 100%"/>
         </n-form-item>
 
@@ -131,6 +242,8 @@
             v-model:value="formData.observations"
             type="textarea"
             clearable
+            :rows="3"
+            placeholder="Observações adicionais sobre o beneficiário"
             style="width: 100%"/>
         </n-form-item>
       </n-form>
@@ -158,7 +271,7 @@
 import { ref, defineProps, defineEmits, watch } from 'vue'
 import { 
   NModal, NForm, NFormItem, NInput, NInputNumber, 
-  NButton, NGrid, NGridItem, NSwitch, NDatePicker, useMessage 
+  NButton, NGrid, NGridItem, NSwitch, NDatePicker, NDivider, NSelect, useMessage 
 } from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
 import type { Beneficiary } from '~/models/beneficiaryModel'
@@ -177,10 +290,21 @@ const emit = defineEmits<{
 
 const formRef = ref()
 const submitting = ref(false)
+
+// ✅ NOVO: FormData com campos de endereço estruturados
 const formData = ref({
   name: '',
   document: '',
-  address: '',
+  
+  // ✅ ENDEREÇO ESTRUTURADO
+  street: '',
+  number: '',
+  neighborhood: '',
+  city: 'Pindamonhangaba',
+  state: 'SP',
+  zip_code: '',
+  complement: '',
+  
   contact: '',
   monthly_limit: 4.5,
   mother_name: '',
@@ -195,21 +319,27 @@ const formData = ref({
   observations: ''
 })
 
+// ✅ NOVO: Opções de estados
+const stateOptions = [
+  { label: 'São Paulo', value: 'SP' },
+  { label: 'Rio de Janeiro', value: 'RJ' },
+  { label: 'Minas Gerais', value: 'MG' },
+  { label: 'Espírito Santo', value: 'ES' },
+  // Adicione outros estados conforme necessário
+]
+
 function timestamp_to_date(timestamp: number): string {
   const data = new Date(timestamp);
-
-  // Adiciona 1 dia ao timestamp
-  data.setUTCDate(data.getUTCDate() + 1); // Incrementa o dia UTC
-
+  data.setUTCDate(data.getUTCDate() + 1);
   const ano = data.getUTCFullYear();
   const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
-  const dia = data.getUTCDate().toString().padStart(2, '0'); // Altere de padStart(1, '0') para padStart(2, '0') para dias como '01'
-
+  const dia = data.getUTCDate().toString().padStart(2, '0');
   return `${ano}-${mes}-${dia}`;
 }
 
 const message = useMessage()
 
+// ✅ ATUALIZADO: Rules para nova estrutura
 const rules = {
   name: {
     required: true,
@@ -219,9 +349,13 @@ const rules = {
     required: true,
     message: 'Por favor, informe o documento'
   },
-  address: {
+  street: {
     required: true,
-    message: 'Por favor, informe o endereço'
+    message: 'Por favor, informe a rua/avenida'
+  },
+  neighborhood: {
+    required: true,
+    message: 'Por favor, informe o bairro'
   },
   contact: {
     required: true,
@@ -233,12 +367,22 @@ const rules = {
   }
 }
 
+// ✅ ATUALIZADO: Watch para nova estrutura
 watch(() => props.beneficiaryData, (newValue) => {
   if (newValue && props.editMode) {
     formData.value = {
       name: newValue.name,
       document: newValue.document,
-      address: newValue.address,
+      
+      // ✅ ENDEREÇO ESTRUTURADO
+      street: newValue.street || '',
+      number: newValue.number || '',
+      neighborhood: newValue.neighborhood || '',
+      city: newValue.city || 'Pindamonhangaba',
+      state: newValue.state || 'SP',
+      zip_code: newValue.zip_code || '',
+      complement: newValue.complement || '',
+      
       contact: newValue.contact,
       monthly_limit: newValue.monthly_limit,
       mother_name: newValue.mother_name,
@@ -260,6 +404,7 @@ const handleSubmit = async () => {
     await formRef.value?.validate()
     submitting.value = true
 
+    // ✅ REMOVIDO: address (agora usa campos estruturados)
     const beneficiaryData = {
       ...formData.value,
       monthly_limit: formData.value.monthly_limit || 0,
@@ -272,9 +417,8 @@ const handleSubmit = async () => {
     }
 
     if (props.editMode && props.beneficiaryData) {
-      // Mostra mensagem "Atualizando..."
       const loadingMsg = message.loading('Atualizando beneficiário...', {
-        duration: 0 // Não fecha automaticamente
+        duration: 0
       })
       
       const updatedBeneficiary = await beneficiaryService.update(
@@ -282,33 +426,21 @@ const handleSubmit = async () => {
         beneficiaryData
       )
       
-      // Fecha a mensagem de loading
       loadingMsg.destroy()
-      
-      // Mostra sucesso com detalhes
       message.success(`Beneficiário ${updatedBeneficiary.name} atualizado com sucesso!`)
       emit('update', props.beneficiaryData.id, updatedBeneficiary)
     } else {
-      // Mostra mensagem "Cadastrando..."
       const loadingMsg = message.loading('Cadastrando novo beneficiário...', {
-        duration: 0 // Não fecha automaticamente
+        duration: 0
       })
       
       const newBeneficiary = await beneficiaryService.create(beneficiaryData)
       
-      // Fecha a mensagem de loading
       loadingMsg.destroy()
-      
-      // Mostra sucesso com detalhes
       message.success(`Beneficiário ${newBeneficiary.name} cadastrado com sucesso!`)
       emit('submit', newBeneficiary)
     }
 
-    // Adicione feedback sonoro (opcional)
-    const audio = new Audio('/sounds/success.mp3')  // Se você tiver um arquivo de som
-    audio.play().catch(() => {}) // Ignora erros se o navegador bloquear
-
-    // Fecha o modal com um pequeno atraso para que o usuário veja a confirmação
     setTimeout(() => {
       emit('update:modelValue', false)
       resetForm()
@@ -317,11 +449,10 @@ const handleSubmit = async () => {
   } catch (error) {
     console.error('Erro detalhado:', error)
     
-    // Feedback de erro mais detalhado
     if (error instanceof Error) {
       message.error({
         content: error.message,
-        duration: 5000, // 5 segundos
+        duration: 5000,
         closable: true
       })
     } else {
@@ -337,11 +468,21 @@ const handleSubmit = async () => {
   }
 }
 
+// ✅ ATUALIZADO: Reset form para nova estrutura
 const resetForm = () => {
   formData.value = {
     name: '',
     document: '',
-    address: '',
+    
+    // ✅ ENDEREÇO ESTRUTURADO
+    street: '',
+    number: '',
+    neighborhood: '',
+    city: 'Pindamonhangaba',
+    state: 'SP',
+    zip_code: '',
+    complement: '',
+    
     contact: '',
     monthly_limit: null,
     mother_name: null,
@@ -373,11 +514,18 @@ const handleCancel = () => {
 
 .modal-content {
   padding: 1rem 0;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+}
+
+/* ✅ NOVO: Estilo para os divisores */
+:deep(.n-divider .n-divider__title) {
+  font-size: 0.95rem;
 }
 </style>
