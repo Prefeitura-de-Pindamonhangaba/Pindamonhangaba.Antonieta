@@ -1,5 +1,5 @@
 <template>
-  <n-modal v-model:show="show" preset="dialog" title="Nova Distribuição de Ração">
+  <n-modal v-model:show="show" preset="dialog" title="Nova Distribuição de Ração" style="width: 700px">
     <n-form
       ref="formRef"
       :model="formData"
@@ -8,7 +8,6 @@
       label-width="auto"
       require-mark-placement="right-hanging"
       size="medium"
-      style="max-width: 640px"
     >
       <!-- Select de Beneficiário -->
       <n-form-item label="Beneficiário" path="beneficiary_id">
@@ -46,6 +45,22 @@
           style="width: 100%"
         />
       </n-form-item>
+
+      <!-- Campo Observations -->
+      <n-form-item label="Observações" path="observations">
+        <n-input
+          v-model:value="formData.observations"
+          type="textarea"
+          placeholder="Observações sobre esta distribuição (opcional)"
+          :autosize="{
+            minRows: 2,
+            maxRows: 4
+          }"
+          maxlength="500"
+          show-count
+          clearable
+        />
+      </n-form-item>
     </n-form>
 
     <template #action>
@@ -70,13 +85,13 @@
 import { ref, onMounted, computed } from 'vue'
 import type { FormInst, FormRules } from 'naive-ui'
 import { 
-  NModal, NForm, NFormItem, NInputNumber, NButton, 
+  NModal, NForm, NFormItem, NInputNumber, NInput, NButton, 
   NSelect, NSpace, NText, useMessage 
 } from 'naive-ui'
 import { beneficiaryService } from '~/services/beneficiaryService'
 import { rationStockService } from '~/services/rationStockService'
 import { distributionService } from '~/services/distributionService'
-import type { Distribution } from '~/models/distributionModel'
+import type { Distribution, DistributionCreate } from '~/models/distributionModel'
 import type { Beneficiary } from '~/models/beneficiaryModel'
 import type { RationStock } from '~/models/rationStockModel'
 
@@ -105,7 +120,8 @@ const show = computed({
 const formData = ref({
   beneficiary_id: null as number | null,
   ration_id: null as number | null,
-  amount: null as number | null, // Agora aceita float
+  amount: null as number | null,
+  observations: '' as string,
   date: new Date().toISOString()
 })
 
@@ -147,7 +163,7 @@ const maxAmount = computed(() => {
   return Math.min(stockLimit, monthlyLimit)
 })
 
-// Regras de validação atualizadas para float
+// Regras de validação
 const rules: FormRules = {
   beneficiary_id: {
     required: true,
@@ -225,14 +241,15 @@ const handleSubmit = async () => {
 
     loading.value = true
 
-    const distributionData = {
+    const distributionData: DistributionCreate = {
       beneficiary_id: formData.value.beneficiary_id!,
       ration_id: formData.value.ration_id!,
-      amount: Number(formData.value.amount!.toFixed(2)), // Garantir 2 casas decimais
+      amount: Number(formData.value.amount!.toFixed(2)),
+      observations: formData.value.observations || null,
       date: new Date().toISOString()
     }
 
-    console.log('📦 Enviando distribuição:', distributionData)
+    console.log('📦 Enviando distribuição com observações:', distributionData)
 
     const response = await distributionService.create(distributionData)
     
@@ -251,11 +268,13 @@ const handleSubmit = async () => {
   }
 }
 
+// Reset form com observations
 const resetForm = () => {
   formData.value = {
     beneficiary_id: null,
     ration_id: null,
     amount: null,
+    observations: '',
     date: new Date().toISOString()
   }
   formRef.value?.restoreValidation()
@@ -296,6 +315,20 @@ onMounted(() => {
   box-shadow: 0 0 0 2px rgba(247, 120, 0, 0.2);
 }
 
+:deep(.n-input--textarea .n-input__input-el) {
+  resize: vertical;
+  min-height: 60px;
+}
+
+:deep(.n-input:hover) {
+  border-color: #f77800;
+}
+
+:deep(.n-input.n-input--focus) {
+  border-color: #f77800;
+  box-shadow: 0 0 0 2px rgba(247, 120, 0, 0.2);
+}
+
 /* Estilo do dropdown */
 :deep(.n-base-select-menu) {
   border-radius: 8px;
@@ -314,12 +347,12 @@ onMounted(() => {
   background-color: #f8f9fa;
 }
 
-:deep(.n-base-select-option.n-base-select-option--selected) {
+:deep(.n-base-select-option.n-base-selection--selected) {
   background-color: #f77800;
   color: white;
 }
 
-:deep(.n-base-select-option.n-base-select-option--selected:hover) {
+:deep(.n-base-select-option.n-base-selection--selected:hover) {
   background-color: #e56b00;
 }
 </style>
