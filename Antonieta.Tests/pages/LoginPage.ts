@@ -105,27 +105,33 @@ export class LoginPage extends BasePage {
     await this.page.waitForTimeout(3000)
     
     let redirected = false
-    
-    try {
-      // Tentar aguardar redirecionamento
-      await this.page.waitForURL('**/dashboard', { timeout: 8000 })
-      redirected = true
-    } catch (error) {
-      // Não houve redirecionamento no tempo esperado
-      redirected = false
-    }
-    
     const currentUrl = this.page.url()
-    const onLoginPage = currentUrl.includes('/login')
     
     console.log(`📍 URL atual: ${currentUrl}`)
-    console.log(`🔄 Redirecionou: ${redirected}`)
-    console.log(`🔐 Ainda na página de login: ${onLoginPage}`)
+    
+    // ✅ MÚLTIPLAS VERIFICAÇÕES para detectar redirecionamento bem-sucedido
+    const conditions = {
+      containsDashboard: currentUrl.includes('/dashboard'),
+      notLoginPage: !currentUrl.includes('/login'),
+      hasLoadingParam: currentUrl.includes('loading=true'),
+      isLocalhost: currentUrl.includes('localhost')
+    }
+    
+    console.log('🔍 Condições de verificação:')
+    console.log(`   - Contém 'dashboard': ${conditions.containsDashboard}`)
+    console.log(`   - Não é página de login: ${conditions.notLoginPage}`)
+    console.log(`   - Tem parâmetro loading: ${conditions.hasLoadingParam}`)
+    console.log(`   - É localhost correto: ${conditions.isLocalhost}`)
+    
+    // ✅ Login bem-sucedido se contém dashboard E não é página de login
+    redirected = conditions.containsDashboard && conditions.notLoginPage
+    
+    console.log(`🔄 Redirecionamento detectado: ${redirected}`)
     
     return {
       redirected,
       currentUrl,
-      onLoginPage
+      onLoginPage: currentUrl.includes('/login')
     }
   }
 

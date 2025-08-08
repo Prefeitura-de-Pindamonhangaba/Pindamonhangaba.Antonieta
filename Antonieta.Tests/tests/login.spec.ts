@@ -31,6 +31,8 @@ test.describe('Login - Testes E2E', () => {
     
     // Realizar login válido
     const result = await loginPage.testValidLogin()
+
+    console.log(result)
     
     expect(result.success).toBe(true)
     expect(result.error).toBeNull()
