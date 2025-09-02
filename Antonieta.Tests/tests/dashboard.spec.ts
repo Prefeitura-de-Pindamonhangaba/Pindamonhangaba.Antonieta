@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { DashboardPage } from '../pages/DashboardPage'
 import { AuthHelper } from '../helpers/authHelper'
+import { DistributionModalOperator } from '../pages/DistributionModalOperator'
 
 test.describe('Dashboard - Testes E2E', () => {
   let dashboardPage: DashboardPage
@@ -117,5 +118,13 @@ test.describe('Dashboard - Testes E2E', () => {
     })
     
     console.log('✅ Teste completo do dashboard realizado com sucesso')
+  })
+  
+  test('deve abrir o modal de distribuição ao clicar no botão de registrar saída', async () => {
+    const modalOperator = new DistributionModalOperator(dashboardPage.page)
+    // Clica no botão de registrar saída
+    await dashboardPage.page.click('button:has-text("Registrar Saída")')
+    // Aguarda o modal de distribuição aparecer usando isOpen
+    expect(await modalOperator.isOpen()).toBe(true)
   })
 })
