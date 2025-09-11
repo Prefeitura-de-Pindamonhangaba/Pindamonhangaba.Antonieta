@@ -7,4 +7,4 @@ class create_ration_stock_dto(BaseModel):
     name: str
     description: str
     unit: str
-    stock: int
+    stock: float
