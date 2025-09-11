@@ -24,7 +24,7 @@
         <n-input-number
           v-model:value="formData.amount"
           :min="1"
-          :precision="0"
+          :precision="2"
           placeholder="Informe a quantidade em kg"
         />
       </n-form-item>

@@ -7,6 +7,6 @@ class update_ration_input_dto(BaseModel):
     """
     id: int
     ration_stock_id: int
-    amount: int
+    amount: float
     date: datetime
     description: str
