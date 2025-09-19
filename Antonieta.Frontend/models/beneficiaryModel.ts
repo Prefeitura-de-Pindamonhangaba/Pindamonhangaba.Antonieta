@@ -17,7 +17,6 @@ export default class Beneficiary {
   public full_address?: string
   
   public contact: string = ''
-  public monthly_limit: number = 0.0
   public mother_name: string | null = null
   public birth_date: string | null = null
   public qtd_dogs: number = 0
@@ -90,7 +89,6 @@ export default class Beneficiary {
     beneficiary.full_address = data.full_address || null
     
     beneficiary.contact = data.contact || ''
-    beneficiary.monthly_limit = parseFloat(data.monthly_limit) || 0.0
     beneficiary.mother_name = data.mother_name || null
     beneficiary.birth_date = data.birth_date || null
     beneficiary.qtd_dogs = parseInt(data.qtd_dogs) || 0
@@ -122,7 +120,6 @@ export default class Beneficiary {
       complement: this.complement,
       
       contact: this.contact,
-      monthly_limit: this.monthly_limit,
       mother_name: this.mother_name,
       birth_date: this.birth_date,
       qtd_dogs: this.qtd_dogs,
@@ -151,7 +148,6 @@ export interface IBeneficiary {
   complement?: string | null
   full_address?: string
   contact: string
-  monthly_limit: number
   mother_name?: string | null
   birth_date?: string | null
   qtd_dogs?: number

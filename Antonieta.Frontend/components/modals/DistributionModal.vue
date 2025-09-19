@@ -156,11 +156,9 @@ const selectedRation = computed(() => {
 // Quantidade máxima permitida (agora com decimais)
 const maxAmount = computed(() => {
   if (!selectedRation.value) return 999.99
-  
-  const stockLimit = selectedRation.value.stock
-  const monthlyLimit = selectedBeneficiary.value?.monthly_limit || 999.99
-  
-  return Math.min(stockLimit, monthlyLimit)
+
+  const stockLimit = selectedRation.value.stock ?? 0
+  return stockLimit
 })
 
 // Regras de validação

@@ -33,7 +33,8 @@
           </n-grid-item>
         </n-grid>
 
-        <n-grid :cols="2" :x-gap="12">
+        <!-- REMOVIDO: Limite Mensal -->
+        <n-grid :cols="1" :x-gap="12">
           <n-grid-item>
             <n-form-item label="Contato" path="contact">
               <n-input 
@@ -41,19 +42,6 @@
                 clearable 
                 style="width: 100%" 
                 placeholder="Telefone ou e-mail"/>
-            </n-form-item>
-          </n-grid-item>
-          <n-grid-item>
-            <n-form-item label="Limite Mensal (kg)" path="monthly_limit">
-              <n-input-number 
-                v-model:value="formData.monthly_limit" 
-                clearable 
-                style="width: 100%" 
-                placeholder="Limite mensal em kg"
-                :precision="2"
-                :step="0.1"
-                :min="0"
-              />
             </n-form-item>
           </n-grid-item>
         </n-grid>
@@ -360,10 +348,6 @@ const rules = {
   contact: {
     required: true,
     message: 'Por favor, informe o contato'
-  },
-  monthly_limit: {
-    required: true,
-    message: 'Por favor, informe o limite mensal'
   }
 }
 
@@ -382,7 +366,6 @@ const formData = ref({
   complement: '',
   
   contact: '',
-  monthly_limit: 4.5,
   mother_name: '',
   birth_date: null as number | null, // ✅ timestamp para o date-picker
   qtd_dogs: 0,
@@ -419,7 +402,6 @@ watch(() => props.beneficiaryData, (newValue) => {
       complement: newValue.complement || '',
       
       contact: newValue.contact,
-      monthly_limit: newValue.monthly_limit,
       mother_name: newValue.mother_name || '',
       // ✅ NOVO: Converter data para timestamp se necessário
       birth_date: newValue.birth_date ? (
@@ -449,7 +431,6 @@ const handleSubmit = async () => {
       ...formData.value,
       // ✅ NOVO: Converter timestamp para string YYYY-MM-DD para o backend
       birth_date: formData.value.birth_date ? timestampToDateString(formData.value.birth_date) : null,
-      monthly_limit: formData.value.monthly_limit || 0,
       qtd_dogs: formData.value.qtd_dogs || 0,
       qtd_castred_dogs: formData.value.qtd_castred_dogs || 0,
       qtd_cats: formData.value.qtd_cats || 0,
@@ -528,7 +509,6 @@ const resetForm = () => {
     complement: '',
     
     contact: '',
-    monthly_limit: null,
     mother_name: '',
     birth_date: null, // ✅ NOVO: null para timestamp
     qtd_dogs: 0,
