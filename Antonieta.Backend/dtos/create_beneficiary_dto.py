@@ -22,9 +22,6 @@ class create_beneficiary_dto(BaseModel):
     state: str = Field(default="SP", max_length=2, description="Estado (sigla)")
     zip_code: Optional[str] = Field(None, max_length=10, description="CEP")
     
-    # Limite mensal
-    monthly_limit: float = Field(default=0.0, ge=0, le=50, description="Limite mensal em kg")
-    
     # Dados pessoais opcionais
     mother_name: Optional[str] = Field(None, max_length=100, description="Nome da mãe")
     birth_date: Optional[str] = Field(None, description="Data de nascimento (YYYY-MM-DD)")
@@ -57,7 +54,6 @@ class create_beneficiary_dto(BaseModel):
                 "state": "SP",
                 "zip_code": "12400-000",
                 "complement": "Casa 2",
-                "monthly_limit": 4.5,
                 "mother_name": "Maria Silva",
                 "birth_date": "1990-01-15",
                 "qtd_dogs": 2,
