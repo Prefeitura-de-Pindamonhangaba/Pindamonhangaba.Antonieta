@@ -18,9 +18,7 @@ class Beneficiary(Base):
     complement = Column(String, nullable=True, comment="Complemento (apt, casa, etc.)")
     
     contact = Column(String, index=True)
-    
-    monthly_limit = Column(Float, default=0.0, comment="Limite mensal em kg")
-    
+        
     mother_name = Column(String, nullable=True)
     birth_date = Column(String, nullable=True)
     qtd_dogs = Column(Integer, default=0)
