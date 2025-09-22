@@ -557,8 +557,10 @@ const handleSubmit = async () => {
     console.log('📅 Data formatada para envio:', beneficiaryData.birth_date)
 
     if (props.editMode && props.beneficiaryData) {
-      const loadingMsg = message.loading('Atualizando beneficiário...', {
-        duration: 
+      const loadingMsg = message.loading({
+        content: 'Atualizando beneficiário...',
+        duration: 5000,
+        closable: true
       })
       
       const updatedBeneficiary = await beneficiaryService.update(
