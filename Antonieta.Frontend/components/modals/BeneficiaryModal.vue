@@ -558,7 +558,7 @@ const handleSubmit = async () => {
 
     if (props.editMode && props.beneficiaryData) {
       const loadingMsg = message.loading('Atualizando beneficiário...', {
-        duration: 0
+        duration: 
       })
       
       const updatedBeneficiary = await beneficiaryService.update(
@@ -571,7 +571,7 @@ const handleSubmit = async () => {
       emit('update', props.beneficiaryData.id, updatedBeneficiary)
     } else {
       const loadingMsg = message.loading('Cadastrando novo beneficiário...', {
-        duration: 0
+        duration: 5000
       })
       
       const newBeneficiary = await beneficiaryService.create(beneficiaryData)
