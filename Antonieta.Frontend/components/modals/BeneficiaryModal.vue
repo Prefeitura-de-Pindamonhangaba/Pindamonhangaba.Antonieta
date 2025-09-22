@@ -329,26 +329,141 @@ function timestampToDateString(timestamp: number | string): string | null {
 const message = useMessage()
 
 const rules = {
-  name: {
-    required: true,
-    message: 'Por favor, informe o nome do beneficiário'
-  },
-  document: {
-    required: true,
-    message: 'Por favor, informe o documento'
-  },
-  street: {
-    required: true,
-    message: 'Por favor, informe a rua/avenida'
-  },
-  neighborhood: {
-    required: true,
-    message: 'Por favor, informe o bairro'
-  },
-  contact: {
-    required: true,
-    message: 'Por favor, informe o contato'
-  }
+  name: [
+    { required: true, message: 'Por favor, informe o nome do beneficiário' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe o nome do beneficiário'))
+        return value.trim().length >= 3
+          ? Promise.resolve()
+          : Promise.reject(new Error('Nome deve ter ao menos 3 caracteres'))
+      }
+    }
+  ],
+  document: [
+    { required: true, message: 'Por favor, informe o documento' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe o documento'))
+        const digits = String(value).replace(/\D/g, '')
+        return digits.length >= 8
+          ? Promise.resolve()
+          : Promise.reject(new Error('Documento inválido, informe ao menos 8 dígitos'))
+      }
+    }
+  ],
+  street: [
+    { required: true, message: 'Por favor, informe a rua/avenida' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe a rua/avenida'))
+        return value.trim().length >= 5
+          ? Promise.resolve()
+          : Promise.reject(new Error('Rua/Avenida deve ter ao menos 5 caracteres'))
+      }
+    }
+  ],
+  neighborhood: [
+    { required: true, message: 'Por favor, informe o bairro' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe o bairro'))
+        return value.trim().length >= 3
+          ? Promise.resolve()
+          : Promise.reject(new Error('Bairro deve ter ao menos 3 caracteres'))
+      }
+    }
+  ],
+  contact: [
+    { required: true, message: 'Por favor, informe o contato' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe o contato'))
+        return String(value).trim().length >= 8
+          ? Promise.resolve()
+          : Promise.reject(new Error('Contato deve ter ao menos 8 caracteres'))
+      }
+    }
+  ],
+  // opcional: número do endereço deve ser apenas dígitos quando preenchido
+  number: [
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.resolve()
+        return /^\d+$/.test(String(value))
+          ? Promise.resolve()
+          : Promise.reject(new Error('Número inválido (somente dígitos)'))
+      }
+    }
+  ],
+  // CEP opcional com formato 12345-678
+  zip_code: [
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.resolve()
+        return /^\d{5}-\d{3}$/.test(String(value))
+          ? Promise.resolve()
+          : Promise.reject(new Error('CEP inválido (ex: 12345-678)'))
+      }
+    }
+  ],
+  // data de nascimento opcional, valida formato/timestamp
+  birth_date: [
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.resolve()
+        const date = typeof value === 'number' ? new Date(value) : new Date(String(value))
+        return isNaN(date.getTime())
+          ? Promise.reject(new Error('Data de nascimento inválida'))
+          : Promise.resolve()
+      }
+    }
+  ],
+  // quantidades de animais: inteiros >= 0
+  qtd_dogs: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') return Promise.resolve()
+        const n = Number(value)
+        return Number.isInteger(n) && n >= 0
+          ? Promise.resolve()
+          : Promise.reject(new Error('Informe um número inteiro >= 0'))
+      }
+    }
+  ],
+  qtd_castred_dogs: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') return Promise.resolve()
+        const n = Number(value)
+        return Number.isInteger(n) && n >= 0
+          ? Promise.resolve()
+          : Promise.reject(new Error('Informe um número inteiro >= 0'))
+      }
+    }
+  ],
+  qtd_cats: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') return Promise.resolve()
+        const n = Number(value)
+        return Number.isInteger(n) && n >= 0
+          ? Promise.resolve()
+          : Promise.reject(new Error('Informe um número inteiro >= 0'))
+      }
+    }
+  ],
+  qtd_castred_cats: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') return Promise.resolve()
+        const n = Number(value)
+        return Number.isInteger(n) && n >= 0
+          ? Promise.resolve()
+          : Promise.reject(new Error('Informe um número inteiro >= 0'))
+      }
+    }
+  ]
 }
 
 // ✅ ATUALIZADO: FormData com data como timestamp para o date-picker
