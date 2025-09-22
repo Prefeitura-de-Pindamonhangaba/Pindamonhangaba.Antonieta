@@ -24,9 +24,6 @@ class update_beneficiary_dto(BaseModel):
     zip_code: Optional[str] = Field(None, max_length=10, description="CEP")
     complement: Optional[str] = Field(None, max_length=100, description="Complemento (apt, casa, etc.)")
     
-    # Limite mensal
-    monthly_limit: Optional[float] = Field(None, ge=0, le=50, description="Limite mensal em kg")
-    
     # Dados pessoais opcionais
     mother_name: Optional[str] = Field(None, max_length=100, description="Nome da mãe")
     birth_date: Optional[str] = Field(None, description="Data de nascimento (YYYY-MM-DD)")
@@ -59,7 +56,6 @@ class update_beneficiary_dto(BaseModel):
                 "zip_code": "12400-001",
                 "complement": "Casa dos fundos",
                 "contact": "(12) 98888-7777",
-                "monthly_limit": 5.0,
                 "qtd_dogs": 3,
                 "qtd_castred_dogs": 2,
                 "government_benefit": True,

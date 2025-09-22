@@ -75,25 +75,25 @@ class DashboardService:
     def get_beneficiaries_dashboard(self, skip: int = 0, limit: int = 10) -> Tuple[List[dict], int]:
         """
         Retorna dados consolidados dos beneficiários para o dashboard
-        incluindo limites, quantidades recebidas e status
-        
+        contendo total recebido no mês para cada beneficiário.
+
         Args:
             skip: Número de registros para pular
             limit: Número máximo de registros para retornar
-            
+
         Returns:
             Tupla contendo a lista de beneficiários e o total de registros
         """
         current_date = datetime.now()
-        
+
         # Busca total de beneficiários
         total = self.db.query(func.count(Beneficiary.id)).scalar()
-        
+
         # Busca beneficiários com paginação
         beneficiaries = self.db.query(Beneficiary).offset(skip).limit(limit).all()
-        
+
         dashboard_data = []
-        
+
         for beneficiary in beneficiaries:
             # Calcula total recebido no mês
             received_amount = self.db.query(
@@ -103,25 +103,11 @@ class DashboardService:
                 extract('month', Distribution.date) == current_date.month,
                 extract('year', Distribution.date) == current_date.year
             ).scalar() or 0
-            
-            # Calcula o progresso
-            progress = (received_amount / beneficiary.monthly_limit * 100) if beneficiary.monthly_limit > 0 else 0
-            
-            # Define o status baseado no progresso
-            if progress >= 100:
-                status = "Limite Atingido"
-            elif progress >= 80:
-                status = "Próx. Limite"
-            else:
-                status = "Pode Receber"
-            
+
             dashboard_data.append({
                 "id": beneficiary.id,
                 "nome": beneficiary.name,
-                "limite_mensal": beneficiary.monthly_limit,
-                "recebido_mes": received_amount,
-                "progresso": round(progress, 2),
-                "status": status
+                "recebido_mes": received_amount
             })
-        
+
         return dashboard_data, total

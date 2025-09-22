@@ -30,7 +30,7 @@ export class BasePage {
 
   async expectToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') {
     const toastSelector = `.n-message`
-    await expect(this.page.locator(toastSelector)).toContainText(message, { timeout: 10000 })
+    await expect(this.page.locator(toastSelector)).toContainText(message, { timeout: 5000 })
   }
 
   async expectPageTitle(title: string) {

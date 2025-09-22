@@ -91,7 +91,6 @@ export const beneficiaryService = {
         complement: processedData.complement || null,
         
         contact: processedData.contact,
-        monthly_limit: processedData.monthly_limit || 0.0,
         mother_name: processedData.mother_name || null,
         birth_date: processedData.birth_date || null,
         qtd_dogs: processedData.qtd_dogs || 0,
@@ -159,7 +158,6 @@ export const beneficiaryService = {
         complement: processedData.complement,
         
         contact: processedData.contact,
-        monthly_limit: processedData.monthly_limit,
         mother_name: processedData.mother_name,
         birth_date: processedData.birth_date,
         qtd_dogs: processedData.qtd_dogs,

@@ -121,7 +121,11 @@ const loadRationStocks = async () => {
     }))
   } catch (error) {
     console.error('Error loading ration types:', error)
-    message.error('Erro ao carregar tipos de ração')
+    message.error({
+        content: 'Erro ao carregar tipos de ração',
+        duration: 5000,
+        closable: true
+      })
   }
 }
 
@@ -144,7 +148,11 @@ const handleSubmit = () => {
         resetForm()
       } catch (error) {
         console.error('Error submitting input:', error)
-        message.error('Erro ao registrar entrada')
+        message.error({
+            content: 'Erro ao registrar entrada',
+            duration: 5000,
+            closable: true
+          })
       } finally {
         loading.value = false
       }

@@ -156,11 +156,9 @@ const selectedRation = computed(() => {
 // Quantidade máxima permitida (agora com decimais)
 const maxAmount = computed(() => {
   if (!selectedRation.value) return 999.99
-  
-  const stockLimit = selectedRation.value.stock
-  const monthlyLimit = selectedBeneficiary.value?.monthly_limit || 999.99
-  
-  return Math.min(stockLimit, monthlyLimit)
+
+  const stockLimit = selectedRation.value.stock ?? 0
+  return stockLimit
 })
 
 // Regras de validação
@@ -209,7 +207,11 @@ const loadBeneficiaries = async () => {
     beneficiaries.value = data
   } catch (error) {
     console.error('Erro ao carregar beneficiários:', error)
-    message.error('Erro ao carregar beneficiários')
+    message.error({
+        content: 'Erro ao carregar beneficiários',
+        duration: 5000,
+        closable: true
+      })
   } finally {
     loadingBeneficiaries.value = false
   }
@@ -222,7 +224,11 @@ const loadRationStocks = async () => {
     rationStocks.value = data
   } catch (error) {
     console.error('Erro ao carregar rações:', error)
-    message.error('Erro ao carregar tipos de ração')
+    message.error({
+        content: 'Erro ao carregar tipos de ração',
+        duration: 5000,
+        closable: true
+      })
   } finally {
     loadingRations.value = false
   }
@@ -262,7 +268,11 @@ const handleSubmit = async () => {
     
   } catch (error) {
     console.error('Erro ao registrar distribuição:', error)
-    message.error('Erro ao registrar distribuição')
+    message.error({
+        content: 'Erro ao registrar distribuição',
+        duration: 5000,
+        closable: true
+      })
   } finally {
     loading.value = false
   }

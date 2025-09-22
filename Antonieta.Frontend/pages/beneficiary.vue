@@ -268,13 +268,6 @@ const columns: DataTableColumns<Beneficiary> = [
     sorter: 'default'
   },
   {
-    title: 'Limite Mensal',
-    key: 'monthly_limit',
-    sorter: (row1: Beneficiary, row2: Beneficiary) => 
-      (row1.monthly_limit || 0) - (row2.monthly_limit || 0),
-    render: (row: Beneficiary) => `${row.monthly_limit || 0} kg`
-  },
-  {
     title: 'Ações',
     key: 'actions',
     render(row) {
@@ -298,10 +291,6 @@ const handleSort = (sorter: { columnKey: keyof Beneficiary, order: 'ascend' | 'd
   
   sortedData.sort((a, b) => {
     const multiplier = order === 'ascend' ? 1 : -1
-    
-    if (columnKey === 'monthly_limit') {
-      return ((a[columnKey] || 0) - (b[columnKey] || 0)) * multiplier
-    }
     
     const aValue = String(a[columnKey] || '')
     const bValue = String(b[columnKey] || '')

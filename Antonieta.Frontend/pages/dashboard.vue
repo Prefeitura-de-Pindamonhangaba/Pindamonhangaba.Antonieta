@@ -102,29 +102,19 @@
 import { h, ref, onMounted, onUnmounted, reactive, watch } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 import { 
-  NLayout,
-  NLayoutContent,
-  NSpace,
-  NButton,
   NCard,
   NDataTable,
-  NIcon,
   NProgress,
   NTag,
   NGrid,
-  NGi,
-  NH1,
   NDivider,
   NText,
-  NStatistic,
-  NSpin,
-  NInput
+  NStatistic
 } from 'naive-ui'
-import { IconPlus, IconUserPlus, IconCheck, IconAlertTriangle, IconX, IconSearch } from '@tabler/icons-vue'
+import { IconPlus, IconUserPlus } from '@tabler/icons-vue'
 import DistributionModal from '../components/modals/DistributionModal.vue'
 import BeneficiaryModal from '../components/modals/BeneficiaryModal.vue'
 import InputModal from '../components/modals/InputModal.vue'
-import type { Beneficiary } from '../models/beneficiaryModel'
 import { beneficiaryService } from '../services/beneficiaryService'
 import { rationStockService } from '../services/rationStockService'
 import { distributionService } from '~/services/distributionService'
@@ -133,14 +123,11 @@ import { dashboardService } from '~/services/dashboardService'
 import { useRoute } from 'vue-router'
 import { useMessage } from 'naive-ui'
 
-// Update BeneficiaryData interface to match the service response
+// Update BeneficiaryData interface to only include received-this-month
 interface BeneficiaryData {
   id: number
   nome: string
-  limite_mensal: number  // Changed from limiteMensal to match backend
-  recebido_mes: number   // Changed from recebido to match backend
-  progresso: number
-  status: 'Pode Receber' | 'Próx. Limite' | 'Limite Atingido'
+  recebido_mes: number
 }
 
 const route = useRoute()
@@ -176,56 +163,45 @@ const sorter = ref<{ columnKey: keyof BeneficiaryData | null, order: 'ascend' | 
   order: false
 })
 
-// ✅ NOVO: Função para formatar pesos com 2 casas decimais
+// Keep format helper
 const formatWeight = (value: number): string => {
   if (value === 0) return '0,00 kg'
-  return `${value.toFixed(2).replace('.', ',')} kg`
+  return `${Number(value || 0).toFixed(2).replace('.', ',')} kg`
 }
 
 // Handle search function
 const handleSearch = (query: string) => {
   if (!query) {
-    // If search is cleared, show all beneficiaries
     tableData.value = [...allBeneficiariesData.value]
     return
   }
-  
-  // Filter beneficiaries by name
   const normalizedQuery = query.toLowerCase().trim()
   tableData.value = allBeneficiariesData.value.filter(beneficiary => 
     beneficiary.nome.toLowerCase().includes(normalizedQuery)
   )
 }
 
-// Handle sorting
+// Handle sorting (only by nome or recebido_mes)
 const handleSort = (sorter: { columnKey: keyof BeneficiaryData, order: 'ascend' | 'descend' | false }) => {
   const { columnKey, order } = sorter
-  
   if (!order || !columnKey) {
-    // Reset to original data
     tableData.value = [...allBeneficiariesData.value]
     return
   }
-
   const sortedData = [...tableData.value]
-  
+  const multiplier = order === 'ascend' ? 1 : -1
   sortedData.sort((a, b) => {
-    const multiplier = order === 'ascend' ? 1 : -1
-    
-    if (columnKey === 'limite_mensal' || columnKey === 'recebido_mes' || columnKey === 'progresso') {
-      return (a[columnKey] - b[columnKey]) * multiplier
+    const aVal = a[columnKey] ?? ''
+    const bVal = b[columnKey] ?? ''
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return (aVal - bVal) * multiplier
     }
-    
-    // For text columns
-    const aValue = String(a[columnKey] || '')
-    const bValue = String(b[columnKey] || '')
-    return aValue.localeCompare(bValue) * multiplier
+    return String(aVal).localeCompare(String(bVal)) * multiplier
   })
-
   tableData.value = sortedData
 }
 
-// ✅ ATUALIZADO: Colunas da tabela com formatação correta
+// Columns: only Nome e Recebido Este Mês
 const columns: DataTableColumns<BeneficiaryData> = [
   {
     title: 'Nome',
@@ -233,95 +209,30 @@ const columns: DataTableColumns<BeneficiaryData> = [
     sorter: 'default'
   },
   {
-    title: 'Limite Mensal',
-    key: 'limite_mensal',
-    sorter: 'default',
-    render(row) {
-      return formatWeight(row.limite_mensal) // ✅ ATUALIZADO: Usar função de formatação
-    }
-  },
-  {
     title: 'Recebido Este Mês',
     key: 'recebido_mes',
     sorter: 'default',
     render(row) {
-      return formatWeight(row.recebido_mes) // ✅ ATUALIZADO: Usar função de formatação
-    }
-  },
-  {
-    title: 'Progresso',
-    key: 'progresso',
-    sorter: 'default',
-    render(row) {
-      return h(NProgress, {
-        type: 'line',
-        percentage: row.progresso,
-        indicatorPlacement: 'inside',
-        processing: row.progresso < 100,
-        status: row.progresso >= 80 ? 'error' : row.progresso >= 50 ? 'warning' : 'success',
-        style: { width: '120px' }
-      })
-    }
-  },
-  {
-    title: 'Status',
-    key: 'status',
-    sorter: 'default',
-    render(row) {
-      const statusConfig = {
-        'Pode Receber': {
-          icon: IconCheck,
-          type: 'success',
-          style: { backgroundColor: '#18a058', color: 'white' }
-        },
-        'Próx. Limite': {
-          icon: IconAlertTriangle,
-          type: 'warning',
-          style: { backgroundColor: '#f0a020', color: 'white' }
-        },
-        'Limite Atingido': {
-          icon: IconX,
-          type: 'error',
-          style: { backgroundColor: '#d03050', color: 'white' }
-        }
-      }
-
-      const config = statusConfig[row.status as keyof typeof statusConfig]
-      
-      return h(
-        NTag,
-        {
-          type: config.type,
-          style: {
-            ...config.style,
-            padding: '4px 12px',
-            fontSize: '14px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-          }
-        },
-        {
-          default: () => [
-            h(config.icon, { size: 16 }),
-            row.status
-          ]
-        }
-      )
+      return formatWeight(row.recebido_mes)
     }
   }
 ]
 
-// Add function to fetch beneficiaries data
+// Fetch beneficiaries and normalize shape to incluir somente recebido_mes
 const fetchBeneficiariesData = async (page: number = 1) => {
   try {
     loading.value = true
     const skip = (page - 1) * pagination.pageSize
-    const beneficiariesData = await dashboardService.getBeneficiariesDashboard(skip, pagination.pageSize)
-    
-    allBeneficiariesData.value = beneficiariesData.data
-    tableData.value = beneficiariesData.data
-    pagination.itemCount = beneficiariesData.total
+    const resp = await dashboardService.getBeneficiariesDashboard(skip, pagination.pageSize)
+    // normalizar campos: backend pode retornar "recebido" ou "recebido_mes"
+    const normalized = resp.data.map((item: any) => ({
+      id: item.id,
+      nome: item.nome ?? item.name ?? '',
+      recebido_mes: Number(item.recebido ?? item.recebido_mes ?? item.recebidoMes ?? 0)
+    }))
+    allBeneficiariesData.value = normalized
+    tableData.value = normalized
+    pagination.itemCount = resp.total
   } catch (error) {
     console.error('Error fetching beneficiaries:', error)
   } finally {

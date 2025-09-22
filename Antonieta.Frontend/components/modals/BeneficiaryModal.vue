@@ -33,7 +33,8 @@
           </n-grid-item>
         </n-grid>
 
-        <n-grid :cols="2" :x-gap="12">
+        <!-- REMOVIDO: Limite Mensal -->
+        <n-grid :cols="1" :x-gap="12">
           <n-grid-item>
             <n-form-item label="Contato" path="contact">
               <n-input 
@@ -41,19 +42,6 @@
                 clearable 
                 style="width: 100%" 
                 placeholder="Telefone ou e-mail"/>
-            </n-form-item>
-          </n-grid-item>
-          <n-grid-item>
-            <n-form-item label="Limite Mensal (kg)" path="monthly_limit">
-              <n-input-number 
-                v-model:value="formData.monthly_limit" 
-                clearable 
-                style="width: 100%" 
-                placeholder="Limite mensal em kg"
-                :precision="2"
-                :step="0.1"
-                :min="0"
-              />
             </n-form-item>
           </n-grid-item>
         </n-grid>
@@ -341,30 +329,141 @@ function timestampToDateString(timestamp: number | string): string | null {
 const message = useMessage()
 
 const rules = {
-  name: {
-    required: true,
-    message: 'Por favor, informe o nome do beneficiário'
-  },
-  document: {
-    required: true,
-    message: 'Por favor, informe o documento'
-  },
-  street: {
-    required: true,
-    message: 'Por favor, informe a rua/avenida'
-  },
-  neighborhood: {
-    required: true,
-    message: 'Por favor, informe o bairro'
-  },
-  contact: {
-    required: true,
-    message: 'Por favor, informe o contato'
-  },
-  monthly_limit: {
-    required: true,
-    message: 'Por favor, informe o limite mensal'
-  }
+  name: [
+    { required: true, message: 'Por favor, informe o nome do beneficiário' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe o nome do beneficiário'))
+        return value.trim().length >= 3
+          ? Promise.resolve()
+          : Promise.reject(new Error('Nome deve ter ao menos 3 caracteres'))
+      }
+    }
+  ],
+  document: [
+    { required: true, message: 'Por favor, informe o documento' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe o documento'))
+        const digits = String(value).replace(/\D/g, '')
+        return digits.length >= 8
+          ? Promise.resolve()
+          : Promise.reject(new Error('Documento inválido, informe ao menos 8 dígitos'))
+      }
+    }
+  ],
+  street: [
+    { required: true, message: 'Por favor, informe a rua/avenida' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe a rua/avenida'))
+        return value.trim().length >= 5
+          ? Promise.resolve()
+          : Promise.reject(new Error('Rua/Avenida deve ter ao menos 5 caracteres'))
+      }
+    }
+  ],
+  neighborhood: [
+    { required: true, message: 'Por favor, informe o bairro' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe o bairro'))
+        return value.trim().length >= 3
+          ? Promise.resolve()
+          : Promise.reject(new Error('Bairro deve ter ao menos 3 caracteres'))
+      }
+    }
+  ],
+  contact: [
+    { required: true, message: 'Por favor, informe o contato' },
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.reject(new Error('Por favor, informe o contato'))
+        return String(value).trim().length >= 8
+          ? Promise.resolve()
+          : Promise.reject(new Error('Contato deve ter ao menos 8 caracteres'))
+      }
+    }
+  ],
+  // opcional: número do endereço deve ser apenas dígitos quando preenchido
+  number: [
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.resolve()
+        return /^\d+$/.test(String(value))
+          ? Promise.resolve()
+          : Promise.reject(new Error('Número inválido (somente dígitos)'))
+      }
+    }
+  ],
+  // CEP opcional com formato 12345-678
+  zip_code: [
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.resolve()
+        return /^\d{5}-\d{3}$/.test(String(value))
+          ? Promise.resolve()
+          : Promise.reject(new Error('CEP inválido (ex: 12345-678)'))
+      }
+    }
+  ],
+  // data de nascimento opcional, valida formato/timestamp
+  birth_date: [
+    {
+      validator: (_rule, value) => {
+        if (!value) return Promise.resolve()
+        const date = typeof value === 'number' ? new Date(value) : new Date(String(value))
+        return isNaN(date.getTime())
+          ? Promise.reject(new Error('Data de nascimento inválida'))
+          : Promise.resolve()
+      }
+    }
+  ],
+  // quantidades de animais: inteiros >= 0
+  qtd_dogs: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') return Promise.resolve()
+        const n = Number(value)
+        return Number.isInteger(n) && n >= 0
+          ? Promise.resolve()
+          : Promise.reject(new Error('Informe um número inteiro >= 0'))
+      }
+    }
+  ],
+  qtd_castred_dogs: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') return Promise.resolve()
+        const n = Number(value)
+        return Number.isInteger(n) && n >= 0
+          ? Promise.resolve()
+          : Promise.reject(new Error('Informe um número inteiro >= 0'))
+      }
+    }
+  ],
+  qtd_cats: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') return Promise.resolve()
+        const n = Number(value)
+        return Number.isInteger(n) && n >= 0
+          ? Promise.resolve()
+          : Promise.reject(new Error('Informe um número inteiro >= 0'))
+      }
+    }
+  ],
+  qtd_castred_cats: [
+    {
+      validator: (_rule, value) => {
+        if (value === null || value === undefined || value === '') return Promise.resolve()
+        const n = Number(value)
+        return Number.isInteger(n) && n >= 0
+          ? Promise.resolve()
+          : Promise.reject(new Error('Informe um número inteiro >= 0'))
+      }
+    }
+  ]
 }
 
 // ✅ ATUALIZADO: FormData com data como timestamp para o date-picker
@@ -382,7 +481,6 @@ const formData = ref({
   complement: '',
   
   contact: '',
-  monthly_limit: 4.5,
   mother_name: '',
   birth_date: null as number | null, // ✅ timestamp para o date-picker
   qtd_dogs: 0,
@@ -419,7 +517,6 @@ watch(() => props.beneficiaryData, (newValue) => {
       complement: newValue.complement || '',
       
       contact: newValue.contact,
-      monthly_limit: newValue.monthly_limit,
       mother_name: newValue.mother_name || '',
       // ✅ NOVO: Converter data para timestamp se necessário
       birth_date: newValue.birth_date ? (
@@ -449,7 +546,6 @@ const handleSubmit = async () => {
       ...formData.value,
       // ✅ NOVO: Converter timestamp para string YYYY-MM-DD para o backend
       birth_date: formData.value.birth_date ? timestampToDateString(formData.value.birth_date) : null,
-      monthly_limit: formData.value.monthly_limit || 0,
       qtd_dogs: formData.value.qtd_dogs || 0,
       qtd_castred_dogs: formData.value.qtd_castred_dogs || 0,
       qtd_cats: formData.value.qtd_cats || 0,
@@ -462,7 +558,7 @@ const handleSubmit = async () => {
 
     if (props.editMode && props.beneficiaryData) {
       const loadingMsg = message.loading('Atualizando beneficiário...', {
-        duration: 0
+        duration: 
       })
       
       const updatedBeneficiary = await beneficiaryService.update(
@@ -475,7 +571,7 @@ const handleSubmit = async () => {
       emit('update', props.beneficiaryData.id, updatedBeneficiary)
     } else {
       const loadingMsg = message.loading('Cadastrando novo beneficiário...', {
-        duration: 0
+        duration: 5000
       })
       
       const newBeneficiary = await beneficiaryService.create(beneficiaryData)
@@ -528,7 +624,6 @@ const resetForm = () => {
     complement: '',
     
     contact: '',
-    monthly_limit: null,
     mother_name: '',
     birth_date: null, // ✅ NOVO: null para timestamp
     qtd_dogs: 0,
