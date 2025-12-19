@@ -36,6 +36,10 @@ class create_beneficiary_dto(BaseModel):
     government_benefit: bool = Field(default=False, description="Recebe benefício do governo")
     receives_basic_basket: bool = Field(default=False, description="Recebe cesta básica")
     
+    # CadÚnico (Cadastro Único)
+    cadunico_code: Optional[str] = Field(None, max_length=50, description="Código familiar do CadÚnico")
+    income_range: Optional[str] = Field(None, max_length=100, description="Faixa de renda familiar per capita")
+    
     # Informações adicionais
     how_did_you_hear: Optional[str] = Field(None, max_length=200, description="Como soube do projeto")
     observations: Optional[str] = Field(None, max_length=500, description="Observações")

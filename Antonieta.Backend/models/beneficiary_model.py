@@ -27,6 +27,11 @@ class Beneficiary(Base):
     qtd_castred_cats = Column(Integer, default=0)
     government_benefit = Column(Boolean, default=False)
     receives_basic_basket = Column(Boolean, default=False)
+    
+    # CadÚnico (Cadastro Único)
+    cadunico_code = Column(String, nullable=True, comment="Código familiar do CadÚnico")
+    income_range = Column(String, nullable=True, comment="Faixa de renda familiar per capita")
+    
     how_did_you_hear = Column(String, nullable=True)
     observations = Column(String, nullable=True)
     
