@@ -114,6 +114,8 @@ const exportData = computed(() => {
     telefone: beneficiary.contact || 'Não informado',
     documento: beneficiary.document || 'Não informado',
     adicional1: beneficiary.name || 'Não informado', // Nome como Adicional 1
+    cadunico_code: beneficiary.cadunico_code || 'Não informado',
+    income_range: beneficiary.income_range || 'Não informado',
   }))
 })
 
@@ -129,7 +131,9 @@ const handleExport = () => {
     const dados = exportData.value.map(item => ({
       'Telefone': item.telefone,
       'Documento': item.documento,
-      'Adicional 1': item.adicional1
+      'Adicional 1': item.adicional1,
+      'Código Familiar CadÚnico': item.cadunico_code,
+      'Faixa de Renda': item.income_range
     }))
 
     // Criar e baixar Excel
@@ -174,7 +178,9 @@ const getFormattedExportData = (formato: 'simples' | 'completo' = 'simples') => 
     return exportData.value.map(item => ({
       'Telefone': item.telefone,
       'Documento': item.documento,
-      'Adicional 1': item.adicional1
+      'Adicional 1': item.adicional1,
+      'Código Familiar CadÚnico': item.cadunico_code,
+      'Faixa de Renda': item.income_range
     }))
   }
   
@@ -182,6 +188,8 @@ const getFormattedExportData = (formato: 'simples' | 'completo' = 'simples') => 
     'Telefone': item.telefone,
     'Documento': item.documento,
     'Adicional 1': item.adicional1,
+    'Código Familiar CadÚnico': item.cadunico_code,
+    'Faixa de Renda': item.income_range,
   }))
 }
 

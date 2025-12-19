@@ -216,6 +216,33 @@
           </n-grid-item>
         </n-grid>
 
+        <!-- CadÚnico (Cadastro Único) -->
+        <n-divider title-placement="left">
+          <span style="font-weight: 600; color: #f77800;">CadÚnico (Cadastro Único)</span>
+        </n-divider>
+
+        <n-grid :cols="2" :x-gap="12">
+          <n-grid-item>
+            <n-form-item label="Código Familiar" path="cadunico_code">
+              <n-input 
+                v-model:value="formData.cadunico_code" 
+                clearable 
+                style="width: 100%" 
+                placeholder="Ex: 123456789"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Faixa de Renda" path="income_range">
+              <n-select
+                v-model:value="formData.income_range"
+                :options="incomeRangeOptions"
+                clearable
+                placeholder="Selecione a faixa de renda"
+                style="width: 100%"/>
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
         <!-- Informações Adicionais -->
         <n-divider title-placement="left">
           <span style="font-weight: 600; color: #f77800;">Informações Adicionais</span>
@@ -489,6 +516,8 @@ const formData = ref({
   qtd_castred_cats: 0,
   government_benefit: false,
   receives_basic_basket: false,
+  cadunico_code: '',
+  income_range: '',
   how_did_you_hear: '',
   observations: ''
 })
@@ -498,6 +527,13 @@ const stateOptions = [
   { label: 'Rio de Janeiro', value: 'RJ' },
   { label: 'Minas Gerais', value: 'MG' },
   { label: 'Espírito Santo', value: 'ES' },
+]
+
+const incomeRangeOptions = [
+  { label: 'Até meio salário mínimo', value: 'Até meio salário mínimo' },
+  { label: 'Entre meio e um salário mínimo', value: 'Entre meio e um salário mínimo' },
+  { label: 'Acima de meio salário mínimo', value: 'Acima de meio salário mínimo' },
+  { label: 'Acima de um salário mínimo', value: 'Acima de um salário mínimo' },
 ]
 
 // ✅ ATUALIZADO: Watch para nova estrutura de data
@@ -530,6 +566,8 @@ watch(() => props.beneficiaryData, (newValue) => {
       qtd_castred_cats: newValue.qtd_castred_cats || 0,
       government_benefit: newValue.government_benefit || false,
       receives_basic_basket: newValue.receives_basic_basket || false,
+      cadunico_code: newValue.cadunico_code || '',
+      income_range: newValue.income_range || '',
       how_did_you_hear: newValue.how_did_you_hear || '',
       observations: newValue.observations || ''
     }
