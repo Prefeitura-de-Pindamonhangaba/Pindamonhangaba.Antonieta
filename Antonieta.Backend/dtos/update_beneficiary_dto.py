@@ -50,8 +50,12 @@ class update_beneficiary_dto(BaseModel):
         """Configuração do Pydantic."""
         json_schema_extra = {
             "example": {
-                "id": 1,  # ✅ ADICIONADO no exemplo
+                "id": 1,
                 "name": "João Silva Santos",
+                "document": "12345678900",
+                "contact": "(12) 98888-7777",
+                
+                # Endereço completo
                 "street": "Rua Nova das Flores",
                 "number": "456",
                 "neighborhood": "Vila Nova",
@@ -59,10 +63,27 @@ class update_beneficiary_dto(BaseModel):
                 "state": "SP",
                 "zip_code": "12400-001",
                 "complement": "Casa dos fundos",
-                "contact": "(12) 98888-7777",
+                
+                # Dados pessoais opcionais
+                "mother_name": "Maria Silva Santos",
+                "birth_date": "1985-03-15",
+                
+                # Dados dos animais
                 "qtd_dogs": 3,
                 "qtd_castred_dogs": 2,
+                "qtd_cats": 2,
+                "qtd_castred_cats": 1,
+                
+                # Benefícios sociais
                 "government_benefit": True,
-                "observations": "Mudou de endereço e aumentou quantidade de animais"
+                "receives_basic_basket": True,
+                
+                # CadÚnico
+                "cadunico_code": "12345678901234",
+                "income_range": "Até 1/2 salário mínimo per capita",
+                
+                # Informações adicionais
+                "how_did_you_hear": "Indicação de amigos",
+                "observations": "Mudou de endereço e aumentou quantidade de animais. Precisa de ração especial para gatos idosos.",
             }
         }
