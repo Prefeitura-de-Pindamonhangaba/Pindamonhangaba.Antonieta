@@ -21,7 +21,7 @@ export const authService = {
     return response.json()
   },
 
-  async login(email: string, password: string): Promise<{ access_token: string }> {
+  async login(email: string, password: string): Promise<{ access_token: string; token_type: string; user: User }> {
     try {
       const response = await fetch(`${BASE_URL}/token`, {
         method: 'POST',

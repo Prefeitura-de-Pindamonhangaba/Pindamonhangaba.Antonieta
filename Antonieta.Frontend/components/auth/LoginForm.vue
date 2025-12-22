@@ -73,11 +73,13 @@ import { useRouter } from "vue-router";
 import { useMessage } from "naive-ui";
 import { MailOutline, LockClosedOutline } from "@vicons/ionicons5";
 import { authService } from "~/services/authService";
+import { useAuth } from "~/composables/useAuth";
 
 const formRef = ref(null);
 const loading = ref(false);
 const router = useRouter();
 const message = useMessage();
+const { setUser } = useAuth();
 
 const formValue = ref({
   email: "",
@@ -113,12 +115,13 @@ const handleSubmit = async () => {
     await formRef.value.validate();
 
     loading.value = true;
-    const { access_token } = await authService.login(
+    const { access_token, user } = await authService.login(
       formValue.value.email,
       formValue.value.password
     );
 
     authService.setToken(access_token);
+    setUser(user);
     message.success("Login realizado com sucesso!");
     await router.push({
       path: "/dashboard",

@@ -83,7 +83,7 @@ import User from '../models/userModel'
 import { userService } from '~/services/userService'
 
 definePageMeta({
-  middleware: 'auth'
+  middleware: ['auth', 'admin']
 })
 
 const message = useMessage()

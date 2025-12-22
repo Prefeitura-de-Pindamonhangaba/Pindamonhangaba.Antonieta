@@ -65,50 +65,59 @@ import {
 } from '@ant-design/icons-vue'
 import { useAuth } from '~/composables/useAuth' // Adjust the import based on your project structure
 
-const { checkAuth, clearToken } = useAuth()
+const { checkAuth, clearToken, isAdmin } = useAuth()
 const router = useRouter()
 const route = useRoute()
 
 const collapsed = ref(false)
 
-const mainMenuOptions: MenuOption[] = [
-  {
-    label: 'Dashboard',
-    key: 'dashboard',
-    icon: renderIcon(DashboardOutlined),
-    path: '/dashboard'
-  },
-  {
-    label: 'Beneficiários',
-    key: 'beneficiary',
-    icon: renderIcon(UserOutlined),
-    path: '/beneficiary'
-  },
-  {
-    label: 'Distribuições',
-    key: 'distributions',
-    icon: renderIcon(GiftOutlined),
-    path: '/distributions'
-  },
-  {
-    label: 'Entradas',
-    key: 'inputs',
-    icon: renderIcon(InboxOutlined),
-    path: '/inputs'
-  },
-  {
-    label: 'Estoques',
-    key: 'ration-stocks',
-    icon: renderIcon(StockOutlined), // Changed from InboxOutlined to StockOutlined
-    path: '/ration_stock'
-  },
-  {
-    label: 'Administração',
-    key: 'admin',
-    icon: renderIcon(SettingOutlined),
-    path: '/admin'
+// Filtrar opções do menu baseado no role do usuário
+const mainMenuOptions = computed<MenuOption[]>(() => {
+  const baseOptions: MenuOption[] = [
+    {
+      label: 'Dashboard',
+      key: 'dashboard',
+      icon: renderIcon(DashboardOutlined),
+      path: '/dashboard'
+    },
+    {
+      label: 'Beneficiários',
+      key: 'beneficiary',
+      icon: renderIcon(UserOutlined),
+      path: '/beneficiary'
+    },
+    {
+      label: 'Distribuições',
+      key: 'distributions',
+      icon: renderIcon(GiftOutlined),
+      path: '/distributions'
+    },
+    {
+      label: 'Entradas',
+      key: 'inputs',
+      icon: renderIcon(InboxOutlined),
+      path: '/inputs'
+    },
+    {
+      label: 'Estoques',
+      key: 'ration-stocks',
+      icon: renderIcon(StockOutlined),
+      path: '/ration_stock'
+    }
+  ]
+
+  // Adicionar Administração apenas para administradores
+  if (isAdmin()) {
+    baseOptions.push({
+      label: 'Administração',
+      key: 'admin',
+      icon: renderIcon(SettingOutlined),
+      path: '/admin'
+    })
   }
-]
+
+  return baseOptions
+})
 
 const footerMenuOptions: MenuOption[] = [
   {
@@ -153,7 +162,7 @@ async function handleMenuClick(key: string) {
     return
   }
 
-  const selectedOption = mainMenuOptions.find(option => option.key === key)
+  const selectedOption = mainMenuOptions.value.find(option => option.key === key)
   if (selectedOption?.path) {
     router.push(selectedOption.path)
   }
