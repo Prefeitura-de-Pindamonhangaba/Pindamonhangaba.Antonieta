@@ -69,6 +69,7 @@ import {
   NIcon,
   NH1,
   NDivider,
+  NTag,
   useMessage,
   type DataTableColumns
 } from 'naive-ui'
@@ -132,6 +133,22 @@ const columns: DataTableColumns<User> = [
     ellipsis: {
       tooltip: true
     }
+  },
+  {
+    title: 'Nível de Acesso',
+    key: 'role',
+    width: 150,
+    render(row) {
+      return h(
+        NTag,
+        {
+          type: row.role === 'administrador' ? 'warning' : 'default',
+          size: 'small'
+        },
+        { default: () => row.getRoleLabel() }
+      )
+    },
+    sorter: (a, b) => a.role.localeCompare(b.role)
   },
   {
     title: 'Data de Criação',

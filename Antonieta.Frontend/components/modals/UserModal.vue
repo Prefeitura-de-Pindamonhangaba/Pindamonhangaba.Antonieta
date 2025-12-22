@@ -22,6 +22,14 @@
             placeholder="usuario@email.com"/>
         </n-form-item>
 
+        <n-form-item label="Nível de Acesso" path="role">
+          <n-select
+            v-model:value="formData.role"
+            :options="roleOptions"
+            placeholder="Selecione o nível de acesso"
+          />
+        </n-form-item>
+
         <n-form-item label="Senha" path="password">
           <n-input 
             v-model:value="formData.password" 
@@ -56,8 +64,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NSpace, useMessage, type FormInst, type FormRules } from 'naive-ui'
-import User from '~/models/userModel'
+import { NModal, NForm, NFormItem, NInput, NSelect, NSpace, useMessage, type FormInst, type FormRules } from 'naive-ui'
+import User, { type UserRole } from '~/models/userModel'
 import AppButton from '~/components/AppButton.vue'
 
 const props = defineProps<{
@@ -72,10 +80,16 @@ const message = useMessage()
 const formRef = ref<FormInst | null>(null)
 const loading = ref(false)
 
+const roleOptions = [
+  { label: 'Comum', value: 'comum' },
+  { label: 'Administrador', value: 'administrador' }
+]
+
 const formData = ref<User & { confirmPassword?: string }>({
   id: 0,
   full_name: '',
   email: '',
+  role: 'comum',
   password: '',
   confirmPassword: ''
 })
@@ -87,6 +101,9 @@ const rules: FormRules = {
   email: [
     { required: true, message: 'E-mail é obrigatório', trigger: 'blur' },
     { type: 'email', message: 'E-mail inválido', trigger: ['blur', 'input'] }
+  ],
+  role: [
+    { required: true, message: 'Nível de acesso é obrigatório', trigger: 'blur' }
   ],
   password: [
     {
@@ -135,6 +152,7 @@ watch(() => props.modelValue, (newValue) => {
         id: 0,
         full_name: '',
         email: '',
+        role: 'comum',
         password: '',
         confirmPassword: ''
       }
@@ -149,7 +167,8 @@ const handleSubmit = async () => {
 
     const userData: any = {
       full_name: formData.value.full_name,
-      email: formData.value.email
+      email: formData.value.email,
+      role: formData.value.role
     }
 
     // Só incluir senha se foi preenchida

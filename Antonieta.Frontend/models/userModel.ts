@@ -1,7 +1,10 @@
+export type UserRole = 'comum' | 'administrador'
+
 export default class User {
   public id: number = 0
   public email: string = ''
   public full_name: string = ''
+  public role: UserRole = 'comum'
   public password?: string = ''
   public created_at?: string
   public updated_at?: string
@@ -19,6 +22,16 @@ export default class User {
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
     }
     return this.full_name.substring(0, 2).toUpperCase()
+  }
+
+  // Método para obter o nome formatado do role
+  public getRoleLabel(): string {
+    return this.role === 'administrador' ? 'Administrador' : 'Comum'
+  }
+
+  // Método para verificar se é administrador
+  public isAdmin(): boolean {
+    return this.role === 'administrador'
   }
 
   // Método para formatar a data de criação

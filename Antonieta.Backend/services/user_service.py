@@ -22,7 +22,8 @@ def create_new_user(db: Session, user: UserCreate) -> User:
     db_user = User(
         email=user.email,
         hashed_password=hashed_password,
-        full_name=user.full_name
+        full_name=user.full_name,
+        role=user.role
     )
     db.add(db_user)
     db.commit()
@@ -39,6 +40,8 @@ def update_user_by_id(db: Session, user_id: int, user: UserUpdate) -> User:
             db_user.full_name = user.full_name
         if user.password is not None:
             db_user.hashed_password = get_password_hash(user.password)
+        if user.role is not None:
+            db_user.role = user.role
         
         db.commit()
         db.refresh(db_user)
