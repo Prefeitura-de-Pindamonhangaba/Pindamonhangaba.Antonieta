@@ -51,6 +51,8 @@ class create_beneficiary_dto(BaseModel):
                 "name": "João Silva",
                 "document": "123.456.789-00",
                 "contact": "(12) 99999-9999",
+                
+                # Endereço completo
                 "street": "Rua das Flores",
                 "number": "123",
                 "neighborhood": "Centro",
@@ -58,14 +60,26 @@ class create_beneficiary_dto(BaseModel):
                 "state": "SP",
                 "zip_code": "12400-000",
                 "complement": "Casa 2",
+                
+                # Dados pessoais opcionais
                 "mother_name": "Maria Silva",
                 "birth_date": "1990-01-15",
+                
+                # Dados dos animais
                 "qtd_dogs": 2,
                 "qtd_castred_dogs": 1,
                 "qtd_cats": 1,
                 "qtd_castred_cats": 0,
+                
+                # Benefícios sociais
                 "government_benefit": False,
                 "receives_basic_basket": True,
+                
+                # CadÚnico
+                "cadunico_code": "12345678901234",
+                "income_range": "Até 1/2 salário mínimo per capita",
+                
+                # Informações adicionais
                 "how_did_you_hear": "Indicação de vizinho",
                 "observations": "Família em situação de vulnerabilidade"
             }
