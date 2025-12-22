@@ -123,13 +123,9 @@ const rules: FormRules = {
   ],
   confirmPassword: [
     {
-      required: !props.editMode,
-      message: 'Confirme a senha',
-      trigger: 'blur'
-    },
-    {
       validator: (_rule: any, value: string) => {
-        if (!props.editMode && value !== formData.value.password) {
+        // Só validar se houver senha preenchida
+        if (formData.value.password && value !== formData.value.password) {
           return new Error('As senhas não coincidem')
         }
         return true
