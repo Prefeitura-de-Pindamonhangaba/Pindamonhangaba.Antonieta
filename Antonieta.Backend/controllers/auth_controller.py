@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
@@ -11,11 +11,12 @@ from services.auth_service import (
     get_current_user,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
+from services.audit_helper import AuditHelper
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/token", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login endpoint - retorna token e informações do usuário"""
     if form_data.grant_type != "password":
         raise HTTPException(
@@ -29,6 +30,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
             detail="Email ou senha incorretos",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # Registrar login bem-sucedido
+    AuditHelper.log_login(db, request, user, success=True)
+    
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires

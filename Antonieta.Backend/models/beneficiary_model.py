@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float
+from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from database import Base
 
 class Beneficiary(Base):
@@ -34,6 +35,12 @@ class Beneficiary(Base):
     
     how_did_you_hear = Column(String, nullable=True)
     observations = Column(String, nullable=True)
+    
+    # Audit fields
+    created_by = Column(Integer, ForeignKey('users.id'), nullable=True)
+    updated_by = Column(Integer, ForeignKey('users.id'), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
     distributions = relationship("Distribution", back_populates="beneficiary")

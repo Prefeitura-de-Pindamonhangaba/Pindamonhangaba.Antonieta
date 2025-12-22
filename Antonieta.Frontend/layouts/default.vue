@@ -65,11 +65,15 @@ import {
 } from '@ant-design/icons-vue'
 import { useAuth } from '~/composables/useAuth' // Adjust the import based on your project structure
 
-const { checkAuth, clearToken, isAdmin } = useAuth()
+const { checkAuth, clearToken, getUser } = useAuth()
 const router = useRouter()
 const route = useRoute()
 
 const collapsed = ref(false)
+
+// Computado reativo que verifica o usuário atual
+const currentUser = computed(() => getUser())
+const isUserAdmin = computed(() => currentUser.value?.role === 'administrador')
 
 // Filtrar opções do menu baseado no role do usuário
 const mainMenuOptions = computed<MenuOption[]>(() => {
@@ -107,7 +111,7 @@ const mainMenuOptions = computed<MenuOption[]>(() => {
   ]
 
   // Adicionar Administração apenas para administradores
-  if (isAdmin()) {
+  if (isUserAdmin.value) {
     baseOptions.push({
       label: 'Administração',
       key: 'admin',

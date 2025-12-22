@@ -11,6 +11,7 @@ from controllers.auth_controller import router as auth_router
 from controllers.ration_input_controller import router as ration_input_router
 from controllers.dashboard_controller import router as dashboard_router
 from controllers.user_controller import router as user_router
+from controllers.audit_controller import router as audit_router
 
 load_dotenv()
 
@@ -33,6 +34,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(user_router)
+app.include_router(audit_router)
 app.include_router(beneficiary_router)
 app.include_router(ration_stock_router)
 app.include_router(distribution_router)

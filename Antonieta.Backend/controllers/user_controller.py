@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
@@ -13,6 +13,7 @@ from services.user_service import (
     delete_user_by_id,
     get_user_by_email
 )
+from services.audit_helper import AuditHelper
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -41,6 +42,7 @@ async def get_user(
 
 @router.post("/", response_model=UserResponse)
 async def create_user(
+    request: Request,
     user: UserCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -53,11 +55,26 @@ async def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email já está registrado"
         )
-    return create_new_user(db, user)
+    
+    new_user = create_new_user(db, user)
+    
+    # Registrar criação
+    AuditHelper.log_create(
+        db=db,
+        request=request,
+        current_user=current_user,
+        entity_type="User",
+        entity_id=new_user.id,
+        entity_data={"email": new_user.email, "full_name": new_user.full_name, "role": new_user.role},
+        description=f"Usuário {new_user.email} criado"
+    )
+    
+    return new_user
 
 @router.put("/{user_id}", response_model=UserResponse)
 async def update_user(
     user_id: int,
+    request: Request,
     user: UserUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -71,6 +88,13 @@ async def update_user(
             detail="Usuário não encontrado"
         )
     
+    # Capturar dados antigos
+    old_data = {
+        "email": existing_user.email,
+        "full_name": existing_user.full_name,
+        "role": existing_user.role
+    }
+    
     # Se o email está sendo alterado, verificar se já existe
     if user.email and user.email != existing_user.email:
         email_exists = get_user_by_email(db, user.email)
@@ -80,11 +104,32 @@ async def update_user(
                 detail="Email já está registrado"
             )
     
-    return update_user_by_id(db, user_id, user)
+    updated_user = update_user_by_id(db, user_id, user)
+    
+    # Registrar atualização
+    new_data = {
+        "email": updated_user.email,
+        "full_name": updated_user.full_name,
+        "role": updated_user.role
+    }
+    
+    AuditHelper.log_update(
+        db=db,
+        request=request,
+        current_user=current_user,
+        entity_type="User",
+        entity_id=user_id,
+        old_data=old_data,
+        new_data=new_data,
+        description=f"Usuário {updated_user.email} atualizado"
+    )
+    
+    return updated_user
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -102,6 +147,17 @@ async def delete_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuário não encontrado"
         )
+    
+    # Registrar exclusão antes de deletar
+    AuditHelper.log_delete(
+        db=db,
+        request=request,
+        current_user=current_user,
+        entity_type="User",
+        entity_id=user_id,
+        entity_data={"email": user.email, "full_name": user.full_name, "role": user.role},
+        description=f"Usuário {user.email} excluído"
+    )
     
     delete_user_by_id(db, user_id)
     return None
