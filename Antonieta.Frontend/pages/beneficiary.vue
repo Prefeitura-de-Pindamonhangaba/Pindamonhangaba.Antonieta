@@ -232,6 +232,7 @@ async function fetchBeneficiaries() {
       pagination.value.itemCount = total
     } else {
       const [beneficiaries, total] = await beneficiaryService.getAll()
+      console.log('🚀 Beneficiários carregados:', beneficiaries)
       allBeneficiaries.value = beneficiaries
       tableData.value = beneficiaries
       pagination.value.itemCount = total

@@ -303,6 +303,8 @@ const props = defineProps<{
   beneficiaryData?: Beneficiary
 }>()
 
+console.log('🚀 BeneficiaryModal props:', props)
+
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'submit': [formData: Beneficiary]
@@ -672,6 +674,8 @@ const resetForm = () => {
     qtd_castred_cats: 0,
     government_benefit: false,
     receives_basic_basket: false,
+    cadunico_code: '',
+    income_range: '',
     how_did_you_hear: '',
     observations: ''
   }

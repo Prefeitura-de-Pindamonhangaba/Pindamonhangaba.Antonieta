@@ -102,6 +102,9 @@ export default class Beneficiary {
     beneficiary.qtd_castred_cats = parseInt(data.qtd_castred_cats) || 0
     beneficiary.government_benefit = Boolean(data.government_benefit)
     beneficiary.receives_basic_basket = Boolean(data.receives_basic_basket)
+    // ✅ CadÚnico
+    beneficiary.cadunico_code = data.cadunico_code || null
+    beneficiary.income_range = data.income_range || null
     beneficiary.how_did_you_hear = data.how_did_you_hear || null
     beneficiary.observations = data.observations || null
     
@@ -133,6 +136,9 @@ export default class Beneficiary {
       qtd_castred_cats: this.qtd_castred_cats,
       government_benefit: this.government_benefit,
       receives_basic_basket: this.receives_basic_basket,
+      // ✅ CadÚnico
+      cadunico_code: this.cadunico_code,
+      income_range: this.income_range,
       how_did_you_hear: this.how_did_you_hear,
       observations: this.observations
     }
@@ -161,6 +167,9 @@ export interface IBeneficiary {
   qtd_castred_cats?: number
   government_benefit?: boolean
   receives_basic_basket?: boolean
+  // ✅ CadÚnico
+  cadunico_code?: string | null
+  income_range?: string | null
   how_did_you_hear?: string | null
   observations?: string | null
 }

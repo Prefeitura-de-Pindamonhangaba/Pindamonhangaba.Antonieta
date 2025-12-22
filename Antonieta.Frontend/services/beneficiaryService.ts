@@ -99,6 +99,9 @@ export const beneficiaryService = {
         qtd_castred_cats: processedData.qtd_castred_cats || 0,
         government_benefit: processedData.government_benefit || false,
         receives_basic_basket: processedData.receives_basic_basket || false,
+        // ✅ CadÚnico
+        cadunico_code: processedData.cadunico_code || null,
+        income_range: processedData.income_range || null,
         how_did_you_hear: processedData.how_did_you_hear || null,
         observations: processedData.observations || null
       }
@@ -166,6 +169,9 @@ export const beneficiaryService = {
         qtd_castred_cats: processedData.qtd_castred_cats,
         government_benefit: processedData.government_benefit,
         receives_basic_basket: processedData.receives_basic_basket,
+        // ✅ CadÚnico
+        cadunico_code: processedData.cadunico_code,
+        income_range: processedData.income_range,
         how_did_you_hear: processedData.how_did_you_hear,
         observations: processedData.observations
       }
