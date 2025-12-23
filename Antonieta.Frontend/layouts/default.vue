@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, onMounted, computed } from 'vue'
+import { h, ref, onMounted, computed, watch } from 'vue'
 import type { Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
 import { NLayout, NLayoutSider, NLayoutContent, NMenu, NIcon } from 'naive-ui'
@@ -65,15 +65,19 @@ import {
 } from '@ant-design/icons-vue'
 import { useAuth } from '~/composables/useAuth' // Adjust the import based on your project structure
 
-const { checkAuth, clearToken, getUser } = useAuth()
+const { checkAuth, clearToken, currentUser } = useAuth()
 const router = useRouter()
 const route = useRoute()
 
 const collapsed = ref(false)
 
-// Computado reativo que verifica o usuário atual
-const currentUser = computed(() => getUser())
+// Usar diretamente o currentUser reativo do composable
 const isUserAdmin = computed(() => currentUser.value?.role === 'administrador')
+
+// Observar mudanças de rota para forçar revalidação
+watch(() => route.path, () => {
+  checkAuth()
+})
 
 // Filtrar opções do menu baseado no role do usuário
 const mainMenuOptions = computed<MenuOption[]>(() => {
@@ -154,6 +158,10 @@ const menuStyle = computed(() => ({
 
 // Check authentication on layout mount
 onMounted(() => {
+  checkAuth()
+  console.log('Layout mounted - Current user:', currentUser.value)
+  console.log('Is admin:', isUserAdmin.value)
+  
   if (!checkAuth() && route.path !== '/login') {
     router.push('/login')
   }

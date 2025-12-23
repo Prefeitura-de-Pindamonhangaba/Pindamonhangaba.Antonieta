@@ -79,7 +79,7 @@ const formRef = ref(null);
 const loading = ref(false);
 const router = useRouter();
 const message = useMessage();
-const { setUser } = useAuth();
+const { setUser, setToken } = useAuth();
 
 const formValue = ref({
   email: "",
@@ -120,8 +120,10 @@ const handleSubmit = async () => {
       formValue.value.password
     );
 
-    authService.setToken(access_token);
+    // Atualizar o estado global do useAuth
+    setToken(access_token);
     setUser(user);
+    
     message.success("Login realizado com sucesso!");
     await router.push({
       path: "/dashboard",
