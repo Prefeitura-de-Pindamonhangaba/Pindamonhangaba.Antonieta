@@ -37,6 +37,7 @@ class update_beneficiary_dto(BaseModel):
     # Benefícios sociais
     government_benefit: Optional[bool] = Field(None, description="Recebe benefício do governo")
     receives_basic_basket: Optional[bool] = Field(None, description="Recebe cesta básica")
+    receives_bpc_loas: Optional[bool] = Field(None, description="Recebe BPC/LOAS (Benefício de Prestação Continuada)")
     
     # CadÚnico (Cadastro Único)
     cadunico_code: Optional[str] = Field(None, max_length=50, description="Código familiar do CadÚnico")
@@ -77,6 +78,7 @@ class update_beneficiary_dto(BaseModel):
                 # Benefícios sociais
                 "government_benefit": True,
                 "receives_basic_basket": True,
+                "receives_bpc_loas": True,
                 
                 # CadÚnico
                 "cadunico_code": "12345678901234",

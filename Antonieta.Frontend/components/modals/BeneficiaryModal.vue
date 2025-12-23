@@ -203,7 +203,7 @@
           <span style="font-weight: 600; color: #f77800;">Benefícios Sociais</span>
         </n-divider>
 
-        <n-grid :cols="2" :x-gap="12">
+        <n-grid :cols="3" :x-gap="12">
           <n-grid-item>
             <n-form-item label="Recebe Benefício do Governo" path="government_benefit">
               <n-switch v-model:value="formData.government_benefit"/>
@@ -212,6 +212,11 @@
           <n-grid-item>
             <n-form-item label="Recebe Cesta Básica" path="receives_basic_basket">
               <n-switch v-model:value="formData.receives_basic_basket"/>
+            </n-form-item>
+          </n-grid-item>
+          <n-grid-item>
+            <n-form-item label="Recebe BPC/LOAS" path="receives_bpc_loas">
+              <n-switch v-model:value="formData.receives_bpc_loas"/>
             </n-form-item>
           </n-grid-item>
         </n-grid>
@@ -518,6 +523,7 @@ const formData = ref({
   qtd_castred_cats: 0,
   government_benefit: false,
   receives_basic_basket: false,
+  receives_bpc_loas: false,
   cadunico_code: '',
   income_range: '',
   how_did_you_hear: '',
@@ -568,6 +574,7 @@ watch(() => props.beneficiaryData, (newValue) => {
       qtd_castred_cats: newValue.qtd_castred_cats || 0,
       government_benefit: newValue.government_benefit || false,
       receives_basic_basket: newValue.receives_basic_basket || false,
+      receives_bpc_loas: newValue.receives_bpc_loas || false,
       cadunico_code: newValue.cadunico_code || '',
       income_range: newValue.income_range || '',
       how_did_you_hear: newValue.how_did_you_hear || '',
@@ -591,7 +598,8 @@ const handleSubmit = async () => {
       qtd_cats: formData.value.qtd_cats || 0,
       qtd_castred_cats: formData.value.qtd_castred_cats || 0,
       government_benefit: formData.value.government_benefit || false,
-      receives_basic_basket: formData.value.receives_basic_basket || false
+      receives_basic_basket: formData.value.receives_basic_basket || false,
+      receives_bpc_loas: formData.value.receives_bpc_loas || false
     }
 
     console.log('📅 Data formatada para envio:', beneficiaryData.birth_date)
@@ -674,6 +682,7 @@ const resetForm = () => {
     qtd_castred_cats: 0,
     government_benefit: false,
     receives_basic_basket: false,
+    receives_bpc_loas: false,
     cadunico_code: '',
     income_range: '',
     how_did_you_hear: '',

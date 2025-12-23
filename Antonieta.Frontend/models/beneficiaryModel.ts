@@ -25,6 +25,7 @@ export default class Beneficiary {
   public qtd_castred_cats: number = 0
   public government_benefit: boolean = false
   public receives_basic_basket: boolean = false
+  public receives_bpc_loas: boolean = false
   
   // CadÚnico (Cadastro Único)
   public cadunico_code: string | null = null

@@ -28,6 +28,7 @@ class Beneficiary(Base):
     qtd_castred_cats = Column(Integer, default=0)
     government_benefit = Column(Boolean, default=False)
     receives_basic_basket = Column(Boolean, default=False)
+    receives_bpc_loas = Column(Boolean, default=False, comment="Recebe BPC/LOAS (Benefício de Prestação Continuada)")
     
     # CadÚnico (Cadastro Único)
     cadunico_code = Column(String, nullable=True, comment="Código familiar do CadÚnico")
