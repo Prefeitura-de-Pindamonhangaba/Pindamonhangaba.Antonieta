@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Float, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Float, String, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -14,6 +14,9 @@ class Distribution(Base):
     ration = relationship("RationStock", back_populates="distributions")
     beneficiary = relationship("Beneficiary", back_populates="distributions")
     observations = Column(String, nullable=True)
+    
+    # Flag para registros antigos (não visíveis para o usuário)
+    old = Column(Boolean, default=False, index=True, comment="Registros anteriores à data de corte")
     
     # Audit fields
     created_by = Column(Integer, ForeignKey('users.id'), nullable=True)

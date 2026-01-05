@@ -16,9 +16,9 @@ async def get_all_beneficiaries_service(skip: int = 0, limit: int = 1000) -> Tup
     """
     db = next(get_db())
     try:
-        query = db.query(Beneficiary)
+        query = db.query(Beneficiary).filter(Beneficiary.old == False)
         beneficiaries = query.offset(skip).limit(limit).all()
-        total_beneficiaries = db.query(func.count(Beneficiary.id)).scalar()
+        total_beneficiaries = db.query(func.count(Beneficiary.id)).filter(Beneficiary.old == False).scalar()
         return beneficiaries, total_beneficiaries
     finally:
         db.close()
@@ -35,7 +35,10 @@ async def get_beneficiary_by_id_service(beneficiary_id: int) -> Optional[Benefic
     """
     db = next(get_db())
     try:
-        beneficiary = db.query(Beneficiary).filter(Beneficiary.id == beneficiary_id).first()
+        beneficiary = db.query(Beneficiary).filter(
+            Beneficiary.id == beneficiary_id,
+            Beneficiary.old == False
+        ).first()
         return beneficiary
     finally:
         db.close()
@@ -74,7 +77,10 @@ async def update_beneficiary_service(beneficiary_dto: update_beneficiary_dto) ->
     """
     db = next(get_db())
     try:
-        beneficiary = db.query(Beneficiary).filter(Beneficiary.id == beneficiary_dto.id).first()
+        beneficiary = db.query(Beneficiary).filter(
+            Beneficiary.id == beneficiary_dto.id,
+            Beneficiary.old == False
+        ).first()
         if beneficiary:
             update_data = beneficiary_dto.model_dump(exclude={'id'}, exclude_unset=True)
 
@@ -98,7 +104,10 @@ async def delete_beneficiary_service(beneficiary_id: int) -> bool:
     """
     db = next(get_db())
     try:
-        beneficiary = db.query(Beneficiary).filter(Beneficiary.id == beneficiary_id).first()
+        beneficiary = db.query(Beneficiary).filter(
+            Beneficiary.id == beneficiary_id,
+            Beneficiary.old == False
+        ).first()
         if not beneficiary:
             return False
         db.delete(beneficiary)

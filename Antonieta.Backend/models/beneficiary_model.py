@@ -37,6 +37,9 @@ class Beneficiary(Base):
     how_did_you_hear = Column(String, nullable=True)
     observations = Column(String, nullable=True)
     
+    # Flag para registros antigos (não visíveis para o usuário)
+    old = Column(Boolean, default=False, index=True, comment="Registros anteriores à data de corte")
+    
     # Audit fields
     created_by = Column(Integer, ForeignKey('users.id'), nullable=True)
     updated_by = Column(Integer, ForeignKey('users.id'), nullable=True)

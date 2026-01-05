@@ -34,6 +34,7 @@ class DashboardService:
         total_amount = self.db.query(
             func.sum(Distribution.amount).label('total_amount')
         ).filter(
+            Distribution.old == False,
             extract('month', Distribution.date) == current_date.month,
             extract('year', Distribution.date) == current_date.year
         ).scalar()
@@ -51,7 +52,7 @@ class DashboardService:
 
         total_distributions = self.db.query(
             func.sum(Distribution.amount).label('total_distributions')
-        ).scalar()
+        ).filter(Distribution.old == False).scalar()
 
         current_stock = (total_inputs or 0) - (total_distributions or 0)
 
@@ -86,11 +87,11 @@ class DashboardService:
         """
         current_date = datetime.now()
 
-        # Busca total de beneficiários
-        total = self.db.query(func.count(Beneficiary.id)).scalar()
+        # Busca total de beneficiários ativos
+        total = self.db.query(func.count(Beneficiary.id)).filter(Beneficiary.old == False).scalar()
 
         # Busca beneficiários com paginação
-        beneficiaries = self.db.query(Beneficiary).offset(skip).limit(limit).all()
+        beneficiaries = self.db.query(Beneficiary).filter(Beneficiary.old == False).offset(skip).limit(limit).all()
 
         dashboard_data = []
 
@@ -99,6 +100,7 @@ class DashboardService:
             received_amount = self.db.query(
                 func.sum(Distribution.amount).label('total_received')
             ).filter(
+                Distribution.old == False,
                 Distribution.beneficiary_id == beneficiary.id,
                 extract('month', Distribution.date) == current_date.month,
                 extract('year', Distribution.date) == current_date.year

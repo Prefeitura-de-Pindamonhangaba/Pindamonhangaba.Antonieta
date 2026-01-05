@@ -17,9 +17,9 @@ async def get_all_distribution_service(skip: int = 0, limit: int = 1000) -> Tupl
     """
     db = next(get_db())
     try:
-        query = db.query(Distribution)
+        query = db.query(Distribution).filter(Distribution.old == False)
         distribution = query.offset(skip).limit(limit).all()
-        total_distribution = db.query(func.count(Distribution.id)).scalar()
+        total_distribution = db.query(func.count(Distribution.id)).filter(Distribution.old == False).scalar()
         return distribution, total_distribution
     finally:
         db.close()
@@ -36,7 +36,10 @@ async def get_distribution_by_id_service(distribution_id: int) -> Optional[Distr
     """
     db = next(get_db())
     try:
-        distribution = db.query(Distribution).filter(Distribution.id == distribution_id).first()
+        distribution = db.query(Distribution).filter(
+            Distribution.id == distribution_id,
+            Distribution.old == False
+        ).first()
         return distribution
     finally:
         db.close()
@@ -84,7 +87,8 @@ async def update_distribution_service(distribution_dto: update_distribution_dto)
     try:
         # Buscar distribuição atual
         current_distribution = db.query(Distribution).filter(
-            Distribution.id == distribution_dto.id
+            Distribution.id == distribution_dto.id,
+            Distribution.old == False
         ).first()
         
         if not current_distribution:
@@ -129,7 +133,10 @@ async def delete_distribution_service(distribution_id: int) -> bool:
     """
     db = next(get_db())
     try:
-        distribution = db.query(Distribution).filter(Distribution.id == distribution_id).first()
+        distribution = db.query(Distribution).filter(
+            Distribution.id == distribution_id,
+            Distribution.old == False
+        ).first()
         if not distribution:
             return False
         db.delete(Distribution)
