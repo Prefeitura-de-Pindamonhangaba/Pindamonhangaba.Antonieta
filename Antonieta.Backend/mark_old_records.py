@@ -24,7 +24,7 @@ from models.beneficiary_model import Beneficiary
 from models.distribution_model import Distribution
 
 # Data de corte: 5 de janeiro de 2026
-CUTOFF_DATE = datetime(2026, 1, 10, 0, 0, 0)
+CUTOFF_DATE = datetime(2026, 1, 5, 0, 0, 0)
 
 def mark_old_records():
     """Marca todos os beneficiários e distribuições anteriores à data de corte como old=True"""

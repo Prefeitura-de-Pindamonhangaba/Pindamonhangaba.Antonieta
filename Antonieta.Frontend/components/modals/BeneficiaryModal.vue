@@ -205,16 +205,6 @@
 
         <n-grid :cols="3" :x-gap="12">
           <n-grid-item>
-            <n-form-item label="Recebe Benefício do Governo" path="government_benefit">
-              <n-switch v-model:value="formData.government_benefit"/>
-            </n-form-item>
-          </n-grid-item>
-          <n-grid-item>
-            <n-form-item label="Recebe Cesta Básica" path="receives_basic_basket">
-              <n-switch v-model:value="formData.receives_basic_basket"/>
-            </n-form-item>
-          </n-grid-item>
-          <n-grid-item>
             <n-form-item label="Recebe BPC/LOAS" path="receives_bpc_loas">
               <n-switch v-model:value="formData.receives_bpc_loas"/>
             </n-form-item>
