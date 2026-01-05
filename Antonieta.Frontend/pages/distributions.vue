@@ -9,11 +9,28 @@
 
       <!-- Search and Action Buttons -->
       <n-space justify="space-between" align="center">
-        <search-field
-          v-model:value="searchQuery"
-          placeholder="Buscar por beneficiário, ração ou observações..."
-          @search="handleSearch"
-        />
+        <n-space align="center">
+          <search-field
+            v-model:value="searchQuery"
+            placeholder="Buscar por beneficiário, ração ou observações..."
+            @search="handleSearch"
+          />
+          
+          <!-- Toggle para visualizar dados antigos (apenas para gestores) -->
+          <n-space v-if="canViewOldRecords()" align="center">
+            <n-switch v-model:value="showOldRecords" @update:value="handleToggleOldRecords">
+              <template #checked>
+                Mostrando Todos
+              </template>
+              <template #unchecked>
+                Apenas Ativos
+              </template>
+            </n-switch>
+            <n-text depth="3" style="font-size: 12px;">
+              {{ showOldRecords ? 'Incluindo registros antigos' : 'Apenas registros ativos' }}
+            </n-text>
+          </n-space>
+        </n-space>
 
         <app-button 
           type="primary" 
@@ -58,7 +75,7 @@ import { h, ref, onMounted, watch } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 import { 
   NCard, NDataTable, NButton, NIcon, NSpace, NH1, NDivider, 
-  NTooltip, useMessage 
+  NTooltip, NSwitch, NText, useMessage 
 } from 'naive-ui'
 import { IconPlus, IconEye, IconFileText } from '@tabler/icons-vue'
 import DistributionModal from '../components/modals/DistributionModal.vue'
@@ -66,8 +83,10 @@ import DistributionDetailsModal from '../components/modals/DistributionDetailsMo
 import { distributionService } from '~/services/distributionService'
 import { beneficiaryService } from '~/services/beneficiaryService'
 import { rationStockService } from '~/services/rationStockService'
+import { useAuth } from '~/composables/useAuth'
 import type { Distribution } from '~/models/distributionModel'
 
+const { canViewOldRecords } = useAuth()
 const message = useMessage()
 const loading = ref(false)
 const showDistributionModal = ref(false)
@@ -77,6 +96,7 @@ const beneficiariesMap = ref<Map<number, string>>(new Map())
 const rationTypesMap = ref<Map<number, string>>(new Map())
 const pageLoading = ref(true)
 const searchQuery = ref('')
+const showOldRecords = ref(false)
 
 // ✅ ATUALIZADO: Estado para modal de detalhes
 const showDetailsModal = ref(false)
@@ -126,7 +146,7 @@ const fetchDistributions = async () => {
       
       await Promise.all([loadBeneficiaries(), loadRationStocks()])
       
-      const [distributions, total] = await distributionService.getAll()
+      const [distributions, total] = await distributionService.getAll(showOldRecords.value)
       
       loadingMsg.destroy()
       message.success(`${distributions.length} distribuições carregadas com sucesso!`)
@@ -143,7 +163,7 @@ const fetchDistributions = async () => {
     } else {
       await Promise.all([loadBeneficiaries(), loadRationStocks()])
       
-      const [distributions, total] = await distributionService.getAll()
+      const [distributions, total] = await distributionService.getAll(showOldRecords.value)
       
       const processedDistributions = distributions.map(dist => ({
         ...dist,
@@ -190,6 +210,11 @@ const loadRationStocks = async () => {
     console.error('Error loading ration types:', error)
     message.error('Erro ao carregar tipos de ração')
   }
+}
+
+// Função para lidar com toggle de dados antigos
+const handleToggleOldRecords = async () => {
+  await fetchDistributions()
 }
 
 // Manipulador de envio de distribuição

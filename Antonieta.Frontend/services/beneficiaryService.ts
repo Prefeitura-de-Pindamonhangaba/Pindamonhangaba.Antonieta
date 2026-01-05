@@ -13,9 +13,13 @@ function timestamp_to_date(timestamp: number): string {
 }
 
 export const beneficiaryService = {
-  async getAll(): Promise<[Beneficiary[], number]> {
+  async getAll(includeOld: boolean = false): Promise<[Beneficiary[], number]> {
     try {
-      const response = await fetch(`${BASE_URL}/`, {
+      const url = includeOld 
+        ? `${BASE_URL}/?include_old=true`
+        : `${BASE_URL}/`
+        
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }

@@ -68,6 +68,16 @@ export const useAuth = () => {
     return user?.role === 'administrador'
   }
 
+  const isGestor = (): boolean => {
+    const user = getUser()
+    return user?.role === 'gestor'
+  }
+
+  const canViewOldRecords = (): boolean => {
+    const user = getUser()
+    return user?.role === 'gestor' || user?.role === 'administrador'
+  }
+
   const clearToken = () => {
     token.value = null
     currentUser.value = null
@@ -101,6 +111,8 @@ export const useAuth = () => {
     setUser,
     getUser,
     isAdmin,
+    isGestor,
+    canViewOldRecords,
     clearToken,
     checkAuth,
     isAuthenticated,

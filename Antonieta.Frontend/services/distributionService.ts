@@ -4,9 +4,13 @@ import { useRuntimeConfig } from '#app'
 const BASE_URL = `${useRuntimeConfig().public.backendUrl}/distribution`
 
 export const distributionService = {
-  async getAll(): Promise<[Distribution[], number]> {
+  async getAll(includeOld: boolean = false): Promise<[Distribution[], number]> {
     try {
-      const response = await fetch(`${BASE_URL}/`, {
+      const url = includeOld 
+        ? `${BASE_URL}/?include_old=true`
+        : `${BASE_URL}/`
+        
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }

@@ -17,13 +17,16 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/beneficiary", tags=["Beneficiary"])
 
 @router.get("/")
-async def get_all_beneficiaries():
+async def get_all_beneficiaries(include_old: bool = False):
     """
     Retorna todos os beneficiários cadastrados
+    
+    Args:
+        include_old: Se True, inclui registros antigos (apenas para gestores)
     """
     try:
-        logger.info("Iniciando busca de todos os beneficiários")
-        result = await get_all_beneficiaries_service()
+        logger.info(f"Iniciando busca de todos os beneficiários (include_old={include_old})")
+        result = await get_all_beneficiaries_service(include_old=include_old)
         logger.info(f"Busca concluída. Encontrados {len(result[0])} beneficiários")
         return result
     except Exception as e:

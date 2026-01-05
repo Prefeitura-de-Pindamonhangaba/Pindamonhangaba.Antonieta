@@ -7,19 +7,31 @@ from dtos.create_distribution_dto import create_distribution_dto
 from dtos.update_distribution_dto import update_distribution_dto
 from models.ration_stock_model import RationStock
 
-async def get_all_distribution_service(skip: int = 0, limit: int = 1000) -> Tuple[List[Distribution], int]:
+async def get_all_distribution_service(skip: int = 0, limit: int = 1000, include_old: bool = False) -> Tuple[List[Distribution], int]:
     """
-    Retorna todos os raçãos do banco de dados.
+    Retorna todas as distribuições do banco de dados.
     Obtém a sessão do DB internamente.
+
+    Args:
+        skip: Número de registros para pular
+        limit: Limite de registros
+        include_old: Se True, inclui registros antigos (apenas para gestores)
 
     Returns:
         Uma lista de objetos distribution.
     """
     db = next(get_db())
     try:
-        query = db.query(Distribution).filter(Distribution.old == False)
+        query = db.query(Distribution)
+        if not include_old:
+            query = query.filter(Distribution.old == False)
         distribution = query.offset(skip).limit(limit).all()
-        total_distribution = db.query(func.count(Distribution.id)).filter(Distribution.old == False).scalar()
+        
+        count_query = db.query(func.count(Distribution.id))
+        if not include_old:
+            count_query = count_query.filter(Distribution.old == False)
+        total_distribution = count_query.scalar()
+        
         return distribution, total_distribution
     finally:
         db.close()

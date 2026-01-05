@@ -9,11 +9,28 @@
 
       <!-- Search and Action Buttons -->
       <n-space justify="space-between" align="center">
-        <search-field
-          v-model:value="searchQuery"
-          placeholder="Buscar por nome ou documento..."
-          @search="handleSearch"
-        />
+        <n-space align="center">
+          <search-field
+            v-model:value="searchQuery"
+            placeholder="Buscar por nome ou documento..."
+            @search="handleSearch"
+          />
+          
+          <!-- Toggle para visualizar dados antigos (apenas para gestores) -->
+          <n-space v-if="canViewOldRecords()" align="center">
+            <n-switch v-model:value="showOldRecords" @update:value="handleToggleOldRecords">
+              <template #checked>
+                Mostrando Todos
+              </template>
+              <template #unchecked>
+                Apenas Ativos
+              </template>
+            </n-switch>
+            <n-text depth="3" style="font-size: 12px;">
+              {{ showOldRecords ? 'Incluindo registros antigos' : 'Apenas registros ativos' }}
+            </n-text>
+          </n-space>
+        </n-space>
 
         <n-space align="center">
           <app-button 
@@ -87,6 +104,8 @@ import {
   NH1,
   NDivider,
   NInput,
+  NSwitch,
+  NText,
   useMessage
 } from 'naive-ui'
 import { IconUserPlus, IconEdit, IconTrash, IconSearch, IconDownload } from '@tabler/icons-vue'
@@ -95,8 +114,10 @@ import ActionButtons from '../components/ActionButtons.vue'
 import type { DataTableColumns } from 'naive-ui'
 import type { Beneficiary } from '../models/beneficiaryModel'
 import { beneficiaryService } from '~/services/beneficiaryService'
+import { useAuth } from '~/composables/useAuth'
 import * as XLSX from 'xlsx'
 
+const { canViewOldRecords } = useAuth()
 const message = useMessage()
 const tableData = ref<Beneficiary[]>([])
 const loading = ref(false)
@@ -107,6 +128,7 @@ const selectedBeneficiary = ref<Beneficiary | null>(null)
 const pageLoading = ref(true)
 const searchQuery = ref('')
 const allBeneficiaries = ref<Beneficiary[]>([])
+const showOldRecords = ref(false)
 
 // Objeto interno para organizar dados de exportação
 const exportData = computed(() => {
@@ -199,6 +221,11 @@ watch(allBeneficiaries, () => {
   console.log('📈 Resumo dos dados organizados:', summary)
 }, { deep: true })
 
+// Função para lidar com toggle de dados antigos
+const handleToggleOldRecords = async () => {
+  await fetchBeneficiaries()
+}
+
 // Resto do código permanece igual...
 const handleSearch = (query: string) => {
   if (!query) {
@@ -222,7 +249,7 @@ async function fetchBeneficiaries() {
         duration: 0
       })
       
-      const [beneficiaries, total] = await beneficiaryService.getAll()
+      const [beneficiaries, total] = await beneficiaryService.getAll(showOldRecords.value)
       
       loadingMsg.destroy()
       message.success(`${total} beneficiários carregados com sucesso!`)
@@ -231,7 +258,7 @@ async function fetchBeneficiaries() {
       tableData.value = beneficiaries
       pagination.value.itemCount = total
     } else {
-      const [beneficiaries, total] = await beneficiaryService.getAll()
+      const [beneficiaries, total] = await beneficiaryService.getAll(showOldRecords.value)
       console.log('🚀 Beneficiários carregados:', beneficiaries)
       allBeneficiaries.value = beneficiaries
       tableData.value = beneficiaries

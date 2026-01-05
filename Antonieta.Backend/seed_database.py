@@ -55,6 +55,12 @@ def create_users(db):
             "role": "administrador"
         },
         {
+            "email": "gestor@antonieta.com",
+            "password": "Gestor@123",
+            "full_name": "Gestor",
+            "role": "gestor"
+        },
+        {
             "email": "usuario@antonieta.com",
             "password": "User@123",
             "full_name": "Usuário Comum",
@@ -318,12 +324,16 @@ def main():
         print("  Admin:")
         print("    Email: admin@antonieta.com")
         print("    Senha: Admin@123")
+        print("  Gestor:")
+        print("    Email: gestor@antonieta.com")
+        print("    Senha: Gestor@123")
         print("  Usuário Comum:")
         print("    Email: usuario@antonieta.com")
         print("    Senha: User@123")
         
         print("\n💡 Dica: Os registros marcados como 'old=True' não aparecerão")
         print("   nas listagens normais, mas continuam no banco de dados.")
+        print("   Apenas GESTORES podem visualizar dados antigos!")
         print("=" * 60)
         
     except Exception as e:

@@ -1,4 +1,4 @@
-export type UserRole = 'comum' | 'administrador'
+export type UserRole = 'comum' | 'gestor' | 'administrador'
 
 export default class User {
   public id: number = 0
@@ -26,7 +26,9 @@ export default class User {
 
   // Método para obter o nome formatado do role
   public getRoleLabel(): string {
-    return this.role === 'administrador' ? 'Administrador' : 'Comum'
+    if (this.role === 'administrador') return 'Administrador'
+    if (this.role === 'gestor') return 'Gestor'
+    return 'Comum'
   }
 
   // Método para verificar se é administrador

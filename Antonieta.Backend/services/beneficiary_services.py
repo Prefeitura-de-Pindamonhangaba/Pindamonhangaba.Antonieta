@@ -6,19 +6,31 @@ from database import get_db
 from dtos.create_beneficiary_dto import create_beneficiary_dto
 from dtos.update_beneficiary_dto import update_beneficiary_dto
 
-async def get_all_beneficiaries_service(skip: int = 0, limit: int = 1000) -> Tuple[List[Beneficiary], int]:
+async def get_all_beneficiaries_service(skip: int = 0, limit: int = 1000, include_old: bool = False) -> Tuple[List[Beneficiary], int]:
     """
     Retorna todos os beneficiários do banco de dados.
     Obtém a sessão do DB internamente.
+
+    Args:
+        skip: Número de registros para pular
+        limit: Limite de registros
+        include_old: Se True, inclui registros antigos (apenas para gestores)
 
     Returns:
         Uma lista de objetos Beneficiary.
     """
     db = next(get_db())
     try:
-        query = db.query(Beneficiary).filter(Beneficiary.old == False)
+        query = db.query(Beneficiary)
+        if not include_old:
+            query = query.filter(Beneficiary.old == False)
         beneficiaries = query.offset(skip).limit(limit).all()
-        total_beneficiaries = db.query(func.count(Beneficiary.id)).filter(Beneficiary.old == False).scalar()
+        
+        count_query = db.query(func.count(Beneficiary.id))
+        if not include_old:
+            count_query = count_query.filter(Beneficiary.old == False)
+        total_beneficiaries = count_query.scalar()
+        
         return beneficiaries, total_beneficiaries
     finally:
         db.close()
