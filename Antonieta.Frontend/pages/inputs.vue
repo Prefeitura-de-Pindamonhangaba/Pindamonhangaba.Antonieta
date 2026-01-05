@@ -229,7 +229,7 @@ const columns: DataTableColumns<RationInput> = [
     sorter: (row1: RationInput, row2: RationInput) => 
       (row1.amount || 0) - (row2.amount || 0),
     render(row) {
-      return `${row.amount} kg`
+      return `${row.amount.toFixed(2)} kg`
     }
   },
   {

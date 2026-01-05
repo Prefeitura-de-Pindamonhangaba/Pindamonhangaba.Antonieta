@@ -244,7 +244,10 @@ const columns: DataTableColumns<RationStock> = [
   {
     title: 'Estoque',
     key: 'stock',
-    sorter: (row1: RationStock, row2: RationStock) => (row1.stock || 0) - (row2.stock || 0)
+    sorter: (row1: RationStock, row2: RationStock) => (row1.stock || 0) - (row2.stock || 0),
+    render(row) {
+      return (row.stock || 0).toFixed(2)
+    }
   },
   {
     title: 'Ações',
