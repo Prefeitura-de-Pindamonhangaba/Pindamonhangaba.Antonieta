@@ -12,6 +12,7 @@ from controllers.ration_input_controller import router as ration_input_router
 from controllers.dashboard_controller import router as dashboard_router
 from controllers.user_controller import router as user_router
 from controllers.audit_controller import router as audit_router
+from controllers.report_controller import router as report_router
 
 load_dotenv()
 
@@ -40,6 +41,7 @@ app.include_router(ration_stock_router)
 app.include_router(distribution_router)
 app.include_router(ration_input_router)
 app.include_router(dashboard_router)
+app.include_router(report_router)
 
 
 if __name__ == "__main__":
