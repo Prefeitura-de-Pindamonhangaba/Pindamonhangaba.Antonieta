@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 class update_ration_stock_dto(BaseModel):
     """
-    Data Transfer Object (DTO) para atualizar registro de raÃ§Ãµes.
+    Data Transfer Object (DTO) para atualizar registro de rações.
     """
     id: int
     name: str

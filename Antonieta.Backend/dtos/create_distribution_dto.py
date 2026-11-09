@@ -4,7 +4,7 @@ from typing import Optional
 
 class create_distribution_dto(BaseModel):
     """
-    Data Transfer Object (DTO) para registrar nova distribuiÃ§Ã£o.
+    Data Transfer Object (DTO) para registrar nova distribuição.
     """
     ration_id: int
     beneficiary_id: int

@@ -12,8 +12,8 @@ from dtos.update_ration_stock_dto import update_ration_stock_dto
 
 async def get_all_ration_stock_service(skip: int = 0, limit: int = 1000) -> Tuple[List[RationStock], int]:
     """
-    Retorna todos os estoques de raÃ§Ã£o do banco de dados.
-    ObtÃ©m a sessÃ£o do DB internamente.
+    Retorna todos os estoques de ração do banco de dados.
+    Obtém a sessão do DB internamente.
 
     Returns:
         Uma lista de objetos ration_stock.
@@ -29,13 +29,13 @@ async def get_all_ration_stock_service(skip: int = 0, limit: int = 1000) -> Tupl
 
 async def get_ration_stock_by_id_service(ration_stock_id: int) -> Optional[RationStock]:
     """
-    Retorna um estoque de raÃ§Ã£o especÃ­fico do banco de dados.
+    Retorna um estoque de ração específico do banco de dados.
 
     Args:
-        ration_stock_id: ID do estoque de raÃ§Ã£o a ser retornado.
+        ration_stock_id: ID do estoque de ração a ser retornado.
 
     Returns:
-        Um objeto ration_stock ou None se nÃ£o encontrado.
+        Um objeto ration_stock ou None se não encontrado.
     """
     db = database.SessionLocal()
     try:
@@ -46,10 +46,10 @@ async def get_ration_stock_by_id_service(ration_stock_id: int) -> Optional[Ratio
 
 async def create_ration_stock_service(ration_stock_dto: create_ration_stock_dto, actor=None, request=None) -> RationStock:
     """
-    Cria um novo estoque de raÃ§Ã£o no banco de dados.
+    Cria um novo estoque de ração no banco de dados.
 
     Args:
-        ration_stock_dto: Dados do estoque de raÃ§Ã£o a ser criado.
+        ration_stock_dto: Dados do estoque de ração a ser criado.
 
     Returns:
         O objeto ration_stock criado.
@@ -69,13 +69,13 @@ async def create_ration_stock_service(ration_stock_dto: create_ration_stock_dto,
 
 async def update_ration_stock_service(ration_stock_dto: update_ration_stock_dto, actor=None, request=None) -> Optional[RationStock]:
     """
-    Atualiza um estoque de raÃ§Ã£o existente no banco de dados.
+    Atualiza um estoque de ração existente no banco de dados.
 
     Args:
-        ration_stock_dto: Dados atualizados do estoque de raÃ§Ã£o.
+        ration_stock_dto: Dados atualizados do estoque de ração.
 
     Returns:
-        O objeto ration_stock atualizado ou None se nÃ£o encontrado.
+        O objeto ration_stock atualizado ou None se não encontrado.
     """
     db = database.SessionLocal()
     try:
@@ -94,13 +94,13 @@ async def update_ration_stock_service(ration_stock_dto: update_ration_stock_dto,
 
 async def delete_ration_stock_service(ration_stock_id: int, actor=None, request=None) -> bool:
     """
-    Deleta um estoque de raÃ§Ã£o do banco de dados.
+    Deleta um estoque de ração do banco de dados.
 
     Args:
-        ration_stock_id: ID do estoque de raÃ§Ã£o a ser deletado.
+        ration_stock_id: ID do estoque de ração a ser deletado.
 
     Returns:
-        True se o estoque de raÃ§Ã£o foi deletado, False caso contrÃ¡rio.
+        True se o estoque de ração foi deletado, False caso contrário.
     """
     db = database.SessionLocal()
     try:

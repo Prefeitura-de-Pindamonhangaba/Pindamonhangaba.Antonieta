@@ -3,7 +3,7 @@ from datetime import datetime
 
 class update_distribution_dto(BaseModel):
     """
-    Data Transfer Object (DTO) para registrar uma distribuiÃ§Ã£o.
+    Data Transfer Object (DTO) para registrar uma distribuição.
     """
     id: int
     ration_id: int

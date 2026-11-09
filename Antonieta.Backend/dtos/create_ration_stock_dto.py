@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 class create_ration_stock_dto(BaseModel):
     """
-    Data Transfer Object (DTO) para criar registro de raÃ§Ãµes.
+    Data Transfer Object (DTO) para criar registro de rações.
     """
     name: str
     description: str
