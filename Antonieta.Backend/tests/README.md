@@ -39,4 +39,23 @@ ao estoque ao excluir uma distribuição. A exclusão repetida não pode duplica
 estorno. Todos esses casos devem passar, sem falhas esperadas ou testes ignorados.
 
 SQLite não substitui a validação de migrações, concorrência e particularidades do
-PostgreSQL. Os testes Playwright existentes em `Antonieta.Tests` continuam separados.
+PostgreSQL. A suíte de concorrência pode ser executada separadamente:
+
+```powershell
+$env:POSTGRES_TEST_URL = 'postgresql://test_user:test_password@localhost:5432/antonieta_tests'
+.venv\Scripts\python -m unittest discover -s tests -p postgres_concurrency.py -v
+```
+
+Use um banco destinado a testes. Cada caso cria um schema temporário com nome
+aleatório, aplica as tabelas nesse schema e remove apenas esse schema ao terminar.
+São verificadas distribuições simultâneas, incrementos concorrentes de entradas e
+exclusões concorrentes. O GitHub Actions executa esses testes com PostgreSQL 16.
+Migrações Alembic ainda não fazem parte desta suíte.
+
+Os testes de sessão no navegador usam `Antonieta.Tests/playwright.security.config.ts`
+e interceptam todas as chamadas à API, sem alterar dados da aplicação. Com o frontend
+ativo, execute na pasta `Antonieta.Tests`:
+
+```powershell
+npx playwright test --config playwright.security.config.ts
+```

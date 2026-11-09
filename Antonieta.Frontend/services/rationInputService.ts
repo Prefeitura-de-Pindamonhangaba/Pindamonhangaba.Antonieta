@@ -1,3 +1,4 @@
+import { apiFetch } from '~/utils/apiFetch'
 import type { RationInput } from '../models/rationInputModel'
 import { useRuntimeConfig } from '#app'
 
@@ -6,7 +7,7 @@ const BASE_URL = `${useRuntimeConfig().public.backendUrl}/ration-input`
 export const rationInputService = {
   async getAll(): Promise<[RationInput[], number]> {
     try {
-      const response = await fetch(`${BASE_URL}/`, {
+      const response = await apiFetch(`${BASE_URL}/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -25,7 +26,7 @@ export const rationInputService = {
   },
 
   async getById(id: number): Promise<RationInput> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -39,7 +40,7 @@ export const rationInputService = {
   },
 
   async getByRationStockId(stockId: number): Promise<RationInput[]> {
-    const response = await fetch(`${BASE_URL}/ration-stock/${stockId}`, {
+    const response = await apiFetch(`${BASE_URL}/ration-stock/${stockId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -53,7 +54,7 @@ export const rationInputService = {
   },
 
   async create(rationInput: Omit<RationInput, 'id'>): Promise<RationInput> {
-    const response = await fetch(`${BASE_URL}/`, {
+    const response = await apiFetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,7 +72,7 @@ export const rationInputService = {
   },
 
   async update(id: number, rationInput: Partial<RationInput>): Promise<RationInput> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       method: 'PUT',  // Changed from PATCH to PUT
       headers: {
         'Content-Type': 'application/json',
@@ -92,7 +93,7 @@ export const rationInputService = {
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`

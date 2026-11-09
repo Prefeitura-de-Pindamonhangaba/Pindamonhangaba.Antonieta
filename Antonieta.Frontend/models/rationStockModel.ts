@@ -1,7 +1,7 @@
 export interface RationStock {
   id: number
   name: string
-  ration_type_id: number
+  ration_type_id?: number
   unit: string
   stock: number
   description: string

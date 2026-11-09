@@ -1,0 +1,45 @@
+name: Frontend tests
+
+on:
+  pull_request:
+    paths: ['Antonieta.Frontend/**', 'Antonieta.Tests/**', '.github/workflows/frontend-tests.yml']
+  push:
+    branches: [main]
+    paths: ['Antonieta.Frontend/**', 'Antonieta.Tests/**', '.github/workflows/frontend-tests.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: Antonieta.Frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: Antonieta.Frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+        env:
+          BACK_BASE_URL: http://localhost:8000
+          FRONTEND_PORT: '3000'
+      - run: npm ci
+        working-directory: Antonieta.Tests
+      - run: npx playwright install --with-deps chromium
+        working-directory: Antonieta.Tests
+      - name: Browser session tests (API intercepted)
+        run: |
+          node .output/server/index.mjs > /tmp/antonieta-frontend.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            curl --fail --silent http://localhost:3000/login > /dev/null && break
+            sleep 1
+          done
+          node ../Antonieta.Tests/node_modules/@playwright/test/cli.js test --config ../Antonieta.Tests/playwright.security.config.ts
+        env:
+          PORT: '3000'

@@ -1,16 +1,11 @@
-export default defineNuxtRouteMiddleware((to) => {
-  const { checkAuth } = useAuth()
-  
-  // Allow access to login page
+import { useAuth } from '~/composables/useAuth'
+
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { validateSession } = useAuth()
+  const authenticated = await validateSession()
   if (to.path === '/login') {
-    if (checkAuth()) {
-      return navigateTo('/dashboard')
-    }
+    if (authenticated) return navigateTo('/dashboard')
     return
   }
-
-  // Check if not authenticated
-  if (!checkAuth()) {
-    return navigateTo('/login')
-  }
+  if (!authenticated) return navigateTo('/login')
 })

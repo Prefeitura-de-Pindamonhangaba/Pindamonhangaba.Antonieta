@@ -1,29 +1,19 @@
-import type { User } from '../models/userModel'
+import { useAuth } from '~/composables/useAuth'
+import { userService } from './userService'
+import { apiFetch } from '~/utils/apiFetch'
+import type User from '../models/userModel'
 import { useRuntimeConfig } from '#app'
 
 const BASE_URL = `${useRuntimeConfig().public.backendUrl}/auth`
 
 export const authService = {
-  async register(user: UserCreate): Promise<User> {
-    const response = await fetch(`${BASE_URL}/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(user)
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Failed to register user')
-    }
-
-    return response.json()
+  async register(user: { email: string; password: string; full_name: string }): Promise<User> {
+    return userService.create(user)
   },
 
   async login(email: string, password: string): Promise<{ access_token: string; token_type: string; user: User }> {
     try {
-      const response = await fetch(`${BASE_URL}/token`, {
+      const response = await apiFetch(`${BASE_URL}/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -33,7 +23,7 @@ export const authService = {
           password: password,
           grant_type: 'password'
         })
-      })
+      }, false)
       
       if (!response.ok) {
         const error = await response.json()
@@ -53,7 +43,7 @@ export const authService = {
       throw new Error('No authentication token found')
     }
 
-    const response = await fetch(`${BASE_URL}/me`, {
+    const response = await apiFetch(`${BASE_URL}/me`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -67,18 +57,18 @@ export const authService = {
   },
 
   setToken(token: string) {
-    localStorage.setItem('access_token', token)
+    useAuth().setToken(token)
   },
 
   getToken(): string | null {
-    return localStorage.getItem('access_token')
+    return useAuth().getToken()
   },
 
   removeToken() {
-    localStorage.removeItem('access_token')
+    useAuth().clearToken()
   },
 
   isAuthenticated(): boolean {
-    return !!this.getToken()
+    return useAuth().checkAuth()
   }
 }

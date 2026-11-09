@@ -1,3 +1,4 @@
+import { apiFetch } from '~/utils/apiFetch'
 import Beneficiary from '../models/beneficiaryModel'
 import { useRuntimeConfig } from '#app'
 
@@ -15,7 +16,7 @@ function timestamp_to_date(timestamp: number): string {
 export const beneficiaryService = {
   async getAll(): Promise<[Beneficiary[], number]> {
     try {
-      const response = await fetch(`${BASE_URL}/`, {
+      const response = await apiFetch(`${BASE_URL}/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -39,7 +40,7 @@ export const beneficiaryService = {
 
   async getById(id: number): Promise<Beneficiary> {
     try {
-      const response = await fetch(`${BASE_URL}/${id}`, {
+      const response = await apiFetch(`${BASE_URL}/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -108,7 +109,7 @@ export const beneficiaryService = {
 
       console.log('📤 Dados enviados para o backend:', dataToSend)
 
-      const response = await fetch(`${BASE_URL}/`, {
+      const response = await apiFetch(`${BASE_URL}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +186,7 @@ export const beneficiaryService = {
 
       console.log('📤 Dados de update enviados:', dataToSend)
 
-      const response = await fetch(`${BASE_URL}/`, {
+      const response = await apiFetch(`${BASE_URL}/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +214,7 @@ export const beneficiaryService = {
 
   async delete(id: number): Promise<void> {
     try {
-      const response = await fetch(`${BASE_URL}/${id}`, {
+      const response = await apiFetch(`${BASE_URL}/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -233,7 +234,7 @@ export const beneficiaryService = {
   // ✅ NOVO: Métodos para buscar por endereço granularizado
   async searchByNeighborhood(neighborhood: string, skip: number = 0, limit: number = 100): Promise<[Beneficiary[], number]> {
     try {
-      const response = await fetch(`${BASE_URL}/search/neighborhood/${encodeURIComponent(neighborhood)}?skip=${skip}&limit=${limit}`, {
+      const response = await apiFetch(`${BASE_URL}/search/neighborhood/${encodeURIComponent(neighborhood)}?skip=${skip}&limit=${limit}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -255,7 +256,7 @@ export const beneficiaryService = {
 
   async searchByStreet(street: string, skip: number = 0, limit: number = 100): Promise<[Beneficiary[], number]> {
     try {
-      const response = await fetch(`${BASE_URL}/search/street/${encodeURIComponent(street)}?skip=${skip}&limit=${limit}`, {
+      const response = await apiFetch(`${BASE_URL}/search/street/${encodeURIComponent(street)}?skip=${skip}&limit=${limit}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }

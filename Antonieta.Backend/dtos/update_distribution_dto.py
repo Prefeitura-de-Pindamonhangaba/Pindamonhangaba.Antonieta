@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 class update_distribution_dto(BaseModel):
@@ -8,5 +8,6 @@ class update_distribution_dto(BaseModel):
     id: int
     ration_id: int
     beneficiary_id: int
-    amount: int
+    amount: float = Field(gt=0, allow_inf_nan=False)
     date: datetime
+    observations: str | None = None

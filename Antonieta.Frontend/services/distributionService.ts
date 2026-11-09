@@ -1,3 +1,4 @@
+import { apiFetch } from '~/utils/apiFetch'
 import type { Distribution } from '../models/distributionModel'
 import { useRuntimeConfig } from '#app'
 
@@ -6,7 +7,7 @@ const BASE_URL = `${useRuntimeConfig().public.backendUrl}/distribution`
 export const distributionService = {
   async getAll(): Promise<[Distribution[], number]> {
     try {
-      const response = await fetch(`${BASE_URL}/`, {
+      const response = await apiFetch(`${BASE_URL}/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -25,7 +26,7 @@ export const distributionService = {
   },
 
   async getById(id: number): Promise<Distribution> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -40,7 +41,7 @@ export const distributionService = {
 
   async getByBeneficiaryId(beneficiaryId: number): Promise<[Distribution[], number]> {
     try {
-      const response = await fetch(`${BASE_URL}/beneficiary/${beneficiaryId}`, {
+      const response = await apiFetch(`${BASE_URL}/beneficiary/${beneficiaryId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -59,7 +60,7 @@ export const distributionService = {
   },
 
   async create(distribution: Omit<Distribution, 'id'>): Promise<Distribution> {
-    const response = await fetch(`${BASE_URL}/`, {
+    const response = await apiFetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -77,7 +78,7 @@ export const distributionService = {
   },
 
   async update(id: number, distribution: Partial<Distribution>): Promise<Distribution> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       method: 'PUT',  // Changed from PATCH to PUT
       headers: {
         'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ export const distributionService = {
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`

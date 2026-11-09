@@ -58,10 +58,12 @@ async def get_distribution_volume_by_month(
             beneficiary_id=beneficiary_id
         )
         return result
+    except HTTPException:
+        raise
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Erro interno ao gerar relatório")
 
 
 @router.get("/distribution-summary-by-ration")
@@ -107,7 +109,9 @@ async def get_distribution_summary_by_ration(
             end_date=end_date
         )
         return result
+    except HTTPException:
+        raise
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Erro interno ao gerar relatório")

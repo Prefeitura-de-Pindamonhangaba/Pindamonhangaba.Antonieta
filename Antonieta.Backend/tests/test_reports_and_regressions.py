@@ -120,8 +120,7 @@ class StockRegressionTests(DatabaseTestCase):
         with self.sessions() as db:
             self.assertIsNone(db.get(Distribution, created.json()["id"]))
         again = self.request("DELETE", f"/distribution/{created.json()['id']}")
-        self.assertEqual(again.status_code, 200, again.text)
-        self.assertFalse(again.json())
+        self.assertEqual(again.status_code, 404, again.text)
         self.assertEqual(self.balance(stock_id), 100)
 
 
