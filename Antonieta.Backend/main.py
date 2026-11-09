@@ -25,15 +25,16 @@ app = FastAPI(
 )
 
 # CORS Configuration
-origins = getenv('CORS_ORIGINS').split(',')
+origins = [origin.strip() for origin in getenv('CORS_ORIGINS', 'http://localhost:3000').split(',') if origin.strip()]
+if '*' in origins:
+    raise ValueError('CORS_ORIGINS deve listar origens explícitas')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
     max_age=600,
 )
 
