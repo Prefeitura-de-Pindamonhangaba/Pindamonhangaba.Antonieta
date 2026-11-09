@@ -67,16 +67,43 @@ class KnownRegressionTests(DatabaseTestCase):
         self.assertEqual(response.status_code, 400, response.text)
         self.assertEqual(self.balance(stock_id), 1)
 
-    @unittest.expectedFailure
     def test_negative_input_rejected_without_changing_balance(self):
-        """BUG: negative amounts are accepted and reduce stock."""
+        """Only positive finite amounts may increase stock."""
         stock_id = self.stock()
-        response = self.request("POST", "/ration-input/", json={
-            "ration_stock_id": stock_id, "amount": -5,
-            "date": datetime.now().isoformat(), "description": "Invalid donation",
-        })
-        self.assertEqual(response.status_code, 422, response.text)
-        self.assertEqual(self.balance(stock_id), 100)
+        for amount in (-5, 0):
+            with self.subTest(amount=amount):
+                response = self.request("POST", "/ration-input/", json={
+                    "ration_stock_id": stock_id, "amount": amount,
+                    "date": datetime.now().isoformat(), "description": "Invalid donation",
+                })
+                self.assertEqual(response.status_code, 422, response.text)
+                self.assertEqual(self.balance(stock_id), 100)
+
+    def test_invalid_input_update_preserves_existing_amount_and_stock(self):
+        stock_id = self.stock()
+        payload = {"ration_stock_id": stock_id, "amount": 5,
+                   "date": datetime.now().isoformat(), "description": "Donation"}
+        created = self.request("POST", "/ration-input/", json=payload)
+        self.assertEqual(created.status_code, 200, created.text)
+        input_id = created.json()["id"]
+        for amount in (-5, 0, "NaN", "Infinity", "-Infinity"):
+            with self.subTest(amount=amount):
+                response = self.request("PUT", f"/ration-input/{input_id}",
+                                        json={**payload, "id": input_id, "amount": amount})
+                self.assertEqual(response.status_code, 422, response.text)
+                self.assertEqual(self.balance(stock_id), 105)
+                self.assertEqual(self.request("GET", f"/ration-input/{input_id}").json()["amount"], 5)
+
+    def test_nonfinite_input_rejected(self):
+        stock_id = self.stock()
+        for amount in ("NaN", "Infinity", "-Infinity"):
+            with self.subTest(amount=amount):
+                response = self.request("POST", "/ration-input/", json={
+                    "ration_stock_id": stock_id, "amount": amount,
+                    "date": datetime.now().isoformat(), "description": "Invalid donation",
+                })
+                self.assertEqual(response.status_code, 422, response.text)
+                self.assertEqual(self.balance(stock_id), 100)
 
     @unittest.expectedFailure
     def test_distribution_delete_restores_stock(self):

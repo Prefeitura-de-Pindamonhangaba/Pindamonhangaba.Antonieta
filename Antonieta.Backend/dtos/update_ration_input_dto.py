@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 class update_ration_input_dto(BaseModel):
@@ -7,6 +7,6 @@ class update_ration_input_dto(BaseModel):
     """
     id: int
     ration_stock_id: int
-    amount: float
+    amount: float = Field(gt=0, allow_inf_nan=False)
     date: datetime
     description: str
