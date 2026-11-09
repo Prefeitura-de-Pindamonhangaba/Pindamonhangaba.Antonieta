@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import APIRouter, Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from os import getenv
@@ -13,12 +13,16 @@ from controllers.dashboard_controller import router as dashboard_router
 from controllers.user_controller import router as user_router
 from controllers.audit_controller import router as audit_router
 from controllers.report_controller import router as report_router
+from services.auth_service import get_current_user
 
 load_dotenv()
 
 port = int(getenv('PORT', 5000))
 
-app = FastAPI(title="Antonieta API", version="1.0.0")
+app = FastAPI(
+    title="Antonieta API", version="1.0.0",
+    docs_url=None, redoc_url=None, openapi_url=None,
+)
 
 # CORS Configuration
 origins = getenv('CORS_ORIGINS').split(',')
@@ -34,14 +38,16 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
-app.include_router(user_router)
-app.include_router(audit_router)
-app.include_router(beneficiary_router)
-app.include_router(ration_stock_router)
-app.include_router(distribution_router)
-app.include_router(ration_input_router)
-app.include_router(dashboard_router)
-app.include_router(report_router)
+protected_router = APIRouter(dependencies=[Depends(get_current_user)])
+protected_router.include_router(user_router)
+protected_router.include_router(audit_router)
+protected_router.include_router(beneficiary_router)
+protected_router.include_router(ration_stock_router)
+protected_router.include_router(distribution_router)
+protected_router.include_router(ration_input_router)
+protected_router.include_router(dashboard_router)
+protected_router.include_router(report_router)
+app.include_router(protected_router)
 
 
 if __name__ == "__main__":
