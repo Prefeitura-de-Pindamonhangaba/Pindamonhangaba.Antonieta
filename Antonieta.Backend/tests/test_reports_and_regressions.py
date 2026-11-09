@@ -1,4 +1,4 @@
-"""Known defects are explicit expected failures, never silently skipped."""
+"""Reports and regression coverage for stock movement defects."""
 from datetime import datetime
 import unittest
 
@@ -52,8 +52,8 @@ class ReportTests(DatabaseTestCase):
         self.assertEqual(response.status_code, 400, response.text)
 
 
-class KnownRegressionTests(DatabaseTestCase):
-    """Remove expectedFailure as the corresponding production defects are fixed."""
+class StockRegressionTests(DatabaseTestCase):
+    """Verify invalid movements cannot corrupt stock balances."""
 
     def test_insufficient_stock_returns_400_without_changing_balance(self):
         """Insufficient stock must be rejected before any balance changes."""
@@ -105,9 +105,8 @@ class KnownRegressionTests(DatabaseTestCase):
                 self.assertEqual(response.status_code, 422, response.text)
                 self.assertEqual(self.balance(stock_id), 100)
 
-    @unittest.expectedFailure
     def test_distribution_delete_restores_stock(self):
-        """BUG: deletion passes the model class to db.delete and does not restore stock."""
+        """Deleting a distribution restores its amount exactly once."""
         stock_id = self.stock()
         created = self.request("POST", "/distribution/", json={
             "ration_id": stock_id, "beneficiary_id": self.beneficiary(),
@@ -117,6 +116,12 @@ class KnownRegressionTests(DatabaseTestCase):
         with TestClientWithoutServerExceptions() as client:
             response = client.delete(f"/distribution/{created.json()['id']}", headers=self.user)
         self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(self.balance(stock_id), 100)
+        with self.sessions() as db:
+            self.assertIsNone(db.get(Distribution, created.json()["id"]))
+        again = self.request("DELETE", f"/distribution/{created.json()['id']}")
+        self.assertEqual(again.status_code, 200, again.text)
+        self.assertFalse(again.json())
         self.assertEqual(self.balance(stock_id), 100)
 
 

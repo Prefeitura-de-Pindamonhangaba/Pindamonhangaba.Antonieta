@@ -31,13 +31,12 @@ o banco da aplicação. Execute em um processo separado, pelos comandos acima.
 - Estoque: entrada com quantidade fracionada, edição, exclusão e distribuição.
 - Dashboard e relatórios: totais, filtros, registros antigos e limite final de datas.
 
-## Regressões conhecidas
+## Regressões de estoque
 
-Três testes usam `unittest.expectedFailure` para documentar defeitos de produção
-já identificados: estoque insuficiente produz erro interno, entradas negativas são
-aceitas e a exclusão de distribuição falha sem recompor estoque. Não representam
-comportamentos aprovados. Remova o decorador ao corrigir cada defeito. Se o teste
-passar sem remover o decorador, unittest acusa `unexpected success` e falha a execução.
+Os testes exigem erro 400 para estoque insuficiente sem alteração de saldo, rejeição
+de entradas negativas, zero e valores não finitos na criação e edição, e devolução
+ao estoque ao excluir uma distribuição. A exclusão repetida não pode duplicar o
+estorno. Todos esses casos devem passar, sem falhas esperadas ou testes ignorados.
 
 SQLite não substitui a validação de migrações, concorrência e particularidades do
 PostgreSQL. Os testes Playwright existentes em `Antonieta.Tests` continuam separados.
