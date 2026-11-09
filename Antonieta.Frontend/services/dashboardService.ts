@@ -1,3 +1,4 @@
+import { apiFetch } from '~/utils/apiFetch'
 import { useRuntimeConfig } from '#app'
 
 interface DashboardData {
@@ -31,7 +32,7 @@ const BASE_URL = `${useRuntimeConfig().public.backendUrl}/dashboard`
 
 export const dashboardService = {
   async getTotalInputsMonth(): Promise<DashboardData> {
-    const response = await fetch(`${BASE_URL}/total-inputs-month`, {
+    const response = await apiFetch(`${BASE_URL}/total-inputs-month`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -45,7 +46,7 @@ export const dashboardService = {
   },
 
   async getTotalDistributionsMonth(): Promise<DashboardData> {
-    const response = await fetch(`${BASE_URL}/total-distributions-month`, {
+    const response = await apiFetch(`${BASE_URL}/total-distributions-month`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -59,7 +60,7 @@ export const dashboardService = {
   },
 
   async getCurrentTotalStock(): Promise<StockData> {
-    const response = await fetch(`${BASE_URL}/current-total-stock`, {
+    const response = await apiFetch(`${BASE_URL}/current-total-stock`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -73,7 +74,7 @@ export const dashboardService = {
   },
 
   async getBeneficiariesDashboard(skip: number = 0, limit: number = 10): Promise<PaginatedResponse<BeneficiaryDashboardData>> {
-    const response = await fetch(`${BASE_URL}/beneficiaries-dashboard?skip=${skip}&limit=${limit}`, {
+    const response = await apiFetch(`${BASE_URL}/beneficiaries-dashboard?skip=${skip}&limit=${limit}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -87,21 +88,6 @@ export const dashboardService = {
   },
 
   async getCurrentStock(): Promise<number> {
-    try {
-      const response = await fetch(`${BASE_URL}/current-stock`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch current stock')
-      }
-      
-      return response.json()
-    } catch (error) {
-      console.error('Error fetching current stock:', error)
-      throw error
-    }
+    return (await this.getCurrentTotalStock()).current_stock
   },
 }

@@ -1,86 +1,28 @@
 import type { RationType } from '../models/rationTypeModel'
-
-const BASE_URL = useRuntimeConfig().public.backendUrl + '/ration_type'
+import { rationStockService } from './rationStockService'
+import { apiFetch } from '~/utils/apiFetch'
+import { useRuntimeConfig } from '#app'
 
 export const rationTypeService = {
   async getAll(): Promise<RationType[]> {
-    const response = await fetch(`${BASE_URL}/`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch ration types')
-    }
-    
-    return response.json()
+    return rationStockService.getAll()
   },
-
   async getById(id: number): Promise<RationType> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch ration type')
-    }
-    
-    return response.json()
+    return rationStockService.getById(id)
   },
-
   async create(rationType: Omit<RationType, 'id'>): Promise<RationType> {
-    const response = await fetch(`${BASE_URL}/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      },
-      body: JSON.stringify(rationType)
-    })
-    
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Failed to create ration type')
-    }
-    
-    return response.json()
+    return rationStockService.create({ ...rationType, unit: 'kg', stock: 0 })
   },
-
   async update(id: number, rationType: Partial<RationType>): Promise<RationType> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'PUT',  // Changed from PATCH to PUT
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      },
-      body: JSON.stringify({
-        id,
-        ...rationType
-      })
+    // Metadata updates never send a stale stock balance from a prior read.
+    const response = await apiFetch(`${useRuntimeConfig().public.backendUrl}/ration-stock/${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...rationType, id }),
     })
-    
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Failed to update ration type')
-    }
-    
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to update ration type')
     return response.json()
   },
-
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Failed to delete ration type')
-    }
-  }
+    return rationStockService.delete(id)
+  },
 }
