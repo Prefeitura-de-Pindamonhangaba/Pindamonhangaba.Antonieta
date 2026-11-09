@@ -3,6 +3,14 @@ from support import DatabaseTestCase
 
 
 class ApiContractTests(DatabaseTestCase):
+    def test_metadata_edit_preserves_stock_balance(self):
+        stock = self.stock(12.5)
+        response = self.request('PATCH', f'/ration-stock/{stock}', json={
+            'id': stock, 'name': 'Updated food', 'description': 'Metadata only',
+        })
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(self.balance(stock), 12.5)
+
     def test_distribution_update_by_route_id(self):
         stock = self.stock()
         record = self.request('POST', '/distribution/', json={

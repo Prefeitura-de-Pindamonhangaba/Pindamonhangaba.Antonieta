@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from services.ration_stock_services import get_all_ration_stock_service, get_ration_stock_by_id_service, create_ration_stock_service, update_ration_stock_service, delete_ration_stock_service
 from dtos.update_ration_stock_dto import update_ration_stock_dto
 from dtos.create_ration_stock_dto import create_ration_stock_dto
+from dtos.update_ration_metadata_dto import UpdateRationMetadata
 
 router = APIRouter(prefix="/ration-stock", tags=["ration-stock"])
 
@@ -31,6 +32,12 @@ async def update_ration_stock(ration_stock_id: int, ration_stock: update_ration_
     if record is None:
         raise HTTPException(status_code=404, detail="Ração não encontrada")
     return record
+
+
+@router.patch("/{ration_stock_id}")
+async def update_ration_metadata(ration_stock_id: int, ration_stock: UpdateRationMetadata,
+                                request: Request, actor: User = Depends(get_current_user)):
+    return await update_ration_stock(ration_stock_id, ration_stock, request, actor)
 
 @router.delete("/{ration_stock_id}")
 async def delete_ration_stock(ration_stock_id: int, request: Request, actor: User = Depends(get_current_user)):
