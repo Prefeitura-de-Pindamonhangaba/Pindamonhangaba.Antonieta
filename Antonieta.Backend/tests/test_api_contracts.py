@@ -66,4 +66,3 @@ class ApiContractTests(DatabaseTestCase):
     def test_report_invalid_month_returns_400(self):
         for report in ('distribution-volume-by-month', 'distribution-summary-by-ration'):
             self.assertEqual(self.request('GET', f'/reports/{report}?month=13').status_code, 400)
-
