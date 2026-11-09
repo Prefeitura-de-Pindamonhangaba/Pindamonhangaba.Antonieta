@@ -4,6 +4,8 @@ from models.beneficiary_model import Beneficiary
 from sqlalchemy.orm import Session
 import database
 from services import transaction_audit
+from fastapi import HTTPException
+from models.distribution_model import Distribution
 from dtos.create_beneficiary_dto import create_beneficiary_dto
 from dtos.update_beneficiary_dto import update_beneficiary_dto
 
@@ -114,9 +116,11 @@ async def delete_beneficiary_service(beneficiary_id: int, actor=None, request=No
         beneficiary = db.query(Beneficiary).filter(
             Beneficiary.id == beneficiary_id,
             Beneficiary.old == False
-        ).first()
+        ).with_for_update().first()
         if not beneficiary:
             return False
+        if db.query(Distribution).filter_by(beneficiary_id=beneficiary_id).first():
+            raise HTTPException(status_code=409, detail="Beneficiário possui distribuições vinculadas")
         db.delete(beneficiary)
         transaction_audit.record_change(db, "DELETE", beneficiary, actor, request, ())
         db.commit()

@@ -20,5 +20,5 @@ def adjust_stock(db, deltas):
 def require_beneficiary(db, beneficiary_id):
     if not db.query(Beneficiary).filter(
         Beneficiary.id == beneficiary_id, Beneficiary.old == False
-    ).first():
+    ).with_for_update(read=True).first():
         raise HTTPException(status_code=404, detail="Beneficiário não encontrado")

@@ -4,6 +4,9 @@ from models.ration_stock_model import RationStock
 from sqlalchemy.orm import Session
 import database
 from services import transaction_audit
+from fastapi import HTTPException
+from models.ration_input_model import RationInput
+from models.distribution_model import Distribution
 from dtos.create_ration_stock_dto import create_ration_stock_dto
 from dtos.update_ration_stock_dto import update_ration_stock_dto
 
@@ -101,9 +104,11 @@ async def delete_ration_stock_service(ration_stock_id: int, actor=None, request=
     """
     db = database.SessionLocal()
     try:
-        ration_stock = db.query(RationStock).filter(RationStock.id == ration_stock_id).first()
+        ration_stock = db.query(RationStock).filter(RationStock.id == ration_stock_id).with_for_update().first()
         if not ration_stock:
             return False
+        if db.query(RationInput).filter_by(ration_stock_id=ration_stock_id).first() or db.query(Distribution).filter_by(ration_id=ration_stock_id).first():
+            raise HTTPException(status_code=409, detail="Ração possui movimentações vinculadas")
         db.delete(ration_stock)
         transaction_audit.record_change(db, "DELETE", ration_stock, actor, request, ())
         db.commit()

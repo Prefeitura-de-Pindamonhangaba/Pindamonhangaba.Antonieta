@@ -14,6 +14,8 @@ from controllers.user_controller import router as user_router
 from controllers.audit_controller import router as audit_router
 from controllers.report_controller import router as report_router
 from services.auth_service import get_current_user
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 load_dotenv()
 
@@ -23,6 +25,13 @@ app = FastAPI(
     title="Antonieta API", version="1.0.0",
     docs_url=None, redoc_url=None, openapi_url=None,
 )
+
+
+@app.exception_handler(IntegrityError)
+async def integrity_error_handler(request, exc):
+    return JSONResponse(status_code=409, content={
+        "detail": "A operação conflita com um registro existente ou vinculado."
+    })
 
 # CORS Configuration
 origins = [origin.strip() for origin in getenv('CORS_ORIGINS', 'http://localhost:3000').split(',') if origin.strip()]
