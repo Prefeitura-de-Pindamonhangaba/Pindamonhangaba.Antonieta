@@ -4,7 +4,7 @@ from typing import List
 from database import get_db
 from dtos.user_dto import UserCreate, UserResponse, UserUpdate
 from models.user_model import User
-from services.auth_service import get_current_user
+from services.auth_service import get_current_admin
 from services.user_service import (
     get_all_users,
     get_user_by_id,
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.get("/", response_model=List[UserResponse])
 async def list_users(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin)
 ):
     """Listar todos os usuários"""
     return get_all_users(db)
@@ -29,7 +29,7 @@ async def list_users(
 async def get_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin)
 ):
     """Obter um usuário específico"""
     user = get_user_by_id(db, user_id)
@@ -45,7 +45,7 @@ async def create_user(
     request: Request,
     user: UserCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin)
 ):
     """Criar um novo usuário (migrado de /auth/register)"""
     # Verificar se o email já existe
@@ -77,7 +77,7 @@ async def update_user(
     request: Request,
     user: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin)
 ):
     """Atualizar um usuário existente"""
     # Verificar se o usuário existe
@@ -131,7 +131,7 @@ async def delete_user(
     user_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin)
 ):
     """Deletar um usuário"""
     # Não permitir que o usuário delete a si mesmo

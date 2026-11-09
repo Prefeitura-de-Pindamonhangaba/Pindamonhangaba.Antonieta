@@ -1,4 +1,5 @@
 from typing import Dict, Any, List, Optional, Tuple
+from fastapi import HTTPException
 from sqlalchemy import func
 from models.distribution_model import Distribution
 from sqlalchemy.orm import Session
@@ -136,11 +137,20 @@ async def delete_distribution_service(distribution_id: int) -> bool:
         distribution = db.query(Distribution).filter(
             Distribution.id == distribution_id,
             Distribution.old == False
-        ).first()
+        ).with_for_update().first()
         if not distribution:
             return False
-        db.delete(Distribution)
+        updated = db.query(RationStock).filter(
+            RationStock.id == distribution.ration_id
+        ).update({RationStock.stock: RationStock.stock + distribution.amount},
+                 synchronize_session=False)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Ração não encontrada")
+        db.delete(distribution)
         db.commit()
         return True
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
