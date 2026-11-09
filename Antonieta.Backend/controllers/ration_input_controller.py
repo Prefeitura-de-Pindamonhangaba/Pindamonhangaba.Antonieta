@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from services.ration_input_services import (
     get_all_ration_input_service,
     get_ration_input_by_id_service,
@@ -12,11 +12,11 @@ from dtos.update_ration_input_dto import update_ration_input_dto
 router = APIRouter(prefix="/ration-input", tags=["ration-input"])
 
 @router.get("/")
-async def get_all_ration_input():
+async def get_all_ration_input(skip: int = Query(0, ge=0), limit: int = Query(1000, ge=1, le=1000)):
     """
     Retorna todos os registros de entrada de ração.
     """
-    return await get_all_ration_input_service()
+    return await get_all_ration_input_service(skip, limit)
 
 @router.get("/{ration_input_id}")
 async def get_ration_input_by_id(ration_input_id: int):
@@ -57,3 +57,7 @@ async def delete_ration_input(ration_input_id: int):
     if not success:
         raise HTTPException(status_code=404, detail="Registro de entrada não encontrado")
     return {"message": "Registro de entrada removido com sucesso"}
+
+@router.get("/ration-stock/{stock_id}")
+async def get_inputs_by_stock(stock_id: int, skip: int = Query(0, ge=0), limit: int = Query(1000, ge=1, le=1000)):
+    return await get_all_ration_input_service(skip, limit, stock_id=stock_id)

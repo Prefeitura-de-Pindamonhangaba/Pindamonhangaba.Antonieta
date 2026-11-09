@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 import logging
 from services.beneficiary_services import (
     get_all_beneficiaries_service, 
@@ -175,3 +175,14 @@ async def delete_beneficiary(beneficiary_id: int):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erro interno do servidor ao deletar beneficiário"
         )
+
+@router.get("/search/neighborhood/{neighborhood}")
+async def search_by_neighborhood(neighborhood: str, skip: int = Query(0, ge=0), limit: int = Query(1000, ge=1, le=1000)):
+    records, total = await get_all_beneficiaries_service(skip, limit, neighborhood=neighborhood)
+    return {"beneficiaries": records, "total": total}
+
+
+@router.get("/search/street/{street}")
+async def search_by_street(street: str, skip: int = Query(0, ge=0), limit: int = Query(1000, ge=1, le=1000)):
+    records, total = await get_all_beneficiaries_service(skip, limit, street=street)
+    return {"beneficiaries": records, "total": total}

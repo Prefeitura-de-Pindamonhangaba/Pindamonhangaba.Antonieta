@@ -6,7 +6,7 @@ from database import get_db
 from dtos.create_beneficiary_dto import create_beneficiary_dto
 from dtos.update_beneficiary_dto import update_beneficiary_dto
 
-async def get_all_beneficiaries_service(skip: int = 0, limit: int = 1000) -> Tuple[List[Beneficiary], int]:
+async def get_all_beneficiaries_service(skip: int = 0, limit: int = 1000, neighborhood: str = None, street: str = None) -> Tuple[List[Beneficiary], int]:
     """
     Retorna todos os beneficiários do banco de dados.
     Obtém a sessão do DB internamente.
@@ -17,8 +17,12 @@ async def get_all_beneficiaries_service(skip: int = 0, limit: int = 1000) -> Tup
     db = next(get_db())
     try:
         query = db.query(Beneficiary).filter(Beneficiary.old == False)
-        beneficiaries = query.offset(skip).limit(limit).all()
-        total_beneficiaries = db.query(func.count(Beneficiary.id)).filter(Beneficiary.old == False).scalar()
+        if neighborhood is not None:
+            query = query.filter(Beneficiary.neighborhood.ilike(f"%{neighborhood}%"))
+        if street is not None:
+            query = query.filter(Beneficiary.street.ilike(f"%{street}%"))
+        beneficiaries = query.order_by(Beneficiary.id).offset(skip).limit(limit).all()
+        total_beneficiaries = query.count()
         return beneficiaries, total_beneficiaries
     finally:
         db.close()
