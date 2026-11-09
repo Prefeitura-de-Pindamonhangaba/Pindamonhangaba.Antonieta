@@ -23,14 +23,18 @@ class DatabaseTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.password_hash = get_password_hash("TestPassword123!")
 
-    def setUp(self):
-        self.engine = create_engine(
+    def make_engine(self):
+        return create_engine(
             "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
         )
 
-        @event.listens_for(self.engine, "connect")
-        def enable_foreign_keys(connection, _):
-            connection.execute("PRAGMA foreign_keys=ON")
+    def setUp(self):
+        self.engine = self.make_engine()
+
+        if self.engine.dialect.name == 'sqlite':
+            @event.listens_for(self.engine, "connect")
+            def enable_foreign_keys(connection, _):
+                connection.execute("PRAGMA foreign_keys=ON")
 
         Base.metadata.create_all(self.engine)
         self.sessions = sessionmaker(bind=self.engine)
