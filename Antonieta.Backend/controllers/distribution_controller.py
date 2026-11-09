@@ -1,3 +1,6 @@
+from fastapi import Depends, Request
+from services.auth_service import get_current_user
+from models.user_model import User
 from fastapi import APIRouter, HTTPException, Query
 from services.distribution_services import (
     get_all_distribution_service, get_distribution_by_id_service,
@@ -28,27 +31,27 @@ async def get_distribution_by_id(distribution_id: int):
 
 
 @router.post("/")
-async def create_distribution(distribution_dto: create_distribution_dto):
-    return await create_distribution_service(distribution_dto)
+async def create_distribution(distribution_dto: create_distribution_dto, request: Request, actor: User = Depends(get_current_user)):
+    return await create_distribution_service(distribution_dto, actor=actor, request=request)
 
 
 @router.put("/")
-async def update_distribution(distribution_dto: update_distribution_dto):
-    record = await update_distribution_service(distribution_dto)
+async def update_distribution(distribution_dto: update_distribution_dto, request: Request, actor: User = Depends(get_current_user)):
+    record = await update_distribution_service(distribution_dto, actor=actor, request=request)
     if record is None:
         raise HTTPException(status_code=404, detail="Distribuição não encontrada")
     return record
 
 
 @router.put("/{distribution_id}")
-async def update_distribution_by_id(distribution_id: int, distribution_dto: update_distribution_dto):
+async def update_distribution_by_id(distribution_id: int, distribution_dto: update_distribution_dto, request: Request, actor: User = Depends(get_current_user)):
     if distribution_id != distribution_dto.id:
         raise HTTPException(status_code=400, detail="ID da rota não corresponde ao ID do corpo da requisição")
-    return await update_distribution(distribution_dto)
+    return await update_distribution(distribution_dto, actor=actor, request=request)
 
 
 @router.delete("/{distribution_id}")
-async def delete_distribution(distribution_id: int):
-    if not await delete_distribution_service(distribution_id):
+async def delete_distribution(distribution_id: int, request: Request, actor: User = Depends(get_current_user)):
+    if not await delete_distribution_service(distribution_id, actor=actor, request=request):
         raise HTTPException(status_code=404, detail="Distribuição não encontrada")
     return True

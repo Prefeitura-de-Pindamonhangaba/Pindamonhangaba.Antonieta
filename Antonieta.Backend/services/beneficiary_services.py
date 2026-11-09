@@ -2,7 +2,8 @@ from typing import Dict, Any, List, Optional, Tuple
 from sqlalchemy import func
 from models.beneficiary_model import Beneficiary
 from sqlalchemy.orm import Session
-from database import get_db
+import database
+from services import transaction_audit
 from dtos.create_beneficiary_dto import create_beneficiary_dto
 from dtos.update_beneficiary_dto import update_beneficiary_dto
 
@@ -14,7 +15,7 @@ async def get_all_beneficiaries_service(skip: int = 0, limit: int = 1000, neighb
     Returns:
         Uma lista de objetos Beneficiary.
     """
-    db = next(get_db())
+    db = database.SessionLocal()
     try:
         query = db.query(Beneficiary).filter(Beneficiary.old == False)
         if neighborhood is not None:
@@ -37,7 +38,7 @@ async def get_beneficiary_by_id_service(beneficiary_id: int) -> Optional[Benefic
     Returns:
         Um objeto Beneficiary ou None se não encontrado.
     """
-    db = next(get_db())
+    db = database.SessionLocal()
     try:
         beneficiary = db.query(Beneficiary).filter(
             Beneficiary.id == beneficiary_id,
@@ -47,7 +48,7 @@ async def get_beneficiary_by_id_service(beneficiary_id: int) -> Optional[Benefic
     finally:
         db.close()
 
-async def create_beneficiary_service(beneficiary_dto: create_beneficiary_dto) -> Beneficiary:
+async def create_beneficiary_service(beneficiary_dto: create_beneficiary_dto, actor=None, request=None) -> Beneficiary:
     """
     Cria um novo beneficiário no banco de dados.
 
@@ -60,16 +61,17 @@ async def create_beneficiary_service(beneficiary_dto: create_beneficiary_dto) ->
 
     db_beneficiary = Beneficiary(**beneficiary_dto.model_dump())
 
-    db = next(get_db())
+    db = database.SessionLocal()
     try:
         db.add(db_beneficiary)
+        transaction_audit.record_change(db, "CREATE", db_beneficiary, actor, request, beneficiary_dto.model_dump(exclude_unset=True).keys())
         db.commit()
         db.refresh(db_beneficiary)
         return db_beneficiary
     finally:
         db.close()
 
-async def update_beneficiary_service(beneficiary_dto: update_beneficiary_dto) -> Optional[Beneficiary]:
+async def update_beneficiary_service(beneficiary_dto: update_beneficiary_dto, actor=None, request=None) -> Optional[Beneficiary]:
     """
     Atualiza um beneficiário existente no banco de dados.
 
@@ -79,7 +81,7 @@ async def update_beneficiary_service(beneficiary_dto: update_beneficiary_dto) ->
     Returns:
         O objeto Beneficiary atualizado ou None se não encontrado.
     """
-    db = next(get_db())
+    db = database.SessionLocal()
     try:
         beneficiary = db.query(Beneficiary).filter(
             Beneficiary.id == beneficiary_dto.id,
@@ -90,13 +92,14 @@ async def update_beneficiary_service(beneficiary_dto: update_beneficiary_dto) ->
 
             for key, value in update_data.items():
                 setattr(beneficiary, key, value)
+            transaction_audit.record_change(db, "UPDATE", beneficiary, actor, request, beneficiary_dto.model_dump(exclude_unset=True).keys())
             db.commit()
             db.refresh(beneficiary)
         return beneficiary
     finally:
         db.close()
 
-async def delete_beneficiary_service(beneficiary_id: int) -> bool:
+async def delete_beneficiary_service(beneficiary_id: int, actor=None, request=None) -> bool:
     """
     Deleta um beneficiário do banco de dados.
 
@@ -106,7 +109,7 @@ async def delete_beneficiary_service(beneficiary_id: int) -> bool:
     Returns:
         True se o beneficiário foi deletado, False caso contrário.
     """
-    db = next(get_db())
+    db = database.SessionLocal()
     try:
         beneficiary = db.query(Beneficiary).filter(
             Beneficiary.id == beneficiary_id,
@@ -115,6 +118,7 @@ async def delete_beneficiary_service(beneficiary_id: int) -> bool:
         if not beneficiary:
             return False
         db.delete(beneficiary)
+        transaction_audit.record_change(db, "DELETE", beneficiary, actor, request, ())
         db.commit()
         return True
     finally:
