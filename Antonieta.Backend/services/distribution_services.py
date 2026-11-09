@@ -1,4 +1,5 @@
 from typing import Dict, Any, List, Optional, Tuple
+from fastapi import HTTPException
 from sqlalchemy import func
 from models.distribution_model import Distribution
 from sqlalchemy.orm import Session

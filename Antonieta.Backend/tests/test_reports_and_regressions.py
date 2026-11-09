@@ -55,9 +55,8 @@ class ReportTests(DatabaseTestCase):
 class KnownRegressionTests(DatabaseTestCase):
     """Remove expectedFailure as the corresponding production defects are fixed."""
 
-    @unittest.expectedFailure
     def test_insufficient_stock_returns_400_without_changing_balance(self):
-        """BUG: distribution service uses HTTPException without importing it."""
+        """Insufficient stock must be rejected before any balance changes."""
         stock_id = self.stock(1)
         beneficiary_id = self.beneficiary()
         with TestClientWithoutServerExceptions() as client:
