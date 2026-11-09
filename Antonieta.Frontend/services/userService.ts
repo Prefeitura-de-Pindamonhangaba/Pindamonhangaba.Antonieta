@@ -1,3 +1,4 @@
+import { apiFetch } from '~/utils/apiFetch'
 import User from '../models/userModel'
 import { useRuntimeConfig } from '#app'
 
@@ -9,7 +10,7 @@ export const userService = {
    */
   async getAll(): Promise<User[]> {
     try {
-      const response = await fetch(`${BASE_URL}/`, {
+      const response = await apiFetch(`${BASE_URL}/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -33,7 +34,7 @@ export const userService = {
    */
   async getById(id: number): Promise<User> {
     try {
-      const response = await fetch(`${BASE_URL}/${id}`, {
+      const response = await apiFetch(`${BASE_URL}/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -55,9 +56,9 @@ export const userService = {
   /**
    * Criar um novo usuário
    */
-  async create(userData: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
+  async create(userData: { email: string; full_name: string; password: string; role?: 'comum' | 'administrador' }): Promise<User> {
     try {
-      const response = await fetch(`${BASE_URL}/`, {
+      const response = await apiFetch(`${BASE_URL}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +85,7 @@ export const userService = {
    */
   async update(id: number, userData: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>): Promise<User> {
     try {
-      const response = await fetch(`${BASE_URL}/${id}`, {
+      const response = await apiFetch(`${BASE_URL}/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ export const userService = {
    */
   async delete(id: number): Promise<void> {
     try {
-      const response = await fetch(`${BASE_URL}/${id}`, {
+      const response = await apiFetch(`${BASE_URL}/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`

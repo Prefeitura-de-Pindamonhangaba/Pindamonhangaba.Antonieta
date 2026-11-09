@@ -10,10 +10,10 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 
 const router = useRouter()
-const { checkAuth } = useAuth()
+const { validateSession } = useAuth()
 
-onMounted(() => {
-  if (checkAuth()) {
+onMounted(async () => {
+  if (await validateSession()) {
     router.push('/dashboard')
   }
 })

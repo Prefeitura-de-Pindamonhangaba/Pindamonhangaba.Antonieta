@@ -1,3 +1,4 @@
+import { apiFetch } from '~/utils/apiFetch'
 import type { RationStock } from '../models/rationStockModel'
 import { useRuntimeConfig } from '#app'
 
@@ -6,7 +7,7 @@ const BASE_URL = `${useRuntimeConfig().public.backendUrl}/ration-stock`
 export const rationStockService = {
   async getAll(): Promise<RationStock[]> {
     try {
-      const response = await fetch(`${BASE_URL}/`, {
+      const response = await apiFetch(`${BASE_URL}/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -25,7 +26,7 @@ export const rationStockService = {
   },
 
   async getById(id: number): Promise<RationStock> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -39,7 +40,7 @@ export const rationStockService = {
   },
 
   async create(rationStock: Omit<RationStock, 'id'>): Promise<RationStock> {
-    const response = await fetch(`${BASE_URL}/`, {
+    const response = await apiFetch(`${BASE_URL}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ export const rationStockService = {
   },
 
   async update(id: number, rationStock: Partial<RationStock>): Promise<RationStock> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       method: 'PUT',  // Changed from PATCH to PUT
       headers: {
         'Content-Type': 'application/json',
@@ -78,7 +79,7 @@ export const rationStockService = {
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await apiFetch(`${BASE_URL}/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
