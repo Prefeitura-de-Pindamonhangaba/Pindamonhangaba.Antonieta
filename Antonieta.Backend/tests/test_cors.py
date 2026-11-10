@@ -4,6 +4,15 @@ from cors_config import PRODUCTION_ORIGIN, get_cors_origins
 
 
 class CorsConfigurationTests(unittest.TestCase):
+    def test_production_json_array_configuration_is_supported(self):
+        self.assertEqual(get_cors_origins(f'["{PRODUCTION_ORIGIN}", "https://staging.example/"]'),
+                         [PRODUCTION_ORIGIN, 'https://staging.example'])
+
+    def test_json_wildcard_and_nonstring_entries_are_rejected(self):
+        for value in ('["*"]', '[123]', '["https://example.com", null]'):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                get_cors_origins(value)
+
     def test_production_is_allowed_with_legacy_configuration(self):
         self.assertIn(PRODUCTION_ORIGIN, get_cors_origins('http://localhost:3000'))
 
