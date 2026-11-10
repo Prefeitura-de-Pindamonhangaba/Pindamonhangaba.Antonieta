@@ -25,7 +25,12 @@ Edições de nome/descrição da ração não sobrescrevem o saldo de estoque.
 O backend permite explicitamente `https://antonieta.pindamonhangaba.sp.gov.br`,
 mesmo quando `CORS_ORIGINS` ainda contém apenas a configuração local antiga.
 Origens adicionais podem ser definidas nessa variável, separadas por vírgulas.
+Listas JSON de strings, usadas no servidor de produção, também são aceitas.
 Após publicar esta correção, reinicie o processo do backend para carregar a lista.
+
+O runtime nativo de produção é Python 3.9.25. Use anotações compatíveis com 3.9:
+`Optional[str]`, em vez de `str | None`. Esta última forma impede a inicialização
+do backend nesse runtime e pode causar 502 no proxy por ausência do serviço.
 
 Para corrigir a configuração de um backend que ainda não recebeu esta versão,
 inclua o domínio em `CORS_ORIGINS` e reinicie o backend:
