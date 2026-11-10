@@ -1,6 +1,6 @@
 # Testes do backend
 
-Na pasta `Antonieta.Backend`, com Python 3.11 ou superior:
+Na pasta `Antonieta.Backend`, com Python 3.9 ou superior:
 
 ```powershell
 python -m venv .venv
@@ -20,6 +20,10 @@ Não é necessário iniciar Docker, frontend, backend ou PostgreSQL. A suíte co
 um segredo JWT exclusivo para testes e usa SQLite em memória, com chaves estrangeiras
 habilitadas e um banco novo para cada caso. Nenhum dado do `.env` é usado para acessar
 o banco da aplicação. Execute em um processo separado, pelos comandos acima.
+
+O CI valida Python 3.9 (runtime da produção) e 3.11. As anotações de tipos do
+backend devem usar `typing.Optional`/`typing.Union`, sem a sintaxe `str | None`
+introduzida no Python 3.10. Um teste de compatibilidade também verifica isso.
 
 ## Cobertura
 

@@ -11,7 +11,7 @@ Os itens da revisão inicial foram implementados:
 | Quantidades e concorrência | Valores inválidos são rejeitados; operações não podem deixar saldo negativo; bloqueios são testados no PostgreSQL. |
 | Erros de distribuição | Falta de estoque retorna 400; recursos ausentes retornam 404. |
 | Contratos frontend/backend | Atualização por ID, filtros de movimentações, buscas de beneficiários, tipos de ração e dashboard usam contratos existentes e testados. |
-| CORS | Usa as origens configuradas, remove espaços, tem padrão local e rejeita configuração com wildcard. |
+| CORS | Permite o frontend oficial de produção e origens adicionais configuradas, normaliza espaços/barras finais e rejeita wildcard. |
 | Sessão no frontend | Expiração é checada localmente, identidade/perfil são confirmados no backend e 401 encerra a sessão pelo cliente HTTP compartilhado. |
 | Auditoria e privacidade | Operações de negócio registram responsável, entidade e campos afetados na mesma transação; valores pessoais de beneficiários não são copiados para logs. |
 | DTOs e respostas | Distribuições aceitam frações na criação/edição, preservam observações e usam erros consistentes. |
@@ -19,6 +19,29 @@ Os itens da revisão inicial foram implementados:
 A documentação pública da API permanece desativada. Exclusões de rações ou
 beneficiários com movimentações vinculadas retornam 409 para preservar o histórico.
 Edições de nome/descrição da ração não sobrescrevem o saldo de estoque.
+
+## Configuração de produção
+
+O backend permite explicitamente `https://antonieta.pindamonhangaba.sp.gov.br`,
+mesmo quando `CORS_ORIGINS` ainda contém apenas a configuração local antiga.
+Origens adicionais podem ser definidas nessa variável, separadas por vírgulas.
+Listas JSON de strings, usadas no servidor de produção, também são aceitas.
+Após publicar esta correção, reinicie o processo do backend para carregar a lista.
+
+O runtime nativo de produção é Python 3.9.25. Use anotações compatíveis com 3.9:
+`Optional[str]`, em vez de `str | None`. Esta última forma impede a inicialização
+do backend nesse runtime e pode causar 502 no proxy por ausência do serviço.
+
+Para corrigir a configuração de um backend que ainda não recebeu esta versão,
+inclua o domínio em `CORS_ORIGINS` e reinicie o backend:
+
+```dotenv
+CORS_ORIGINS="https://antonieta.pindamonhangaba.sp.gov.br"
+```
+
+O frontend de produção deve apontar para a URL HTTPS correta da API. Se o proxy
+ou Cloudflare responder 403 antes da aplicação, será necessário verificar essa
+camada: os cabeçalhos CORS do FastAPI não são aplicados a respostas do proxy.
 
 ## Validação das correções
 

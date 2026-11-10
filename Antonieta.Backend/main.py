@@ -16,6 +16,7 @@ from controllers.report_controller import router as report_router
 from services.auth_service import get_current_user
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
+from cors_config import get_cors_origins
 
 load_dotenv()
 
@@ -34,9 +35,7 @@ async def integrity_error_handler(request, exc):
     })
 
 # CORS Configuration
-origins = [origin.strip() for origin in getenv('CORS_ORIGINS', 'http://localhost:3000').split(',') if origin.strip()]
-if '*' in origins:
-    raise ValueError('CORS_ORIGINS deve listar origens explícitas')
+origins = get_cors_origins(getenv('CORS_ORIGINS'))
 
 app.add_middleware(
     CORSMiddleware,
